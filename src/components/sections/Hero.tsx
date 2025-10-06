@@ -24,7 +24,7 @@ export function Hero() {
           Crafting Excellence, Building Futures
         </h1>
         <p className="mt-6 text-lg md:text-xl max-w-2xl mx-auto text-primary-foreground/80">
-          Apex Portfolio delivers unparalleled design and development solutions that elevate your brand and engage your audience.
+          Reddune Solutions delivers unparalleled design and development solutions that elevate your brand and engage your audience.
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold shadow-lg">

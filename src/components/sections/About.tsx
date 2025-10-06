@@ -27,7 +27,7 @@ export function About() {
     <section id="about" className="py-20 md:py-32 bg-background">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="font-headline text-3xl md:text-4xl font-bold">About Apex Portfolio</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-bold">About Reddune Solutions</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
             We are a collective of passionate designers, developers, and strategists dedicated to crafting exceptional digital and physical experiences. Our mission is to merge functionality with artistry, creating solutions that are not only beautiful but also impactful and enduring.
           </p>

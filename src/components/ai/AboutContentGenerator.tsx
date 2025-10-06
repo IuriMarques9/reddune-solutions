@@ -37,7 +37,7 @@ export function AboutContentGenerator() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      companyDescription: "Apex Portfolio is a design and development agency specializing in modern architecture and user-centric digital experiences.",
+      companyDescription: "Reddune Solutions is a design and development agency specializing in modern architecture and user-centric digital experiences.",
       targetAudience: "Startups and established businesses looking for high-quality branding and web presence.",
       brandVoice: "Professional, sophisticated, and innovative.",
       additionalKeywords: "sustainable, futuristic, client-focused",

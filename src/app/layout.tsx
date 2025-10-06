@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "Apex Portfolio",
+  title: "Reddune Solutions",
   description:
     "A professional portfolio website to showcase services and completed projects.",
 };
