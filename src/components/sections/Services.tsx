@@ -1,20 +1,21 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Briefcase, Building2, Palette } from "lucide-react";
+import { HardDriveUpload, Server, Wrench, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 const services = [
   {
-    icon: <Building2 className="h-10 w-10 text-primary" />,
-    title: "Design Arquitetônico",
+    icon: <HardDriveUpload className="h-10 w-10 text-primary" />,
+    title: "Assistência Técnica",
     description: "Soluções arquitetônicas inovadoras e sustentáveis, do conceito à conclusão, para projetos residenciais e comerciais.",
   },
   {
-    icon: <Palette className="h-10 w-10 text-primary" />,
-    title: "Design de Interiores",
+    icon: <Server className="h-10 w-10 text-primary" />,
+    title: "Web e Serviços Digitais",
     description: "Criando espaços interiores belos e funcionais que refletem seu estilo pessoal e melhoram sua qualidade de vida.",
   },
   {
-    icon: <Briefcase className="h-10 w-10 text-primary" />,
-    title: "Gerenciamento de Projetos",
+    icon: <Wrench className="h-10 w-10 text-primary" />,
+    title: "Software e Recuperação",
     description: "Serviços especializados de gerenciamento de projetos para garantir que seu projeto seja entregue no prazo, dentro do orçamento e com os mais altos padrões.",
   },
 ];
@@ -43,6 +44,12 @@ export function Services() {
               </CardContent>
             </Card>
           ))}
+        </div>
+        <div className="mt-20 text-center">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                <Sparkles className="inline-block h-5 w-5 text-primary mr-2" />
+                Não encontrou o que procurava? A nossa paixão é criar soluções à medida. <Link href="#contact" className="font-semibold text-primary hover:underline">Fale connosco</Link> e vamos transformar a sua ideia em realidade.
+            </p>
         </div>
       </div>
     </section>
