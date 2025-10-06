@@ -20,9 +20,9 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { useState } from "react";
 
 const formSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters."),
-  email: z.string().email("Please enter a valid email address."),
-  message: z.string().min(10, "Message must be at least 10 characters."),
+  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
+  email: z.string().email("Por favor, insira um endereço de e-mail válido."),
+  message: z.string().min(10, "A mensagem deve ter pelo menos 10 caracteres."),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -47,8 +47,8 @@ export function Contact() {
     
     setTimeout(() => {
         toast({
-            title: "Message Sent!",
-            description: "Thank you for contacting us. We'll get back to you shortly.",
+            title: "Mensagem Enviada!",
+            description: "Obrigado por nos contatar. Retornaremos em breve.",
         });
         form.reset();
         setIsSubmitting(false);
@@ -59,9 +59,9 @@ export function Contact() {
     <section id="contact" className="py-20 md:py-32 bg-secondary/50">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="font-headline text-3xl md:text-4xl font-bold">Get In Touch</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-bold">Entre em Contato</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Have a project in mind? We'd love to hear from you.
+            Tem um projeto em mente? Adoraríamos ouvir de você.
           </p>
         </div>
 
@@ -69,7 +69,7 @@ export function Contact() {
             <div className="lg:col-span-2">
                 <Card className="shadow-lg rounded-lg">
                     <CardHeader>
-                        <CardTitle className="font-headline text-2xl">Send us a message</CardTitle>
+                        <CardTitle className="font-headline text-2xl">Envie-nos uma mensagem</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Form {...form}>
@@ -79,9 +79,9 @@ export function Contact() {
                                     name="name"
                                     render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Full Name</FormLabel>
+                                        <FormLabel>Nome Completo</FormLabel>
                                         <FormControl>
-                                        <Input placeholder="John Doe" {...field} />
+                                        <Input placeholder="João da Silva" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -92,9 +92,9 @@ export function Contact() {
                                     name="email"
                                     render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Email Address</FormLabel>
+                                        <FormLabel>Endereço de E-mail</FormLabel>
                                         <FormControl>
-                                        <Input placeholder="you@example.com" {...field} />
+                                        <Input placeholder="voce@exemplo.com" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -105,16 +105,16 @@ export function Contact() {
                                     name="message"
                                     render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Your Message</FormLabel>
+                                        <FormLabel>Sua Mensagem</FormLabel>
                                         <FormControl>
-                                        <Textarea placeholder="Tell us about your project..." {...field} rows={6}/>
+                                        <Textarea placeholder="Conte-nos sobre seu projeto..." {...field} rows={6}/>
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                     )}
                                 />
                                 <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                                    {isSubmitting ? "Sending..." : "Send Message"}
+                                    {isSubmitting ? "Enviando..." : "Enviar Mensagem"}
                                 </Button>
                             </form>
                         </Form>
@@ -122,26 +122,26 @@ export function Contact() {
                 </Card>
             </div>
             <div className="space-y-8">
-                <h3 className="font-headline text-2xl font-bold">Contact Information</h3>
+                <h3 className="font-headline text-2xl font-bold">Informações de Contato</h3>
                 <div className="space-y-6 text-muted-foreground">
                     <div className="flex items-start gap-4">
                         <MapPin className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                         <div>
-                            <h4 className="font-semibold text-foreground">Our Office</h4>
-                            <p>123 Design Avenue, Metropolis, 10101</p>
+                            <h4 className="font-semibold text-foreground">Nosso Escritório</h4>
+                            <p>Avenida do Design, 123, Metrópole, 10101</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-4">
                         <Mail className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                         <div>
-                            <h4 className="font-semibold text-foreground">Email Us</h4>
-                            <p>hello@reddunesolutions.com</p>
+                            <h4 className="font-semibold text-foreground">Envie-nos um E-mail</h4>
+                            <p>ola@reddunesolutions.com</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-4">
                         <Phone className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                         <div>
-                            <h4 className="font-semibold text-foreground">Call Us</h4>
+                            <h4 className="font-semibold text-foreground">Ligue para Nós</h4>
                             <p>(123) 456-7890</p>
                         </div>
                     </div>

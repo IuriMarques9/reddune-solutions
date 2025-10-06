@@ -13,21 +13,21 @@ import {z} from 'genkit';
 const GenerateAboutUsContentInputSchema = z.object({
   companyDescription: z
     .string()
-    .describe('A detailed description of the company, its mission, and values.'),
+    .describe('Uma descrição detalhada da empresa, sua missão e valores.'),
   targetAudience: z
     .string()
-    .describe('Description of the target audience for the company.'),
-  brandVoice: z.string().describe('The desired brand voice and tone.'),
+    .describe('Descrição do público-alvo da empresa.'),
+  brandVoice: z.string().describe('A voz e o tom de marca desejados.'),
   additionalKeywords: z
     .string()
-    .describe('Any additional keywords to include in the content.'),
+    .describe('Quaisquer palavras-chave adicionais a serem incluídas no conteúdo.'),
 });
 export type GenerateAboutUsContentInput = z.infer<typeof GenerateAboutUsContentInputSchema>;
 
 const GenerateAboutUsContentOutputSchema = z.object({
   aboutUsContent: z
     .string()
-    .describe('Generated content for the About Us section of the website.'),
+    .describe('Conteúdo gerado para a seção "Sobre Nós" do site.'),
 });
 export type GenerateAboutUsContentOutput = z.infer<typeof GenerateAboutUsContentOutputSchema>;
 
@@ -41,16 +41,16 @@ const prompt = ai.definePrompt({
   name: 'generateAboutUsContentPrompt',
   input: {schema: GenerateAboutUsContentInputSchema},
   output: {schema: GenerateAboutUsContentOutputSchema},
-  prompt: `You are an expert copywriter specializing in creating About Us content for company websites.
+  prompt: `Você é um redator especialista em criar conteúdo para a seção "Sobre Nós" de sites de empresas.
 
-You will use the provided information to generate compelling and engaging content that aligns with the brand voice.
+Você usará as informações fornecidas para gerar conteúdo atraente e envolvente que se alinhe com a voz da marca. Responda em português.
 
-Company Description: {{{companyDescription}}}
-Target Audience: {{{targetAudience}}}
-Brand Voice: {{{brandVoice}}}
-Additional Keywords: {{{additionalKeywords}}}
+Descrição da Empresa: {{{companyDescription}}}
+Público-alvo: {{{targetAudience}}}
+Voz da Marca: {{{brandVoice}}}
+Palavras-chave Adicionais: {{{additionalKeywords}}}
 
-Generate content for the About Us section that is informative, engaging, and persuasive.`,
+Gere conteúdo para a seção "Sobre Nós" que seja informativo, envolvente e persuasivo.`,
 });
 
 const generateAboutUsContentFlow = ai.defineFlow(

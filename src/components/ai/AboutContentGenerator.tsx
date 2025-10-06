@@ -21,9 +21,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Copy, Loader2, Sparkles } from "lucide-react";
 
 const formSchema = z.object({
-  companyDescription: z.string().min(10, "Please provide a more detailed description."),
-  targetAudience: z.string().min(5, "Please describe your target audience."),
-  brandVoice: z.string().min(5, "Please describe your brand voice."),
+  companyDescription: z.string().min(10, "Forneça uma descrição mais detalhada."),
+  targetAudience: z.string().min(5, "Descreva seu público-alvo."),
+  brandVoice: z.string().min(5, "Descreva a voz da sua marca."),
   additionalKeywords: z.string().optional(),
 });
 
@@ -37,10 +37,10 @@ export function AboutContentGenerator() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      companyDescription: "Reddune Solutions is a design and development agency specializing in modern architecture and user-centric digital experiences.",
-      targetAudience: "Startups and established businesses looking for high-quality branding and web presence.",
-      brandVoice: "Professional, sophisticated, and innovative.",
-      additionalKeywords: "sustainable, futuristic, client-focused",
+      companyDescription: "A Reddune Solutions é uma agência de design e desenvolvimento especializada em arquitetura moderna e experiências digitais centradas no usuário.",
+      targetAudience: "Startups e empresas estabelecidas que procuram branding e presença na web de alta qualidade.",
+      brandVoice: "Profissional, sofisticada e inovadora.",
+      additionalKeywords: "sustentável, futurista, focada no cliente",
     },
   });
 
@@ -53,13 +53,13 @@ export function AboutContentGenerator() {
     if (result.success && result.data) {
       setGeneratedContent(result.data.aboutUsContent);
       toast({
-        title: "Content Generated",
-        description: "Your 'About Us' content has been successfully generated.",
+        title: "Conteúdo Gerado",
+        description: "Seu conteúdo 'Sobre Nós' foi gerado com sucesso.",
       });
     } else {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: "Erro",
         description: result.error,
       });
     }
@@ -69,8 +69,8 @@ export function AboutContentGenerator() {
     if (generatedContent) {
       navigator.clipboard.writeText(generatedContent);
       toast({
-        title: "Copied to Clipboard",
-        description: "The generated content has been copied.",
+        title: "Copiado para a Área de Transferência",
+        description: "O conteúdo gerado foi copiado.",
       });
     }
   };
@@ -81,9 +81,9 @@ export function AboutContentGenerator() {
         <div className="flex items-center gap-3">
             <Sparkles className="text-primary h-8 w-8" />
             <div className="flex-1">
-                <CardTitle className="font-headline text-2xl">AI Content Assistant</CardTitle>
+                <CardTitle className="font-headline text-2xl">Assistente de Conteúdo de IA</CardTitle>
                 <CardDescription className="mt-1">
-                    Generate compelling 'About Us' content. Fill in the details below to get started.
+                    Gere um conteúdo atraente para a seção 'Sobre Nós'. Preencha os detalhes abaixo para começar.
                 </CardDescription>
             </div>
         </div>
@@ -97,9 +97,9 @@ export function AboutContentGenerator() {
                 name="companyDescription"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Company Description</FormLabel>
+                    <FormLabel>Descrição da Empresa</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Describe your company, mission, and values..." {...field} rows={4} />
+                      <Textarea placeholder="Descreva sua empresa, missão e valores..." {...field} rows={4} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -110,9 +110,9 @@ export function AboutContentGenerator() {
                 name="targetAudience"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Target Audience</FormLabel>
+                    <FormLabel>Público-alvo</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Who are you trying to reach?" {...field} />
+                      <Textarea placeholder="Quem você está tentando alcançar?" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -123,9 +123,9 @@ export function AboutContentGenerator() {
                 name="brandVoice"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Brand Voice</FormLabel>
+                    <FormLabel>Voz da Marca</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="e.g., Professional, friendly, quirky..." {...field} />
+                      <Textarea placeholder="ex: Profissional, amigável, peculiar..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -136,9 +136,9 @@ export function AboutContentGenerator() {
                 name="additionalKeywords"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Additional Keywords (optional)</FormLabel>
+                    <FormLabel>Palavras-chave Adicionais (opcional)</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="e.g., sustainable, innovative..." {...field} />
+                      <Textarea placeholder="ex: sustentável, inovador..." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -148,24 +148,24 @@ export function AboutContentGenerator() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
+                    Gerando...
                   </>
                 ) : (
                   <>
                     <Sparkles className="mr-2 h-4 w-4" />
-                    Generate Content
+                    Gerar Conteúdo
                   </>
                 )}
               </Button>
             </form>
             
             <div className="flex flex-col">
-                <FormLabel>Generated Content</FormLabel>
+                <FormLabel>Conteúdo Gerado</FormLabel>
                 <div className="relative flex-grow mt-2">
                 <Textarea
                     readOnly
-                    value={isLoading ? "Generating, please wait..." : generatedContent}
-                    placeholder="AI-generated content will appear here..."
+                    value={isLoading ? "Gerando, por favor aguarde..." : generatedContent}
+                    placeholder="O conteúdo gerado por IA aparecerá aqui..."
                     className="h-full min-h-[300px] resize-none bg-background"
                 />
                 {generatedContent && !isLoading && (

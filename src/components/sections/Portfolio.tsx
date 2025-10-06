@@ -10,9 +10,9 @@ export function Portfolio() {
     <section id="portfolio" className="py-20 md:py-32 bg-secondary/50">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="font-headline text-3xl md:text-4xl font-bold">Our Portfolio</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-bold">Nosso Portfólio</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            A glimpse into our world of creativity and professional execution.
+            Um vislumbre do nosso mundo de criatividade e execução profissional.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">

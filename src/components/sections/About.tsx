@@ -5,17 +5,17 @@ import { AboutContentGenerator } from "@/components/ai/AboutContentGenerator";
 const teamMembers = [
   {
     name: "Alexia Thorne",
-    role: "Founder & CEO",
+    role: "Fundadora & CEO",
     imageId: "team-1",
   },
   {
     name: "Julian Cross",
-    role: "Lead Designer",
+    role: "Designer Líder",
     imageId: "team-2",
   },
   {
     name: "Seraphina Vale",
-    role: "Project Manager",
+    role: "Gerente de Projetos",
     imageId: "team-3",
   },
 ];
@@ -27,15 +27,15 @@ export function About() {
     <section id="about" className="py-20 md:py-32 bg-background">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="font-headline text-3xl md:text-4xl font-bold">About Reddune Solutions</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-bold">Sobre a Reddune Solutions</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
-            We are a collective of passionate designers, developers, and strategists dedicated to crafting exceptional digital and physical experiences. Our mission is to merge functionality with artistry, creating solutions that are not only beautiful but also impactful and enduring.
+            Somos um coletivo de designers, desenvolvedores e estrategistas apaixonados, dedicados a criar experiências digitais e físicas excepcionais. Nossa missão é fundir funcionalidade com arte, criando soluções que não são apenas belas, mas também impactantes e duradouras.
           </p>
         </div>
 
         <div className="mt-20 text-center">
-            <h3 className="font-headline text-2xl md:text-3xl font-bold">Meet Our Team</h3>
-            <p className="mt-2 text-md text-muted-foreground max-w-2xl mx-auto">The creative minds behind our success.</p>
+            <h3 className="font-headline text-2xl md:text-3xl font-bold">Conheça Nossa Equipe</h3>
+            <p className="mt-2 text-md text-muted-foreground max-w-2xl mx-auto">As mentes criativas por trás do nosso sucesso.</p>
             <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3 mt-12">
             {teamMembers.map((member) => {
                 const image = teamImages.find((img) => img.id === member.imageId);

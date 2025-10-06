@@ -2,63 +2,63 @@
   "placeholderImages": [
     {
       "id": "portfolio-1",
-      "description": "Abstract Architecture",
+      "description": "Arquitetura Abstrata",
       "imageUrl": "https://images.unsplash.com/photo-1656507746159-4a18a9f5efcb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxhcmNoaXRlY3R1cmUlMjBidWlsZGluZ3xlbnwwfHx8fDE3NTk2NzU5MTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "architecture building"
+      "imageHint": "prédio arquitetura"
     },
     {
       "id": "portfolio-2",
-      "description": "Modern Interior Space",
+      "description": "Espaço Interior Moderno",
       "imageUrl": "https://images.unsplash.com/photo-1564078516393-cf04bd966897?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxpbnRlcmlvciUyMGRlc2lnbnxlbnwwfHx8fDE3NTk3MjkyNTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "interior design"
+      "imageHint": "design de interiores"
     },
     {
       "id": "portfolio-3",
-      "description": "Corporate Branding",
+      "description": "Branding Corporativo",
       "imageUrl": "https://images.unsplash.com/photo-1558655146-d09347e92766?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxicmFuZGluZyUyMGRlc2lnbnxlbnwwfHx8fDE3NTk2ODg0MDl8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "branding design"
+      "imageHint": "design de marca"
     },
     {
       "id": "portfolio-4",
-      "description": "Urban Landscape",
+      "description": "Paisagem Urbana",
       "imageUrl": "https://images.unsplash.com/photo-1697092432771-0edd28a4be59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjaXR5c2NhcGUlMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzU5NzMyNDk1fDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "cityscape architecture"
+      "imageHint": "paisagem urbana arquitetura"
     },
     {
       "id": "portfolio-5",
-      "description": "Product Packaging",
+      "description": "Embalagem de Produto",
       "imageUrl": "https://images.unsplash.com/photo-1603712521905-3c68898026f2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwcm9kdWN0JTIwcGFja2FnaW5nfGVufDB8fHx8MTc1OTY1NzAwNnww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "product packaging"
+      "imageHint": "embalagem de produto"
     },
     {
       "id": "portfolio-6",
-      "description": "Sustainable Housing",
+      "description": "Habitação Sustentável",
       "imageUrl": "https://images.unsplash.com/photo-1673677794341-b65fc030c737?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxlY28lMjBob3VzZXxlbnwwfHx8fDE3NTk3Njg4NDh8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "eco house"
+      "imageHint": "casa ecológica"
     },
     {
       "id": "team-1",
-      "description": "Portrait of CEO",
+      "description": "Retrato do CEO",
       "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwcm9mZXNzaW9uYWwlMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTk3MDE4MjN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "professional portrait"
+      "imageHint": "retrato profissional"
     },
     {
       "id": "team-2",
-      "description": "Portrait of Lead Designer",
+      "description": "Retrato do Designer Líder",
       "imageUrl": "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxwZXJzb24lMjBzbWlsaW5nfGVufDB8fHx8MTc1OTY2MDUwM3ww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "person smiling"
+      "imageHint": "pessoa sorrindo"
     },
     {
       "id": "team-3",
-      "description": "Portrait of Project Manager",
+      "description": "Retrato da Gerente de Projetos",
       "imageUrl": "https://images.unsplash.com/photo-1592621385612-4d7129426394?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx3b21hbiUyMHBvcnRyYWl0fGVufDB8fHx8MTc1OTcxODAxNHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "woman portrait"
+      "imageHint": "retrato de mulher"
     },
     {
       "id": "hero-image",
-      "description": "Modern office building exterior",
+      "description": "Exterior de um moderno edifício de escritórios",
       "imageUrl": "https://images.unsplash.com/photo-1531591022136-eb8b0da1e6d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bW9kZXJuJTIwYXJjaGl0ZWN0dXJlfGVufDB8fHx8MTc1OTc2ODA4Nnww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "modern architecture"
+      "imageHint": "arquitetura moderna"
     }
   ]
 }

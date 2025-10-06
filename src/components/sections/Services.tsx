@@ -4,18 +4,18 @@ import { Briefcase, Building2, Palette } from "lucide-react";
 const services = [
   {
     icon: <Building2 className="h-10 w-10 text-primary" />,
-    title: "Architectural Design",
-    description: "Innovative and sustainable architectural solutions from concept to completion for residential and commercial projects.",
+    title: "Design Arquitetônico",
+    description: "Soluções arquitetônicas inovadoras e sustentáveis, do conceito à conclusão, para projetos residenciais e comerciais.",
   },
   {
     icon: <Palette className="h-10 w-10 text-primary" />,
-    title: "Interior Design",
-    description: "Creating beautiful and functional interior spaces that reflect your personal style and enhance your quality of life.",
+    title: "Design de Interiores",
+    description: "Criando espaços interiores belos e funcionais que refletem seu estilo pessoal e melhoram sua qualidade de vida.",
   },
   {
     icon: <Briefcase className="h-10 w-10 text-primary" />,
-    title: "Project Management",
-    description: "Expert project management services to ensure your project is delivered on time, within budget, and to the highest standards.",
+    title: "Gerenciamento de Projetos",
+    description: "Serviços especializados de gerenciamento de projetos para garantir que seu projeto seja entregue no prazo, dentro do orçamento e com os mais altos padrões.",
   },
 ];
 
@@ -24,9 +24,9 @@ export function Services() {
     <section id="services" className="py-20 md:py-32 bg-background">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="font-headline text-3xl md:text-4xl font-bold">Our Services</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-bold">Nossos Serviços</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            We provide a comprehensive range of services to bring your vision to life.
+            Oferecemos uma gama completa de serviços para dar vida à sua visão.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
