@@ -28,11 +28,10 @@ export function About() {
         <div className="text-center">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">Sobre a Reddune Solutions</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">
-            Somos um coletivo de designers, desenvolvedores e estrategistas apaixonados, dedicados a criar experiências digitais e físicas excepcionais. Nossa missão é fundir funcionalidade com arte, criando soluções que não são apenas belas, mas também impactantes e duradouras.
-          </p>
+            A RedDune Solutions é uma empresa especializada em tecnologia e inovação digital, focada em oferecer soluções completas em manutenção de computadores, reparação de equipamentos eletrónicos e criação de websites modernos e eficientes. Combinamos conhecimento técnico, criatividade e compromisso para garantir resultados de qualidade, adaptados às necessidades de cada cliente. O nosso objetivo é simplificar a tecnologia e ajudar pessoas e negócios a tirarem o máximo proveito do mundo digital.          </p>
         </div>
 
-        <div className="mt-20 text-center">
+        {/* <div className="mt-20 text-center">
             <h3 className="font-headline text-2xl md:text-3xl font-bold">Conheça Nossa Equipe</h3>
             <p className="mt-2 text-md text-muted-foreground max-w-2xl mx-auto">As mentes criativas por trás do nosso sucesso.</p>
             <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3 mt-12">
@@ -48,10 +47,12 @@ export function About() {
                     <p className="text-primary font-medium">{member.role}</p>
                 </div>
                 );
-            })}
-            </div>
-        </div>
-      </div>
+                })}
+                </div>
+              }
+              </div>
+              */}
+              </div>
     </section>
   );
 }
