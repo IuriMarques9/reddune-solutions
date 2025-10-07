@@ -1,6 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { AboutContentGenerator } from "@/components/ai/AboutContentGenerator";
 
 const teamMembers = [
   {
@@ -52,8 +51,6 @@ export function About() {
             })}
             </div>
         </div>
-
-        <AboutContentGenerator />
       </div>
     </section>
   );

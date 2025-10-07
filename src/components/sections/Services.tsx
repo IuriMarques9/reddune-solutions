@@ -4,19 +4,19 @@ import Link from "next/link";
 
 const services = [
   {
-    icon: <HardDriveUpload className="h-10 w-10 text-primary" />,
+    icon: <Wrench className="h-10 w-10 text-primary" />,
     title: "Assistência Técnica",
-    description: "Soluções arquitetônicas inovadoras e sustentáveis, do conceito à conclusão, para projetos residenciais e comerciais.",
+    description: "Assistência técnica especializada para computadores, consolas e outros equipamentos eletrónicos. Diagnosticamos e resolvemos problemas com rapidez e precisão, garantindo que o teu dispositivo volte a funcionar no máximo desempenho, com a transparência que esperas de uma equipa profissional.",
   },
   {
     icon: <Server className="h-10 w-10 text-primary" />,
     title: "Web e Serviços Digitais",
-    description: "Criando espaços interiores belos e funcionais que refletem seu estilo pessoal e melhoram sua qualidade de vida.",
+    description: "Desenvolvimento de sites e soluções digitais à medida, pensadas para destacar a tua marca e simplificar processos. Criamos plataformas modernas, rápidas e seguras, desde páginas institucionais até lojas online completas, com foco na performance, design e experiência do utilizador.",
   },
   {
-    icon: <Wrench className="h-10 w-10 text-primary" />,
+    icon: <HardDriveUpload className="h-10 w-10 text-primary" />,
     title: "Software e Recuperação",
-    description: "Serviços especializados de gerenciamento de projetos para garantir que seu projeto seja entregue no prazo, dentro do orçamento e com os mais altos padrões.",
+    description: "Instalação e configuração de software, drivers e sistemas operativos, bem como recuperação básica de dados perdidos. Garantimos que o teu equipamento volta a funcionar de forma estável, atualizada e otimizada, com todos os programas essenciais prontos a usar e os teus ficheiros recuperados sempre que possível.",
   },
 ];
 
