@@ -3,11 +3,10 @@
 import { Instagram } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import logo from '../../public/logo.png';
 import { useEffect, useState } from "react";
 
 const RedduneDuneLogo = () => (
-    <Image src={logo} alt={"logo"} width={50} height={50}/>
+    <Image src="/logo.png" alt={"logo"} width={50} height={50}/>
 );
 
 

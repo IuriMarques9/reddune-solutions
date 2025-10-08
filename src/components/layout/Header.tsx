@@ -4,14 +4,13 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import logo from '../../public/logo.png';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from "@/hooks/use-mobile";
 
 
 const RedduneDuneLogo = () => (
-    <Image src={logo} alt={"logo"} width={50} height={50}/>
+    <Image src="/logo.png" alt={"logo"} width={50} height={50}/>
 );
 
 const navLinks = [

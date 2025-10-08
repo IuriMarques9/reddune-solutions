@@ -1,28 +1,25 @@
 {
   "placeholderImages": [
     {
-      "id": "logo",
-      "description": "Logo da RedDune Solutions",
-      "imageUrl": "/logo.png",
-      "imageHint": "logo empresa"
-    },
-    {
       "id": "portfolio-1",
       "description": "Construção de Computadores",
       "imageUrl": "/portfolio1.png",
-      "imageHint": "computador desktop"
+      "imageHint": "computador desktop",
+      "serviceUrl": "https://www.instagram.com/p/DL5SABPM3Wn/?img_index=1"
     },
     {
       "id": "portfolio-2",
       "description": "Desenvolvimento de Website",
-      "imageUrl": "",
-      "imageHint": "website e apps"
+      "imageUrl": "/portfolio2.png",
+      "imageHint": "website e apps",
+      "serviceUrl": "https://www.instagram.com/p/DNoS8fhM9Oi/"
     },
     {
       "id": "portfolio-3",
       "description": "Diagnostico e Reparação de Hardware",
-      "imageUrl": "",
-      "imageHint": "diagnostico hardware e reparação"
+      "imageUrl": "/portfolio3.png",
+      "imageHint": "diagnostico hardware e reparação",
+      "serviceUrl": "https://www.instagram.com/p/DLIpvUEsyEv/?img_index=1"
     },
     {
       "id": "hero-image",
