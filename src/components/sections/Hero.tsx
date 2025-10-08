@@ -20,11 +20,12 @@ export function Hero() {
         />
       )}
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-primary-foreground">
-        <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
-          Criando Excelência, Construindo Futuros
+        <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+          A Resposta Certa para as Suas Necessidades Informáticas
         </h1>
         <p className="mt-6 text-lg md:text-xl max-w-2xl mx-auto text-primary-foreground/80">
-          A Reddune Solutions oferece soluções de design e desenvolvimento inigualáveis que elevam sua marca e envolvem seu público.
+          Soluções informáticas personalizadas para cada cliente.
+          Na RedDune Solutions, disponibilizamos um serviço integrado e à medida, orientado tanto para particulares como para empresas, com foco em confiança, eficiência e transparencia
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold shadow-lg">

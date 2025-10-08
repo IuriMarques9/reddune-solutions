@@ -61,7 +61,7 @@ export function Contact() {
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">Entre em Contato</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Tem um projeto em mente? Adoraríamos ouvir de você.
+            Tem um projeto em mente, dúuvidas ou sugestões? Adoraríamos ouvir de você.
           </p>
         </div>
 
@@ -141,7 +141,7 @@ export function Contact() {
                     <div className="flex items-start gap-4">
                         <Phone className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                         <div>
-                            <h4 className="font-semibold text-foreground">Ligue para Nós</h4>
+                            <h4 className="font-semibold text-foreground">Ligue-nos</h4>
                             <p>(+351) 961 531 235</p>
                         </div>
                     </div>
