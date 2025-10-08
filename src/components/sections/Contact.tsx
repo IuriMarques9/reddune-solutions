@@ -127,22 +127,22 @@ export function Contact() {
                     <div className="flex items-start gap-4">
                         <MapPin className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                         <div>
-                            <h4 className="font-semibold text-foreground">Nosso Escritório</h4>
-                            <p>Avenida do Design, 123, Metrópole, 10101</p>
+                            <h4 className="font-semibold text-foreground">Local</h4>
+                            <p>Fuseta</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-4">
                         <Mail className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                         <div>
                             <h4 className="font-semibold text-foreground">Envie-nos um E-mail</h4>
-                            <p>ola@reddunesolutions.com</p>
+                            <p>reddunesolutions@gmail.com</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-4">
                         <Phone className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                         <div>
                             <h4 className="font-semibold text-foreground">Ligue para Nós</h4>
-                            <p>(123) 456-7890</p>
+                            <p>(+351) 961 531 235</p>
                         </div>
                     </div>
                 </div>
