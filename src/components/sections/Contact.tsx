@@ -1,7 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useForm, type SubmitHandler } from "react-hook-form";import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { sendEmail } from "../../api/contact/route";
 
 const formSchema = z.object({
   name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
@@ -40,19 +40,31 @@ export function Contact() {
     },
   });
 
-  function onSubmit(values: FormValues) {
+ const onSubmit: SubmitHandler<FormValues> = async (values) => {    
     setIsSubmitting(true);
-    // This is a mock submission. In a real app, you would send this to a server.
-    console.log(values);
     
-    setTimeout(() => {
-        toast({
-            title: "Mensagem Enviada!",
-            description: "Obrigado por nos contatar. Retornaremos em breve.",
-        });
-        form.reset();
-        setIsSubmitting(false);
-    }, 1000);
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("email", values.email);
+    formData.append("message", values.message);
+
+    const result = await sendEmail({}, formData);
+
+    if (result.message === "E-mail enviado com sucesso!") {
+      toast({
+          title: "Mensagem Enviada!",
+          description: "Obrigado por nos contatar. Retornaremos em breve.",
+      });
+      form.reset();
+    } else {
+      toast({
+          variant: "destructive",
+          title: "Uh oh! Algo correu mal.",
+          description: result.message || "Não foi possível enviar a sua mensagem.",
+      });
+    }
+    
+    setIsSubmitting(false);
   }
 
   return (
