@@ -27,7 +27,7 @@ export function Services() {
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">Nossos Serviços</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Oferecemos uma gama completa de serviços para dar vida à sua visão.
+            Oferecemos uma gama completa de serviços para dar resposta aos seus problemas.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">

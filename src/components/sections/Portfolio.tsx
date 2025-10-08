@@ -12,7 +12,7 @@ export function Portfolio() {
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">Nosso Portfólio</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Um vislumbre do nosso mundo de criatividade e execução profissional.
+            Um vislumbre do nosso mundo de soluções e profissionalismo.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">

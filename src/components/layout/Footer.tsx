@@ -1,6 +1,6 @@
 "use client";
 
-import { Github, Linkedin, Twitter } from "lucide-react";
+import { Instagram } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import logo from '../../public/logo.png';
@@ -37,17 +37,9 @@ export function Footer() {
             <Logo />
           </div>
           <div className="flex space-x-4">
-            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              <Twitter className="h-5 w-5" />
-              <span className="sr-only">Twitter</span>
-            </Link>
-            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              <Github className="h-5 w-5" />
-              <span className="sr-only">GitHub</span>
-            </Link>
-            <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
-              <Linkedin className="h-5 w-5" />
-              <span className="sr-only">LinkedIn</span>
+            <Link href="https://www.instagram.com/reddune_solutions/" className="text-muted-foreground hover:text-primary transition-colors">
+              <Instagram className="h-5 w-5" />
+              <span className="sr-only">Instagram</span>
             </Link>
           </div>
         </div>

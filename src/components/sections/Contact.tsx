@@ -61,7 +61,7 @@ export function Contact() {
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">Entre em Contato</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Tem um projeto em mente, dúuvidas ou sugestões? Adoraríamos ouvir de você.
+            Tem um projeto, dúvidas ou sugestões em mente? Adoraríamos ouvi-lo.
           </p>
         </div>
 
