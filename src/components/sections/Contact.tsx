@@ -32,7 +32,7 @@ export function Contact() {
                             {/* Disable Captcha */}
                             <input type="hidden" name="_captcha" value="false" />
                             {/* Success URL */}
-                            <input type="hidden" name="_next" value="/emailSend" />
+                            <input type="hidden" name="_next" value="https://reddunesolutions.pt/emailSend" />
                             {/* Email Template */}
                             <input type="hidden" name="_template" value="table" />
                             
