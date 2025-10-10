@@ -1,71 +1,13 @@
 "use client";
 
-import { useForm, type SubmitHandler } from "react-hook-form";import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, MapPin, Phone } from "lucide-react";
-import { useState, useEffect } from "react";
-import { sendEmail } from "../../api/contact/route";
 
-const formSchema = z.object({
-  name: z.string().min(2, "O nome deve ter pelo menos 2 caracteres."),
-  email: z.string().email("Por favor, insira um endereço de e-mail válido."),
-  message: z.string().min(10, "A mensagem deve ter pelo menos 10 caracteres."),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 export function Contact() {
-  const { toast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      message: "",
-    },
-  });
-
- const onSubmit: SubmitHandler<FormValues> = async (values) => {    
-    setIsSubmitting(true);
-    
-    const formData = new FormData();
-    formData.append("name", values.name);
-    formData.append("email", values.email);
-    formData.append("message", values.message);
-
-    const result = await sendEmail({}, formData);
-
-    if (result.message === "E-mail enviado com sucesso!") {
-      toast({
-          title: "Mensagem Enviada!",
-          description: "Obrigado por nos contatar. Retornaremos em breve.",
-      });
-      form.reset();
-    } else {
-      toast({
-          variant: "destructive",
-          title: "Uh oh! Algo correu mal.",
-          description: result.message || "Não foi possível enviar a sua mensagem.",
-      });
-    }
-    
-    setIsSubmitting(false);
-  }
 
   return (
     <section id="contact" className="py-20 md:py-32 bg-secondary/50">
@@ -84,55 +26,39 @@ export function Contact() {
                         <CardTitle className="font-headline text-2xl">Envie-nos uma mensagem</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Nome Completo</FormLabel>
-                                        <FormControl>
-                                        <Input placeholder="João da Silva" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Endereço de E-mail</FormLabel>
-                                        <FormControl>
-                                        <Input placeholder="voce@exemplo.com" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="message"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Sua Mensagem</FormLabel>
-                                        <FormControl>
-                                        <Textarea placeholder="Conte-nos sobre seu projeto..." {...field} rows={6}/>
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                                    {isSubmitting ? "Enviando..." : "Enviar Mensagem"}
-                                </Button>
-                            </form>
-                        </Form>
+                       <form action={`https://formsubmit.co/reddunesolutions@hotmail.com`} method="POST" className="space-y-6">
+                            {/* Honeypot */}
+                            <input type="text" name="_honey" style={{ display: 'none' }} />
+                            {/* Disable Captcha */}
+                            <input type="hidden" name="_captcha" value="false" />
+                            {/* Success URL */}
+                            <input type="hidden" name="_next" value="/emailSend" />
+                            {/* Email Template */}
+                            <input type="hidden" name="_template" value="table" />
+                            
+                            <div className="space-y-2">
+                                <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Nome Completo</label>
+                                <Input type="text" name="name" id="name" placeholder="João da Silva" required />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Endereço de E-mail</label>
+                                <Input type="email" name="email" id="email" placeholder="voce@exemplo.com" required />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label htmlFor="message" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Sua Mensagem</label>
+                                <Textarea name="message" id="message" placeholder="Conte-nos sobre seu projeto..." rows={6} required />
+                            </div>
+
+                            <Button type="submit" className="w-full" size="lg">
+                                Enviar Mensagem
+                            </Button>
+                        </form>
                     </CardContent>
                 </Card>
             </div>
+
             <div className="space-y-8">
                 <h3 className="font-headline text-2xl font-bold">Informações de Contato</h3>
                 <div className="space-y-6 text-muted-foreground">
