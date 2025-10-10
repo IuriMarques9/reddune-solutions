@@ -26,7 +26,7 @@ export function Contact() {
                         <CardTitle className="font-headline text-2xl">Envie-nos uma mensagem</CardTitle>
                     </CardHeader>
                     <CardContent>
-                       <form action={`https://formsubmit.co/reddunesolutions@hotmail.com`} method="POST" className="space-y-6">
+                       <form action={`https://formsubmit.co/f321ecd01816630a01deb0d2629f73d4`} method="POST" className="space-y-6">
                             {/* Honeypot */}
                             <input type="text" name="_honey" style={{ display: 'none' }} />
                             {/* Disable Captcha */}
