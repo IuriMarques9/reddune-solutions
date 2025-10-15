@@ -5,8 +5,10 @@ import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "Reddune Solutions",
-  description:
-    "Um site de portfólio profissional para mostrar serviços e projetos concluídos.",
+  description: "Um site de portfólio profissional para mostrar serviços e projetos concluídos.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
