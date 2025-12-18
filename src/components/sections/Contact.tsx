@@ -16,36 +16,26 @@ const [status, setStatus] = useState<SubmissionStatus>("idle");
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setStatus("loading");
 
     const formData = new FormData(event.currentTarget);
 
-    try {
-      const response = await fetch(`https://formsubmit.co/f321ecd01816630a01deb0d2629f73d4`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Accept: "application/json",
-        },
-      });
+    setStatus("loading");
 
-      if (response.ok) {
-        setStatus("success");
-        toast({
-          title: "Mensagem Enviada!",
-          description: "Obrigado por entrar em contato. Responderemos em breve.",
+    try{
+        const response = await fetch('/api/sendEmail', {
+            method: 'POST',
+            
         });
-        (event.target as HTMLFormElement).reset(); // Limpa o formulário
-      } else {
-        throw new Error("A resposta da rede não foi bem-sucedida.");
-      }
-    } catch (error) {
-      setStatus("error");
-      toast({
-        variant: "destructive",
-        title: "Ocorreu um Erro",
-        description: "Não foi possível enviar a sua mensagem. Por favor, tente novamente mais tarde.",
-      });
+
+    }
+    catch (error) {
+        setStatus("error");
+        toast({
+            title: "Erro ao enviar a mensagem.",
+            description: "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.",
+            variant: "destructive",
+        });
+        return;
     } finally {
         // Atraso para o utilizador ver o sucesso antes de reativar o botão
         if (status === 'success') {
@@ -55,6 +45,7 @@ const [status, setStatus] = useState<SubmissionStatus>("idle");
         }
     }
   };
+
   return (
     <section id="contact" className="py-20 md:py-32 bg-secondary/50">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -73,12 +64,6 @@ const [status, setStatus] = useState<SubmissionStatus>("idle");
                     </CardHeader>
                     <CardContent>
                        <form onSubmit={handleSubmit} className="space-y-6">
-                            {/* Honeypot */}
-                            <input type="text" name="_honey" style={{ display: 'none' }} />
-                            {/* Disable Captcha */}
-                            <input type="hidden" name="_captcha" value="false" />
-                            {/* Email Template */}
-                            <input type="hidden" name="_template" value="table" />
                             
                             <div className="space-y-2">
                                 <label htmlFor="name" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Nome Completo</label>
