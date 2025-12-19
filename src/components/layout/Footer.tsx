@@ -5,10 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-const RedduneDuneLogo = () => (
-    <Image src="/logo.png" alt={"logo"} width={50} height={50}/>
-);
-
 
 export function Footer() {
   
@@ -21,19 +17,15 @@ export function Footer() {
       return () => window.removeEventListener("scroll", handleScroll);
     }, []);
     
-    const Logo = () => (
-        <Link href="/" className="flex items-center gap-2 text-foreground">
-            <RedduneDuneLogo />
-            <span className="font-headline text-xl font-bold">Reddune Solutions</span>
-        </Link>
-      );
 
   return (
     <footer className="bg-secondary/50 text-secondary-foreground py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between md:flex-row">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
-            <Logo />
+            <Link href="/">
+              <Image src="/logo.png" alt="Reddune Solutions Logo" width={150} height={150} className=""/>
+            </Link>
           </div>
           <div className="flex space-x-4">
             <Link href="https://www.instagram.com/reddune_solutions/" className="text-muted-foreground hover:text-primary transition-colors">

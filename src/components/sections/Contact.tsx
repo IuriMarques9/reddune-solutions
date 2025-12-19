@@ -33,6 +33,16 @@ const [status, setStatus] = useState<SubmissionStatus>("idle");
             body: JSON.stringify(data),
         });
 
+        if (response.ok) {
+        setStatus("success");
+        toast({
+          title: "Mensagem Enviada!",
+          description: "Obrigado por entrar em contato. Responderemos em breve.",
+        });
+        (event.target as HTMLFormElement).reset(); // Limpa o formulário
+      } else {
+        throw new Error("A resposta da rede não foi bem-sucedida.");
+      }
     }
     catch (error) {
         setStatus("error");
@@ -53,7 +63,7 @@ const [status, setStatus] = useState<SubmissionStatus>("idle");
   };
 
   return (
-    <section id="contact" className="py-20 md:py-32 bg-secondary/50">
+    <section id="contact" className="md:py-32 bg-secondary/50">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">Entre em Contato</h2>
