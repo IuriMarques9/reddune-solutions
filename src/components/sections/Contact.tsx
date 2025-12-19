@@ -19,12 +19,18 @@ const [status, setStatus] = useState<SubmissionStatus>("idle");
 
     const formData = new FormData(event.currentTarget);
 
-    setStatus("loading");
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      message: formData.get("message"),
+    };
 
+    setStatus("loading");
+    
     try{
         const response = await fetch('/api/sendEmail', {
             method: 'POST',
-            
+            body: JSON.stringify(data),
         });
 
     }

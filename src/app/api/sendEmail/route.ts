@@ -4,10 +4,12 @@ import { render } from '@react-email/render';
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
-export async function POST() {
-  try {
 
-    const emailHtml = await render(EmailTemplate({ firstName: 'John' }));
+export async function POST(data: Request) {
+  const { name, email, message } = await data.json();
+  console.log(name, email, message);
+  try {
+    const emailHtml = await render(EmailTemplate({ name, email, message }));
 
 
     const { data, error } = await resend.emails.send({

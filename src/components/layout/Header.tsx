@@ -8,11 +8,6 @@ import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from "@/hooks/use-mobile";
 
-
-const RedduneDuneLogo = () => (
-    <Image src="/logo.png" alt={"logo"} width={50} height={50}/>
-);
-
 const navLinks = [
     { href: "#home", label: "Início" },
     { href: "#services", label: "Serviços" },
@@ -34,18 +29,6 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const Logo = () => (
-    <Link href="/" className="flex items-center gap-2 text-foreground" onClick={() => setMobileMenuOpen(false)}>
-        <RedduneDuneLogo />
-        <span className="font-headline text-xl font-bold">Reddune Solutions</span>
-    </Link>
-  );
-
-  const LogoMobile = () => (
-    <Link href="/" className="flex items-center gap-2 text-foreground" onClick={() => setMobileMenuOpen(false)}>
-        <RedduneDuneLogo />
-    </Link>
-  );
 
   return (
     isMobile ? (
@@ -59,7 +42,9 @@ export function Header() {
 			)}
 		>
 			<div className={cn("flex w-full items-center justify-center container mx-auto h-16 max-w-7xl px-4 ", {'justify-between': scrolled})}>
-				{scrolled ? <LogoMobile /> : <Logo />}
+				<Link href="/">
+					<Image src="/logo.png" alt="Logo" width={120} height={40} className="object-contain" />
+				</Link>
 				
 				<nav className="hidden gap-6">
 					{navLinks.map((link) => (
@@ -103,7 +88,9 @@ export function Header() {
 			)}
 		>
 			<div className={cn("flex w-full items-center justify-center container mx-auto h-20 max-w-7xl px-4", {'justify-between': scrolled})}>
-			 	<Logo />
+				<Link href="/">
+					<Image src="/logo.png" alt="Logo" width={120} height={40} className="object-contain" />
+				</Link>
 
 				<nav className={cn("hidden gap-6", {"flex": scrolled})}>
 					{navLinks.map((link) => (
