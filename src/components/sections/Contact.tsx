@@ -38,6 +38,7 @@ const [status, setStatus] = useState<SubmissionStatus>("idle");
         toast({
           title: "Mensagem Enviada!",
           description: "Obrigado por entrar em contato. Responderemos em breve.",
+          variant: "success",
         });
         (event.target as HTMLFormElement).reset(); // Limpa o formulário
       } else {

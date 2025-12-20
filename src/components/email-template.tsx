@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import * as React from 'react';
 import {
   Body,
@@ -10,7 +9,6 @@ import {
   Preview,
   Section,
   Text,
-  render,
 } from "@react-email/components";
 
 
@@ -24,7 +22,7 @@ export function EmailTemplate(data: { name: string; email: string; message: stri
     <Preview>Nova mensagem de contato de {name}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Novo Contato</Heading>
+        <Heading style={h1}>Novo Contato de {name}</Heading>
         <Section style={section}>
           <Text style={text}>
             <strong>Nome:</strong> {name}
@@ -43,7 +41,7 @@ export function EmailTemplate(data: { name: string; email: string; message: stri
         </Text>
       </Container>
     </Body>
-  </Html>
+  </Html> 
 
   );
 }
