@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
+import {NextIntlClientProvider} from 'next-intl';
 
 export const metadata: Metadata = {
   title: "Reddune Solutions",
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -31,7 +32,7 @@ export default function RootLayout({
         />
       </head>
       <body className={cn("font-body antialiased")}>
-        {children}
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
         <Toaster />
       </body>
     </html>
