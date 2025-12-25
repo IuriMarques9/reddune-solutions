@@ -3,22 +3,19 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 import {NextIntlClientProvider} from 'next-intl';
+import { getLocale, getMessages } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: "Reddune Solutions",
-  description: "Um site de portfólio profissional para mostrar serviços e projetos concluídos.",
-  icons: {
-    icon: "/favicon.ico",
-  },
-};
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const messages = await getMessages();
+  const locale = await getLocale();
+
   return (
-    <html lang="pt-BR" className="!scroll-smooth">
+    <html lang={locale} className="!scroll-smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -32,7 +29,7 @@ export default async function RootLayout({
         />
       </head>
       <body className={cn("font-body antialiased")}>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
         <Toaster />
       </body>
     </html>

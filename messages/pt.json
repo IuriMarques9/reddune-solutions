@@ -1,5 +1,9 @@
 {
-  "HomePage": {
-    "title": "Olá mundo!"
-  }
+    "TabDescription" : "Site Oficial da RedDune Solutions. Soluções tecnologicas profissionais para ajudar nos seus projetos.",
+    "TabTitles": {
+        "home" : "RedDune Solutions - Inicio"
+    },
+    "HomePage": {
+        "title": "Olá mundo!"
+    }
 }

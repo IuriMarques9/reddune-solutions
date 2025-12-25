@@ -1,5 +1,9 @@
 {
-  "HomePage": {
-    "title": "Hello world!"
-  }
+    "TabDescription" : "Official RedDune Solutions website. Professional technological solutions to help with your projects.",
+    "TabTitles": {
+        "home" : "RedDune Solutions - Home"
+    },
+    "HomePage": {
+        "title": "Hello world!"
+    }
 }

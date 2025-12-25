@@ -1,11 +1,12 @@
 import {getRequestConfig} from 'next-intl/server';
+import { cookies } from 'next/headers';
  
 export default getRequestConfig(async () => {
-  // Static for now, we'll change this later
-  const locale = 'pt';
+  const cookieLocale = (await cookies()).get('MYNEXTAPP_LOCALE')?.value || "pt";
+  const locale = cookieLocale;
  
   return {
     locale,
-    messages: (await import(`../../messages/${locale}.json`)).default
+    messages: (await import(`../../messages/${locale}.json`)).default,
   };
 });
