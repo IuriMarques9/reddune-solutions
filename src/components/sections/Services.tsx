@@ -1,33 +1,37 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HardDriveUpload, Server, Wrench, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
+
+const t = useTranslations('ServicesSection');
 
 const services = [
   {
     icon: <Wrench className="h-10 w-10 text-primary" />,
-    title: "Assistência Técnica",
-    description: "Assistência técnica especializada para computadores, consolas e outros equipamentos eletrónicos. Diagnosticamos e resolvemos problemas com rapidez e precisão, garantindo que o seu dispositivo volte a funcionar no máximo desempenho, com a transparência que esperas de uma equipa profissional.",
+    title: t("services.tecAssist.title"),
+    description: t("tecAssist.description"),
   },
   {
     icon: <Server className="h-10 w-10 text-primary" />,
-    title: "Web e Serviços Digitais",
-    description: "Desenvolvimento de sites e soluções digitais à medida, pensadas para destacar a sua marca e simplificar processos. Criamos plataformas modernas, rápidas e seguras, desde páginas institucionais até lojas online completas, com foco na performance, design e experiência do utilizador.",
+    title: t("services.webDigital.title"),
+    description: t("services.webDigital.description"),
   },
   {
     icon: <HardDriveUpload className="h-10 w-10 text-primary" />,
-    title: "Software e Recuperação",
-    description: "Instalação e configuração de software, drivers e sistemas operativos, bem como recuperação básica de dados perdidos. Garantimos que o seu equipamento volta a funcionar de forma estável, atualizada e otimizada, com todos os programas essenciais prontos a usar e os seus ficheiros recuperados sempre que possível.",
+    title: t("services.dataRecovery.title"),
+    description: t("services.dataRecovery.description"),
   },
 ];
 
 export function Services() {
+
   return (
     <section id="services" className="py-20 md:py-32 bg-background">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">Nossos Serviços</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Oferecemos uma gama completa de serviços para dar resposta aos seus problemas.
+            {t('ServicesSection.title')}
           </p>
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -47,8 +51,17 @@ export function Services() {
         </div>
         <div className="mt-20 text-center">
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                <Sparkles className="inline-block h-5 w-5 text-primary mr-2" />
-                Não encontrou o que procurava? A nossa paixão é criar soluções à medida. <Link href="#contact" className="font-semibold text-primary hover:underline">Fale connosco</Link> e vamos transformar a sua ideia em realidade.
+              <Sparkles className="inline-block h-5 w-5 text-primary mr-2" />
+              {t.rich('ServicesSection.quote', {
+                contactLink: (chunks) => (
+                  <Link
+                    className="font-semibold text-primary hover:underline" 
+                    href={"#contact"}                
+                  >
+                  {chunks}
+                </Link>
+                ),
+              })}
             </p>
         </div>
       </div>

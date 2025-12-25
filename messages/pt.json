@@ -4,6 +4,32 @@
         "home" : "RedDune Solutions - Inicio"
     },
     "HomePage": {
-        "title": "Olá mundo!"
+        "Hero": {
+            "title": "A Resposta Certa para as suas necessidades Informáticas",
+            "description": "Soluções informáticas personalizadas para cada cliente. Na Reddune Solutions, disponibilizamos um serviço integrado e completo, tanto para particulares como para empresas. O nosso foco está na confiança, eficiência e transparência. Tudo a pensar na total satisfação dos nossos clientes.",
+            "cta": {
+                "contactUs": "Entre em contacto",
+                "seeWork": "Veja o nosso trabalho"
+            } 
+        },
+        "ServicesSection": {
+            "title": "Nossos Serviços",
+            "description": "Oferecemos uma gama completa de serviços para dar resposta aos seus problemas.",
+            "services": {
+                "tecAssist": {
+                    "title": "Assistência Técnica",
+                    "description": "Assistência técnica especializada para computadores, consolas e outros equipamentos eletrónicos. Diagnosticamos e resolvemos problemas com rapidez e precisão, garantindo que o seu dispositivo volte a funcionar no máximo desempenho, com a transparência que esperas de uma equipa profissional."
+                },
+                "webDigital": {
+                    "title": "Aplicações Móveis",
+                    "description": "Desenvolvimento de aplicações móveis nativas e híbridas para iOS e Android."
+                },
+                "dataRecovery": {
+                    "title": "Software e Recuperação",
+                    "description": "Instalação e configuração de software, drivers e sistemas operativos, bem como recuperação básica de dados perdidos. Garantimos que o seu equipamento volta a funcionar de forma estável, atualizada e otimizada, com todos os programas essenciais prontos a usar e os seus ficheiros recuperados sempre que possível."
+                }
+            },
+            "quote": "Não encontrou o que procurava? A nossa paixão é criar soluções à medida. <contactLink>Fale connosco</contactLink> e vamos transformar a sua ideia em realidade."
+        }
     }
 }

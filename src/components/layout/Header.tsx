@@ -68,7 +68,7 @@ export function Header() {
 						</div>
 						{/* Mobile Menu */}
 						{mobileMenuOpen && (
-							<div className="absolute top-16 left-0 bg-background/95 border-t w-full border-border/40 w-full">
+							<div className="absolute top-16 left-0 bg-background/95 border-t border-border/40 w-full">
 								<nav className="container mx-auto flex flex-col items-center gap-4 py-6">
 									{navLinks.map((link) => (
 										<Link key={link.href} href={link.href} className="text-lg font-medium text-foreground hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>
