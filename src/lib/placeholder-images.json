@@ -1,22 +1,22 @@
 {
   "placeholderImages": [
     {
-      "id": "portfolio-1",
-      "description": "Construção de Computadores",
+      "id": "portfolioCard-1",
+      "description": "Publicação de um Desktop da pagina de Instagram",
       "imageUrl": "/portfolio1.png",
       "imageHint": "computador desktop",
       "serviceUrl": "https://www.instagram.com/p/DL5SABPM3Wn/?img_index=1"
     },
     {
-      "id": "portfolio-2",
-      "description": "Desenvolvimento de Website",
+      "id": "portfolioCard-2",
+      "description": "Publicação de um Website publicado na pagina",
       "imageUrl": "/portfolio2.png",
       "imageHint": "website e apps",
       "serviceUrl": "https://www.instagram.com/p/DNoS8fhM9Oi/"
     },
     {
-      "id": "portfolio-3",
-      "description": "Diagnostico e Reparação de Hardware",
+      "id": "portfolioCard-3",
+      "description": "Publicação de um diagnostico da pagina de Instagram",
       "imageUrl": "/portfolio3.png",
       "imageHint": "diagnostico hardware e reparação",
       "serviceUrl": "https://www.instagram.com/p/DLIpvUEsyEv/?img_index=1"

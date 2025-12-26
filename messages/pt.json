@@ -37,6 +37,49 @@
                 }
             },
             "quote": "Não encontrou o que procurava? A nossa paixão é criar soluções à medida. <contactLink>Fale connosco</contactLink> e vamos transformar a sua ideia em realidade."
+        },
+        "PortfolioSection": {
+            "title": "Nosso Portfólio",
+            "description": "Um vislumbre do nosso mundo de soluções e profissionalismo.",
+            "cards" : {
+                "portfolioCard-1": "Construção de computadores",
+                "portfolioCard-2": "Desenvolvimento de website",
+                "portfolioCard-3": "Diagnóstico e reparação de hardware"
+            }
+        },
+        "AboutUsSection": {
+            "title": "Sobre a Reddune Solutions",
+            "description": "A Reddune Solutions é uma empresa especializada em tecnologia e inovação digital, focada em oferecer soluções completas em manutenção de computadores, reparação de equipamentos eletrónicos e criação de websites modernos e eficientes. Combinamos conhecimento técnico, criatividade e compromisso para garantir resultados de qualidade, adaptados às necessidades de cada cliente. O nosso objetivo é simplificar a tecnologia e ajudar pessoas e negócios a tirarem o máximo proveito do mundo digital."
+        },
+        "ContactSection": {
+            "title": "Entre em contacto",
+            "description": "Tem um projeto em mente ou precisa de assistência? Estamos aqui para ajudar! Entre em contacto connosco e vamos discutir como podemos trabalhar juntos para dar vida às suas ideias.",
+            "form" : {
+                "title": "Envie-nos uma mensagem",
+                "nameTitle": "Nome",
+                "namePlaceholder": "João Silva",
+                "emailTitle": "Endereço de E-mail",
+                "emailPlaceholder": "email@exemplo.com",
+                "messageTitle": "Mensagem",
+                "messagePlaceholder": "Conte-nos sobre o seu projeto...",
+                "submitButton": "Enviar Mensagem",
+                "submitButtonLoading": "A enviar..."
+            },
+            "contactInfo": {
+                "title": "Informações de Contacto",
+                "email": "Envie-nos um E-mail",
+                "address": "Localização",
+                "phone": "Ligue-nos"
+            },
+            "useToast": {
+                "successTitle": "Mensagem Enviada",
+                "successDescription": "Obrigado por nos contactar! Responderemos o mais breve possível.",
+                "errorTitle": "Erro ao Enviar",
+                "errorDescription": "Ocorreu um erro ao enviar a sua mensagem. Por favor, tente novamente mais tarde."
+            }
         }
+    },
+    "Footer": {
+        "rights": "Todos os direitos reservados."
     }
 }

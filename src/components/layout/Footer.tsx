@@ -4,10 +4,11 @@ import { Instagram } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-
+import { useTranslations } from "use-intl";
 
 export function Footer() {
-  
+    const t = useTranslations("Footer");
+
     const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
       const handleScroll = () => {
@@ -19,7 +20,7 @@ export function Footer() {
     
 
   return (
-    <footer className="bg-secondary/50 text-secondary-foreground py-12">
+    <footer className="bg-secondary/50 text-secondary-foreground py-8">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between md:flex-row">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
@@ -35,13 +36,11 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Reddune Solutions. Todos os direitos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Reddune Solutions. {t("rights")}</p>
         </div>
       </div>
     </footer>
   );
 }
-function setScrolled(arg0: boolean) {
-  throw new Error("Function not implemented.");
-}
+
 

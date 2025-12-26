@@ -37,6 +37,49 @@
                 }
             },
             "quote": "Didn't find what you were looking for? Our passion is creating tailored solutions. <contactLink>Talk to us</contactLink> and we'll turn your idea into reality."
+        },
+        "PortfolioSection": {
+            "title": "Our Portfolio",
+            "description": "A glimpse into our world of solutions and professionalism.",
+            "cards" : {
+                "portfolioCard-1": "Computer Building",
+                "portfolioCard-2": "Website Development",
+                "portfolioCard-3": "Hardware Diagnosis and Repair"
+            }
+        },
+        "AboutUsSection": {
+            "title": "About Us",
+            "description": "RedDune Solutions is a technology and digital innovation company, focused on providing complete solutions for computer maintenance, electronic equipment repair, and modern and efficient website creation. We combine technical knowledge, creativity, and commitment to ensure quality results tailored to each client's needs. Our goal is to simplify technology and help people and businesses make the most of the digital world."
+        },
+        "ContactSection": {
+            "title": "Get in Touch",
+            "description": "Have a project in mind or need assistance? We're here to help! Get in touch with us and we'll discuss how we can work together to bring your ideas to life.",
+            "form" : {
+                "title": "Send us a message",
+                "nameTitle": "Name",
+                "namePlaceholder": "John Doe",
+                "emailTitle": "Email Address",
+                "emailPlaceholder": "email@example.com",
+                "messageTitle": "Message",
+                "messagePlaceholder": "Tell us about your project...",
+                "submitButton": "Send Message",
+                "submitButtonLoading": "Sending..."
+            },
+            "contactInfo": {
+                "title": "Contact Information",
+                "email": "Send us an Email",
+                "address": "Location",
+                "phone": "Call Us"
+            },
+            "useToast": {
+                "successTitle": "Message Sent",
+                "successDescription": "Thank you for contacting us! We will respond as soon as possible.",
+                "errorTitle": "Error Sending Message",
+                "errorDescription": "An error occurred while sending your message. Please try again later."
+            }
         }
+    },
+    "Footer": {
+        "rights": "All rights reserved."
     }
 }
