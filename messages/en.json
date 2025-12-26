@@ -4,6 +4,32 @@
         "home" : "RedDune Solutions - Home"
     },
     "HomePage": {
-        "title": "Hello world!"
+        "Hero": {
+            "title": "The Right Answer to Your IT Needs",
+            "description": "Customized IT solutions for each client. At Reddune Solutions, we provide an integrated and complete service for both individuals and companies. Our focus is on trust, efficiency and transparency. Everything with your complete satisfaction in mind.",
+            "cta": {
+                "contactUs": "Get in touch",
+                "seeWork": "See our work"
+            } 
+        },
+        "ServicesSection": {
+            "title": "Our Services",
+            "description": "We offer a complete range of services to address your needs.",
+            "services": {
+                "tecAssist": {
+                    "title": "Technical Support",
+                    "description": "Specialized technical support for computers, consoles and other electronic equipment. We diagnose and resolve issues quickly and accurately, ensuring your device works at peak performance, with the transparency you expect from a professional team."
+                },
+                "webDigital": {
+                    "title": "Mobile Applications",
+                    "description": "Development of native and hybrid mobile applications for iOS and Android."
+                },
+                "dataRecovery": {
+                    "title": "Software and Recovery",
+                    "description": "Installation and configuration of software, drivers and operating systems, as well as basic data recovery from lost files. We ensure your equipment returns to working stably, updated and optimized, with all essential programs ready to use and your files recovered whenever possible."
+                }
+            },
+            "quote": "Didn't find what you were looking for? Our passion is creating tailored solutions. <contactLink>Talk to us</contactLink> and we'll turn your idea into reality."
+        }
     }
 }

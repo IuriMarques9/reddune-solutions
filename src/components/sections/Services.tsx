@@ -3,35 +3,37 @@ import { HardDriveUpload, Server, Wrench, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 
-const t = useTranslations('ServicesSection');
 
-const services = [
-  {
-    icon: <Wrench className="h-10 w-10 text-primary" />,
-    title: t("services.tecAssist.title"),
-    description: t("tecAssist.description"),
-  },
-  {
-    icon: <Server className="h-10 w-10 text-primary" />,
-    title: t("services.webDigital.title"),
-    description: t("services.webDigital.description"),
-  },
-  {
-    icon: <HardDriveUpload className="h-10 w-10 text-primary" />,
-    title: t("services.dataRecovery.title"),
-    description: t("services.dataRecovery.description"),
-  },
-];
 
 export function Services() {
+
+  const t = useTranslations('HomePage.ServicesSection');
+
+  const services = [
+    {
+      icon: <Wrench className="h-10 w-10 text-primary" />,
+      title: t("services.tecAssist.title"),
+      description: t("services.tecAssist.description"),
+    },
+    {
+      icon: <Server className="h-10 w-10 text-primary" />,
+      title: t("services.webDigital.title"),
+      description: t("services.webDigital.description"),
+    },
+    {
+      icon: <HardDriveUpload className="h-10 w-10 text-primary" />,
+      title: t("services.dataRecovery.title"),
+      description: t("services.dataRecovery.description"),
+    },
+  ];
 
   return (
     <section id="services" className="py-20 md:py-32 bg-background">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="font-headline text-3xl md:text-4xl font-bold">Nossos Serviços</h2>
+          <h2 className="font-headline text-3xl md:text-4xl font-bold">{t('title')}</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t('ServicesSection.title')}
+            {t('description')}
           </p>
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
@@ -52,7 +54,7 @@ export function Services() {
         <div className="mt-20 text-center">
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               <Sparkles className="inline-block h-5 w-5 text-primary mr-2" />
-              {t.rich('ServicesSection.quote', {
+              {t.rich('quote', {
                 contactLink: (chunks) => (
                   <Link
                     className="font-semibold text-primary hover:underline" 

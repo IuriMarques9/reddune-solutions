@@ -7,7 +7,7 @@ import {useTranslations} from 'next-intl';
   
 export function Hero() {
   const heroImage = PlaceHolderImages.find((img) => img.id === "hero-image");
-  const t = useTranslations('HomePage');
+  const t = useTranslations('HomePage.Hero');
 
   return (
     <section id="home" className="relative w-full h-[90vh] min-h-[700px] flex items-center justify-center text-center bg-primary">
@@ -26,18 +26,17 @@ export function Hero() {
           {t('title')}
         </h1>
         <p className="mt-6 text-lg md:text-xl max-w-2xl mx-auto text-primary-foreground/80">
-          Soluções informáticas personalizadas para cada cliente.
-          Na Reddune Solutions, disponibilizamos um serviço integrado e completo, tanto para particulares como para empresas. O nosso foco está na confiança, eficiência e transparência. Tudo a pensar na total satisfação dos nossos clientes.
+          {t('description')}
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold shadow-lg">
             <Link href="#portfolio">
-              Veja Nosso Trabalho <ArrowRight className="ml-2" />
+              {t('cta.seeWork')} <ArrowRight className="ml-2" />
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-colors duration-300">
             <Link href="#contact">
-              Entre em Contato
+              {t('cta.contactUs')}
             </Link>
           </Button>
         </div>
