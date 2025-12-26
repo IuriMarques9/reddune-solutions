@@ -110,7 +110,7 @@ export function Contact() {
             </div>
 
             <div className="space-y-8">
-                <h3 className="font-headline text-2xl font-bold">Informações de Contato</h3>
+                <h3 className="font-headline text-2xl font-bold">{t("contactInfo.title")}</h3>
                 <div className="space-y-6 text-muted-foreground">
                     <div className="flex items-start gap-4">
                         <MapPin className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
