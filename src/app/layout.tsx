@@ -1,10 +1,9 @@
-import type { Metadata } from "next";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 import {NextIntlClientProvider} from 'next-intl';
 import { getLocale, getMessages } from "next-intl/server";
-
+import { Analytics } from "@vercel/analytics/next"
 
 export default async function RootLayout({
   children,
@@ -33,6 +32,7 @@ export default async function RootLayout({
           {children}
         </NextIntlClientProvider>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );
