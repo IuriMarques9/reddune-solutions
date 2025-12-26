@@ -8,108 +8,104 @@ import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from "@/hooks/use-mobile";
 import LanguageSwitcher from "../templates/language-switcher";
+import { useTranslations } from "next-intl";
 
 
-const navLinks = [
-    { href: "#home", label: "Início" },
-    { href: "#services", label: "Serviços" },
-    { href: "#portfolio", label: "Portfólio" },
-    { href: "#about", label: "Sobre" },
-    { href: "#contact", label: "Contacto" },
-];
 
 export function Header() {
-	const [scrolled, setScrolled] = useState(false);
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-	const isMobile = useIsMobile();
+    const t = useTranslations("Navigation");
+    const [scrolled, setScrolled] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const isMobile = useIsMobile();
 
+	const navLinks = [
+		{ href: "#home", key: t("home") },
+		{ href: "#services", key: t("services") },
+		{ href: "#portfolio", key: t("portfolio") },
+		{ href: "#about", key: t("about") },
+		{ href: "#contact", key: t("contact") },
+	];
 
-	useEffect(() => {
-		const handleScroll = () => {
-		setScrolled(window.scrollY > 10);
-		};
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 20);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
 
-	
+    return (
+        <header
+            className={cn(
+                "fixed top-0 z-50 w-full transition-all duration-500",
+                // Blur forte (md ou lg) para separar o texto do Hero
+                "backdrop-blur-md", 
+                // No topo: fundo branco muito leve para dar corpo ao blur e sombra branca
+                "bg-white/20 border-b border-white/10 shadow-[0_4px_30px_rgba(255,255,255,0.05)]",
+                // Ao scrollar: fundo mais sólido e sombra escura padrão
+                scrolled && "bg-background/90 border-border/40 shadow-lg"
+            )}
+            style={{ height: scrolled ? "64px" : "80px" }}
+        >
+            <div className="container mx-auto h-full max-w-7xl px-4 flex items-center justify-between">
+                <Link href="/" className="shrink-0">
+                    <Image src="/logo.png" alt="Logo" width={110} height={35} className="object-contain" />
+                </Link>
 
-	return (
-		isMobile ? (
-			/* Mobile Header */
-			<header
-				className={cn(
-					"sticky top-0 z-50 w-full transition-all duration-300",
-					scrolled
-					? "border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-					: "bg-transparent"
-				)}
-			>
-				<div className={cn("flex w-full items-center justify-center container mx-auto h-16 max-w-7xl px-4 ", {'justify-between': scrolled})}>
-					<Link href="/">
-						<Image src="/logo.png" alt="Logo" width={120} height={40} className="object-contain" />
-					</Link>
-					
+                {!isMobile && (
+                    <nav className="flex items-center gap-8">
+                        <div className="flex items-center gap-6">
+                            {navLinks.map((link) => (
+                                <Link 
+                                    key={link.href} 
+                                    href={link.href} 
+                                    className="text-sm font-medium transition-colors hover:text-primary text-foreground/90"
+                                >
+                                    {link.key}
+                                </Link>
+                            ))}
+                        </div>
+                        <div className={cn("h-6 border-l", scrolled ? "border-border" : "border-white/20")} />
+                        <LanguageSwitcher />
+                    </nav>
+                )}
 
-					<nav className="hidden gap-6">
-						{navLinks.map((link) => (
-							<Link key={link.href} href={link.href} className="font-medium text-foreground transition-colors hover:text-primary">
-								{link.label}
-							</Link>
-						))}
-					</nav>
+                {isMobile && (
+                    <div className="flex items-center gap-2">
+                        <LanguageSwitcher />
+                        <div className="h-5 border-l border-white/20 mx-1" />
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
+                            {mobileMenuOpen ? <X /> : <Menu />}
+                        </Button>
+                    </div>
+                )}
+            </div>
 
-					<div className={cn("", {"hidden": !scrolled})}>
-						<div className="">
-							<Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-								{mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-								<span className="sr-only">Abrir menu</span>
-							</Button>
-						</div>
-						{/* Mobile Menu */}
-						{mobileMenuOpen && (
-							<div className="absolute top-16 left-0 bg-background/95 border-t border-border/40 w-full">
-								<nav className="container mx-auto flex flex-col items-center gap-4 py-6">
-									{navLinks.map((link) => (
-										<Link key={link.href} href={link.href} className="text-lg font-medium text-foreground hover:text-primary transition-colors" onClick={() => setMobileMenuOpen(false)}>
-											{link.label}
-										</Link>
-									))}
-								</nav>
-							</div>
-						)}
-					</div>
-
-				</div>
-			</header>
-		) : (
-			/* Desktop Header */
-			<header
-				className={cn(
-					"sticky top-0 z-50 w-full transition-all duration-300",
-					scrolled
-					? "border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-					: "bg-transparent"
-				)}
-			>
-				<div className={cn("flex w-full items-center justify-center container mx-auto h-20 max-w-7xl px-4", {'justify-between': scrolled})}>
-					<Link href="/">
-						<Image src="/logo.png" alt="Logo" width={120} height={40} className="object-contain" />
-					</Link>
-
-					<nav className={cn("hidden gap-6 items-center", {"flex": scrolled})}>
-						{navLinks.map((link) => (
-							<Link key={link.href} href={link.href} className="font-medium text-foreground transition-colors hover:text-primary">
-								{link.label}
-							</Link>
-						))}
-
-						<LanguageSwitcher />
-					</nav>
-				</div>
-
-				
-			</header>
-		)
-	);
+            {/* Mobile Menu com Blur reforçado */}
+            {isMobile && mobileMenuOpen && (
+                <div className={cn(
+                    "absolute top-full left-0 w-full border-b animate-in fade-in slide-in-from-top-2 duration-300",
+                    // Aqui o blur é essencial para não ler o Hero por trás do menu
+                    "bg-background/95 backdrop-blur-xl border-border shadow-2xl"
+                )}>
+                    <nav className="flex flex-col p-6 gap-1">
+                        {navLinks.map((link) => (
+                            <Link 
+                                key={link.href} 
+                                href={link.href} 
+                                onClick={() => setMobileMenuOpen(false)}
+                                className="flex items-center h-12 px-4 rounded-lg text-base font-medium hover:bg-accent transition-colors"
+                            >
+                                {link.key}
+                            </Link>
+                        ))}
+                    </nav>
+                </div>
+            )}
+        </header>
+    );
 }

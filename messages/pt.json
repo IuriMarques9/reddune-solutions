@@ -3,6 +3,13 @@
     "TabTitles": {
         "home" : "RedDune Solutions - Inicio"
     },
+    "Navigation": {
+        "home": "Início",
+        "services": "Serviços",
+        "portfolio": "Portofólio",
+        "about": "Sobre Nós",
+        "contact": "Contacto"
+    },
     "HomePage": {
         "Hero": {
             "title": "A Resposta Certa para as suas necessidades Informáticas",

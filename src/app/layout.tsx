@@ -29,7 +29,9 @@ export default async function RootLayout({
         />
       </head>
       <body className={cn("font-body antialiased")}>
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
         <Toaster />
       </body>
     </html>

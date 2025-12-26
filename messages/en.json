@@ -3,6 +3,13 @@
     "TabTitles": {
         "home" : "RedDune Solutions - Home"
     },
+    "Navigation": {
+        "home": "Home",
+        "services": "Services",
+        "portfolio": "Portfolio",
+        "about": "About Us",
+        "contact": "Contact"
+    },
     "HomePage": {
         "Hero": {
             "title": "The Right Answer to Your IT Needs",
