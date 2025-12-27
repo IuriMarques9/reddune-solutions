@@ -81,50 +81,72 @@
         }
     },
     "PricingPage" : {
-        "pricing": {
-            "breadcrumb_home": "Início",
-            "breadcrumb_pricing": "Preços",
-            "title": "Planos e Preços",
-            "subtitle": "Soluções transparentes e flexíveis para cada necessidade.",
-            "tab_tech": "Assistência Técnica",
-            "tab_web": "Web e Serviços",
-            "tab_software": "Software e Recuperação",
-            "tech_title": "Assistência Técnica",
-            "tech_desc": "Soluções rápidas e eficazes para os seus equipamentos.",
-            "tech_service1_name": "Diagnóstico Completo",
-            "tech_service1_price": "25€",
-            "tech_service2_name": "Limpeza de Vírus e Malware",
-            "tech_service2_price": "40€",
-            "tech_service3_name": "Formatação e Instalação de SO",
-            "tech_service3_price": "50€",
-            "tech_service4_name": "Manutenção de Consolas",
-            "tech_service4_price": "A partir de 45€",
-            "tech_service5_name": "Substituição de Componentes",
-            "tech_service5_price": "Sob Consulta",
-            "web_title": "Web e Serviços",
-            "web_desc": "A sua presença digital, construída com profissionalismo.",
-            "web_service1_name": "Alojamento e Manutenção Mensal",
-            "web_service1_price": "30€/mês",
-            "web_service2_name": "Website Institucional (One-Page)",
-            "web_service2_price": "A partir de 250€",
-            "web_service3_name": "Loja Online (E-commerce)",
-            "web_service3_price": "A partir de 600€",
-            "web_service4_name": "Otimização SEO",
-            "web_service4_price": "Sob Consulta",
-            "software_title": "Software e Recuperação",
-            "software_desc": "Proteja e recupere os seus dados e sistemas.",
-            "software_service1_name": "Instalação de Software Específico",
-            "software_service1_price": "20€ por app",
-            "software_service2_name": "Configuração de Redes Domésticas",
-            "software_service2_price": "60€",
-            "software_service3_name": "Recuperação de Dados (Básico)",
-            "software_service3_price": "80€",
-            "software_service4_name": "Recuperação de Dados (Avançado)",
-            "software_service4_price": "Sob Consulta",
-            "custom_plan_title": "Não encontrou o que procura?",
-            "custom_plan_desc": "Temos soluções à medida para projetos complexos e necessidades específicas.",
-            "custom_plan_text": "Se o seu projeto não se encaixa nos pacotes acima, entre em contato connosco. Teremos todo o gosto em analisar as suas necessidades e apresentar um orçamento personalizado.",
-            "custom_plan_button": "Pedir Orçamento Personalizado"
+        "breadcrumbHome": "Início",
+        "breadcrumbPricing": "Preços",
+        "title": "Planos e Preços",
+        "subtitle": "Soluções transparentes e flexíveis para cada necessidade.",
+        "pricingTable": {
+            "technical_assistance": {
+                "tab": "Assistência Técnica",
+                "title": "Assistência Técnica",
+                "desc": "Soluções rápidas e eficazes para os seus equipamentos.",
+                "price_table" : {
+                    "header_service": "Serviço",
+                    "header_tower": "Torres",
+                    "header_laptop": "Portáteis",
+                    "service1_name": "Diagnóstico Completo",
+                    "service1_desktop_price": "25€",
+                    "service1_laptop_price": "30€",
+                    "service2_name": "Limpeza de Vírus e Malware",
+                    "service2_desktop_price": "40€",
+                    "service2_laptop_price": "45€",
+                    "service3_name": "Formatação e Instalação de SO",
+                    "service3_desktop_price": "50€",
+                    "service3_laptop_price": "50€",
+                    "service4_name": "Manutenção de Consolas",
+                    "service4_desktop_price": "A partir de 45€",
+                    "service4_laptop_price": "A partir de 45€",
+                    "service5_name": "Substituição de Componentes",
+                    "service5_desktop_price": "Sob Consulta",
+                    "service5_laptop_price": "Sob Consulta"
+                }
+            },
+            "web_services": {
+                "tab": "Web e Serviços",
+                "title": "Web e Serviços",
+                "desc": "A sua presença digital, construída com profissionalismo.",
+                "price_table" : {
+                    "service1_name": "Alojamento e Manutenção Mensal",
+                    "service1_price": "30€/mês",
+                    "service2_name": "Website Institucional (One-Page)",
+                    "service2_price": "A partir de 250€",
+                    "service3_name": "Loja Online (E-commerce)",
+                    "service3_price": "A partir de 600€",
+                    "service4_name": "Otimização SEO",
+                    "service4_price": "Sob Consulta"
+                }
+            },
+            "software_services" : {
+                "tab": "Software e Recuperação",
+                "title": "Software e Recuperação",
+                "desc": "Proteja e recupere os seus dados e sistemas.",
+                "price_table" : {
+                    "service1_name": "Instalação de Software Específico",
+                    "service1_price": "20€ por app",
+                    "service2_name": "Configuração de Redes Domésticas",
+                    "service2_price": "60€",
+                    "service3_name": "Recuperação de Dados (Básico)",
+                    "service3_price": "80€",
+                    "service4_name": "Recuperação de Dados (Avançado)",
+                    "service4_price": "Sob Consulta"
+                }
+            }
+        },
+        "customProjectCard" : {
+            "title": "Não encontrou o que procura?",
+            "desc": "Temos soluções à medida para projetos complexos e necessidades específicas.",
+            "text": "Se o seu projeto não se encaixa nos pacotes acima, entre em contato connosco. Teremos todo o gosto em analisar as suas necessidades e apresentar um orçamento personalizado.",
+            "cta": "Pedir Orçamento Personalizado"
         }
     },
     "Footer": {

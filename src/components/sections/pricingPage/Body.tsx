@@ -1,43 +1,44 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, ArrowRight, ChevronRight, InfoIcon } from "lucide-react";
+import { CheckCircle, ArrowRight, ChevronRight, InfoIcon, Laptop } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export function Body() {
-  const t = useTranslations('PricingPage.pricing');
+  const t = useTranslations('PricingPage');
 
   const pricingData = {
     tech: {
-      title: t('tech_title'),
-      description: t('tech_desc'),
+      title: t('pricingTable.technical_assistance.title'),
+      description: t('pricingTable.technical_assistance.desc'),
       services: [
-        { name: t('tech_service1_name'), price: t('tech_service1_price') },
-        { name: t('tech_service2_name'), price: t('tech_service2_price') },
-        { name: t('tech_service3_name'), price: t('tech_service3_price') },
-        { name: t('tech_service4_name'), price: t('tech_service4_price') },
-        { name: t('tech_service5_name'), price: t('tech_service5_price') },
+        { name: t('pricingTable.technical_assistance.price_table.service1_name'), desktop: t('pricingTable.technical_assistance.price_table.service1_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service1_laptop_price') },
+        { name: t('pricingTable.technical_assistance.price_table.service2_name'), desktop: t('pricingTable.technical_assistance.price_table.service2_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service2_laptop_price') },
+        { name: t('pricingTable.technical_assistance.price_table.service3_name'), desktop: t('pricingTable.technical_assistance.price_table.service3_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service3_laptop_price') },
+        { name: t('pricingTable.technical_assistance.price_table.service4_name'), desktop: t('pricingTable.technical_assistance.price_table.service4_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service4_laptop_price') },
+        { name: t('pricingTable.technical_assistance.price_table.service5_name'), desktop: t('pricingTable.technical_assistance.price_table.service5_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service5_laptop_price')  },
       ]
     },
     web: {
-      title: t('web_title'),
-      description: t('web_desc'),
+      title: t('pricingTable.web_services.title'),
+      description: t('pricingTable.web_services.desc'),
       services: [
-          { name: t('web_service1_name'), price: t('web_service1_price') },
-          { name: t('web_service2_name'), price: t('web_service2_price') },
-          { name: t('web_service3_name'), price: t('web_service3_price') },
-          { name: t('web_service4_name'), price: t('web_service4_price') },
+          { name: t('pricingTable.web_services.price_table.service1_name'), price: t('pricingTable.web_services.price_table.service1_price') },
+          { name: t('pricingTable.web_services.price_table.service2_name'), price: t('pricingTable.web_services.price_table.service2_price') },
+          { name: t('pricingTable.web_services.price_table.service3_name'), price: t('pricingTable.web_services.price_table.service3_price') },
+          { name: t('pricingTable.web_services.price_table.service4_name'), price: t('pricingTable.web_services.price_table.service4_price') },
       ]
     },
     software: {
-      title: t('software_title'),
-      description: t('software_desc'),
+      title: t('pricingTable.software_services.title'),
+      description: t('pricingTable.software_services.desc'),
       services: [
-          { name: t('software_service1_name'), price: t('software_service1_price') },
-          { name: t('software_service2_name'), price: t('software_service2_price') },
-          { name: t('software_service3_name'), price: t('software_service3_price') },
-          { name: t('software_service4_name'), price: t('software_service4_price') },
+          { name: t('pricingTable.software_services.price_table.service1_name'), price: t('pricingTable.software_services.price_table.service1_price') },
+          { name: t('pricingTable.software_services.price_table.service2_name'), price: t('pricingTable.software_services.price_table.service2_price') },
+          { name: t('pricingTable.software_services.price_table.service3_name'), price: t('pricingTable.software_services.price_table.service3_price') },
+          { name: t('pricingTable.software_services.price_table.service4_name'), price: t('pricingTable.software_services.price_table.service4_price') },
       ]
     }
   };
@@ -47,9 +48,9 @@ export function Body() {
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <div className="mb-4 flex items-center text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-primary transition-colors">{t('breadcrumb_home')}</Link>
+            <Link href="/" className="hover:text-primary transition-colors">{t('breadcrumbHome')}</Link>
             <ChevronRight className="h-4 w-4 mx-1" />
-            <span>{t('breadcrumb_pricing')}</span>
+            <span>{t('breadcrumbPricing')}</span>
           </div>
           <h2 className="font-headline text-3xl md:text-4xl font-bold">{t('title')}</h2>
           <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -59,35 +60,35 @@ export function Body() {
 
         <Tabs defaultValue="tech" className="w-full">
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-10 max-w-2xl mx-auto h-auto">
-            <TabsTrigger value="tech" className="py-2">{t('tab_tech')}</TabsTrigger>
-            <TabsTrigger value="web" className="py-2">{t('tab_web')}</TabsTrigger>
-            <TabsTrigger value="software" className="py-2">{t('tab_software')}</TabsTrigger>
+            <TabsTrigger value="tech" className="py-2">{t('pricingTable.technical_assistance.tab')}</TabsTrigger>
+            <TabsTrigger value="web" className="py-2">{t('pricingTable.web_services.tab')}</TabsTrigger>
+            <TabsTrigger value="software" className="py-2">{t('pricingTable.software_services.tab')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tech">
-            <PricingCategory category={pricingData.tech} />
+            <PricingCategory category={pricingData.tech} t={t} isTechTab={true} />
           </TabsContent>
           <TabsContent value="web">
-            <PricingCategory category={pricingData.web} />
+            <PricingCategory category={pricingData.web} t={t} />
           </TabsContent>
           <TabsContent value="software">
-            <PricingCategory category={pricingData.software} />
+            <PricingCategory category={pricingData.software} t={t} />
           </TabsContent>
         </Tabs>
 
         <Card className="mt-16 bg-background/70 border-primary/50 shadow-lg">
             <CardHeader className="text-center">
-                <CardTitle className="font-headline text-2xl">{t('custom_plan_title')}</CardTitle>
+                <CardTitle className="font-headline text-2xl">{t('customProjectCard.title')}</CardTitle>
                 <CardDescription>
-                {t('custom_plan_desc')}
+                {t('customProjectCard.desc')}
                 </CardDescription>
             </CardHeader>
             <CardContent className="text-center">
                 <p className="text-muted-foreground mb-6">
-                    {t('custom_plan_text')}
+                    {t('customProjectCard.text')}
                 </p>
                 <Button asChild>
-                    <Link href="/#contact">{t('custom_plan_button')} <ArrowRight className="ml-2" /></Link>
+                    <Link href="/#contact">{t('customProjectCard.cta')} <ArrowRight className="ml-2" /></Link>
                 </Button>
             </CardContent>
         </Card>
@@ -101,35 +102,63 @@ interface PricingCategoryProps {
     category: {
         title: string;
         description: string;
-        services: { name: string; price: string }[];
-    }
+        services: any[];
+    };
+    t: (key: string) => string;
+    isTechTab?: boolean;
 }
 
-function PricingCategory({ category }: PricingCategoryProps) {
+function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
     return (
         <Card className="border-0 shadow-lg bg-background">
-            <CardHeader className="text-center md:text-left">
+            <CardHeader className="text-center">
                 <CardTitle className="font-headline text-2xl">{category.title}</CardTitle>
                 <CardDescription>{category.description}</CardDescription>
             </CardHeader>
             <CardContent>
-                 <ul className="space-y-4">
-                    {category.services.map((service, index) => (
-                        <li key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition-colors hover:bg-secondary/50">
-                            <div className="flex items-center gap-3">
+                {isTechTab ? (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[50%]">{t('pricingTable.technical_assistance.price_table.header_service')}</TableHead>
+                                <TableHead className="text-center">{t('pricingTable.technical_assistance.price_table.header_tower')}</TableHead>
+                                <TableHead className="text-center">{t('pricingTable.technical_assistance.price_table.header_laptop')}</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {category.services.map((service, index) => (
+                                <TableRow key={index} className="hover:bg-secondary/50">
+                                    <TableCell className="font-medium">
+                                        <div className="flex items-center gap-3">
+                                            <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                                            <span>{service.name}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.torre}</TableCell>
+                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.portatil}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : (
+                    <ul className="space-y-4">
+                        {category.services.map((service, index) => (
+                            <li key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition-colors hover:bg-secondary/50">
                                 <div className="flex items-center gap-3">
-                                    <CheckCircle className="h-full w-5 text-primary flex-shrink-0" />
-                                    <span className="font-medium text-foreground">{service.name}</span>
+                                    <div className="flex items-center gap-3">
+                                        <CheckCircle className="h-full w-5 text-primary flex-shrink-0" />
+                                        <span className="font-medium text-foreground">{service.name}</span>
+                                    </div>
+                                    <InfoIcon className="h-3 w-3 text-muted-foreground" />
                                 </div>
-                                <InfoIcon className="h-3 w-3 text-muted-foreground" />
-                            </div>
-                            <p className="font-semibold text-primary text-lg mt-2 md:mt-0 md:ml-4">
-                                {service.price}
-                            </p>
-                            
-                        </li>
-                    ))}
-                </ul>
+                                <p className="font-semibold text-primary text-lg mt-2 md:mt-0 md:ml-4">
+                                    {service.price}
+                                </p>
+                                
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </CardContent>
         </Card>
     )
