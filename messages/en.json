@@ -1,7 +1,8 @@
 {
     "TabDescription" : "Official RedDune Solutions website. Professional technological solutions to help with your projects.",
     "TabTitles": {
-        "home" : "RedDune Solutions - Home"
+        "home" : "RedDune Solutions - Home",
+        "pricing" : "RedDune Solutions - Pricing"
     },
     "Navigation": {
         "home": "Home",
@@ -77,6 +78,53 @@
                 "errorTitle": "Error Sending Message",
                 "errorDescription": "An error occurred while sending your message. Please try again later."
             }
+        }
+    },
+    "PricingPage" : {
+        "pricing": {
+            "breadcrumb_home": "Home",
+            "breadcrumb_pricing": "Pricing",
+            "title": "Plans and Pricing",
+            "subtitle": "Transparent and flexible solutions for every need.",
+            "tab_tech": "Technical Assistance",
+            "tab_web": "Web and Services",
+            "tab_software": "Software and Recovery",
+            "tech_title": "Technical Assistance",
+            "tech_desc": "Fast and effective solutions for your equipment.",
+            "tech_service1_name": "Complete Diagnosis",
+            "tech_service1_price": "€25",
+            "tech_service2_name": "Virus and Malware Removal",
+            "tech_service2_price": "€40",
+            "tech_service3_name": "Formatting and OS Installation",
+            "tech_service3_price": "€50",
+            "tech_service4_name": "Console Maintenance",
+            "tech_service4_price": "From €45",
+            "tech_service5_name": "Component Replacement",
+            "tech_service5_price": "On Consultation",
+            "web_title": "Web and Services",
+            "web_desc": "Your digital presence, built with professionalism.",
+            "web_service1_name": "Monthly Hosting and Maintenance",
+            "web_service1_price": "€30/month",
+            "web_service2_name": "Institutional Website (One-Page)",
+            "web_service2_price": "From €250",
+            "web_service3_name": "Online Store (E-commerce)",
+            "web_service3_price": "From €600",
+            "web_service4_name": "SEO Optimization",
+            "web_service4_price": "On Consultation",
+            "software_title": "Software and Recovery",
+            "software_desc": "Protect and recover your data and systems.",
+            "software_service1_name": "Specific Software Installation",
+            "software_service1_price": "€20 per app",
+            "software_service2_name": "Home Network Setup",
+            "software_service2_price": "€60",
+            "software_service3_name": "Data Recovery (Basic)",
+            "software_service3_price": "€80",
+            "software_service4_name": "Data Recovery (Advanced)",
+            "software_service4_price": "On Consultation",
+            "custom_plan_title": "Didn't find what you're looking for?",
+            "custom_plan_desc": "We have custom solutions for complex projects and specific needs.",
+            "custom_plan_text": "If your project doesn't fit the packages above, please contact us. We'll be happy to analyze your needs and provide a personalized quote.",
+            "custom_plan_button": "Request Custom Quote"
         }
     },
     "Footer": {
