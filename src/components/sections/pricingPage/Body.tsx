@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, ArrowRight, ChevronRight } from "lucide-react";
+import { CheckCircle, ArrowRight, ChevronRight, InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
@@ -46,7 +46,7 @@ export function Body() {
     <section id="pricing" className="py-20 md:py-32 bg-secondary/50">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <div className="mb-4 flex items-center justify-center text-sm text-muted-foreground">
+          <div className="mb-4 flex items-center text-sm text-muted-foreground">
             <Link href="/" className="hover:text-primary transition-colors">{t('breadcrumb_home')}</Link>
             <ChevronRight className="h-4 w-4 mx-1" />
             <span>{t('breadcrumb_pricing')}</span>
@@ -116,13 +116,17 @@ function PricingCategory({ category }: PricingCategoryProps) {
                  <ul className="space-y-4">
                     {category.services.map((service, index) => (
                         <li key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition-colors hover:bg-secondary/50">
-                             <div className="flex items-center gap-3">
-                                <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                                <span className="font-medium text-foreground">{service.name}</span>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-3">
+                                    <CheckCircle className="h-full w-5 text-primary flex-shrink-0" />
+                                    <span className="font-medium text-foreground">{service.name}</span>
+                                </div>
+                                <InfoIcon className="h-3 w-3 text-muted-foreground" />
                             </div>
                             <p className="font-semibold text-primary text-lg mt-2 md:mt-0 md:ml-4">
                                 {service.price}
                             </p>
+                            
                         </li>
                     ))}
                 </ul>
