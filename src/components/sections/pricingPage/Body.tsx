@@ -12,94 +12,93 @@ import {
 } from "@/components/ui/popover";
 
 export function Body() {
-  const t = useTranslations('PricingPage');
+    const t = useTranslations('PricingPage');
 
-  const pricingData = {
-    tech: {
-      title: t('pricingTable.technical_assistance.title'),
-      description: t('pricingTable.technical_assistance.desc'),
-      services: [
-        { 
-            name: t('pricingTable.technical_assistance.price_table.service1_name'), 
-            desktop: t('pricingTable.technical_assistance.price_table.service1_desktop_price'), 
-            laptop: t('pricingTable.technical_assistance.price_table.service1_laptop_price'), 
-            console: t('pricingTable.technical_assistance.price_table.service1_console_price'),
-            info: t('pricingTable.technical_assistance.price_table.service1_info'),
+    const pricingData = {
+        tech: {
+            title: t('pricingTable.technical_assistance.title'),
+            description: t('pricingTable.technical_assistance.desc'),
+            services: [
+                { 
+                    name: t('pricingTable.technical_assistance.price_table.service1_name'), 
+                    desktop: t('pricingTable.technical_assistance.price_table.service1_desktop_price'), 
+                    laptop: t('pricingTable.technical_assistance.price_table.service1_laptop_price'), 
+                    console: t('pricingTable.technical_assistance.price_table.service1_console_price'),
+                    info: t('pricingTable.technical_assistance.price_table.service1_info'),
+                },
+                { 
+                    name: t('pricingTable.technical_assistance.price_table.service2_name'), 
+                    desktop: t('pricingTable.technical_assistance.price_table.service2_desktop_price'), 
+                    laptop: t('pricingTable.technical_assistance.price_table.service2_laptop_price'), 
+                    console: t('pricingTable.technical_assistance.price_table.service2_console_price'),
+                    info: t('pricingTable.technical_assistance.price_table.service2_info'),
+                },
+                { 
+                    name: t('pricingTable.technical_assistance.price_table.service3_name'), 
+                    desktop: t('pricingTable.technical_assistance.price_table.service3_desktop_price'), 
+                    laptop: t('pricingTable.technical_assistance.price_table.service3_laptop_price'), 
+                    console: t('pricingTable.technical_assistance.price_table.service3_console_price'),
+                    info: t('pricingTable.technical_assistance.price_table.service3_info'),
+                },
+                { 
+                    name: t('pricingTable.technical_assistance.price_table.service4_name'), 
+                    desktop: t('pricingTable.technical_assistance.price_table.service4_desktop_price'), 
+                    laptop: t('pricingTable.technical_assistance.price_table.service4_laptop_price'), 
+                    console: t('pricingTable.technical_assistance.price_table.service4_console_price'),
+                    info: t('pricingTable.technical_assistance.price_table.service4_info'),
+                },
+            ]
         },
-        { 
-            name: t('pricingTable.technical_assistance.price_table.service2_name'), 
-            desktop: t('pricingTable.technical_assistance.price_table.service2_desktop_price'), 
-            laptop: t('pricingTable.technical_assistance.price_table.service2_laptop_price'), 
-            console: t('pricingTable.technical_assistance.price_table.service2_console_price'),
-            info: t('pricingTable.technical_assistance.price_table.service2_info'),
+        web: {
+            title: t('pricingTable.web_services.title'),
+            description: t('pricingTable.web_services.desc'),
+            services: [
+                { 
+                    name: t('pricingTable.web_services.price_table.service1_name'), 
+                    price: t('pricingTable.web_services.price_table.service1_price'),
+                    info: t('pricingTable.web_services.price_table.service1_info')
+                },
+                { 
+                    name: t('pricingTable.web_services.price_table.service2_name'), 
+                    price: t('pricingTable.web_services.price_table.service2_price'),
+                    info: t('pricingTable.web_services.price_table.service2_info')
+                },
+                { 
+                    name: t('pricingTable.web_services.price_table.service3_name'), 
+                    price: t('pricingTable.web_services.price_table.service3_price'),
+                    info: t('pricingTable.web_services.price_table.service3_info')
+                },
+                { 
+                    name: t('pricingTable.web_services.price_table.service4_name'), 
+                    price: t('pricingTable.web_services.price_table.service4_price'),
+                    info: t('pricingTable.web_services.price_table.service4_info')
+                },
+            ]
         },
-        { 
-            name: t('pricingTable.technical_assistance.price_table.service3_name'), 
-            desktop: t('pricingTable.technical_assistance.price_table.service3_desktop_price'), 
-            laptop: t('pricingTable.technical_assistance.price_table.service3_laptop_price'), 
-            console: t('pricingTable.technical_assistance.price_table.service3_console_price'),
-            info: t('pricingTable.technical_assistance.price_table.service3_info'),
-        },
-        { 
-            name: t('pricingTable.technical_assistance.price_table.service4_name'), 
-            desktop: t('pricingTable.technical_assistance.price_table.service4_desktop_price'), 
-            laptop: t('pricingTable.technical_assistance.price_table.service4_laptop_price'), 
-            console: t('pricingTable.technical_assistance.price_table.service4_console_price'),
-            info: t('pricingTable.technical_assistance.price_table.service4_info'),
-        },
-      ]
-    },
-    web: {
-      title: t('pricingTable.web_services.title'),
-      description: t('pricingTable.web_services.desc'),
-      services: [
-          { 
-            name: t('pricingTable.web_services.price_table.service1_name'), 
-            price: t('pricingTable.web_services.price_table.service1_price'),
-            info: t('pricingTable.web_services.price_table.service1_info')
-        },
-          { 
-            name: t('pricingTable.web_services.price_table.service2_name'), 
-            price: t('pricingTable.web_services.price_table.service2_price'),
-            info: t('pricingTable.web_services.price_table.service2_info')
-        },
-          { 
-            name: t('pricingTable.web_services.price_table.service3_name'), 
-            price: t('pricingTable.web_services.price_table.service3_price'),
-            info: t('pricingTable.web_services.price_table.service3_info')
-        },
-          { 
-            name: t('pricingTable.web_services.price_table.service4_name'), 
-            price: t('pricingTable.web_services.price_table.service4_price'),
-            info: t('pricingTable.web_services.price_table.service4_info')
-        },
-      ]
-    },
-    software: {
-      title: t('pricingTable.software_services.title'),
-      description: t('pricingTable.software_services.desc'),
-      services: [
-          { 
-            name: t('pricingTable.software_services.price_table.service1_name'), 
-            price: t('pricingTable.software_services.price_table.service1_price'),
-            info: t('pricingTable.web_services.price_table.service1_info')
+        software: {
+            title: t('pricingTable.software_services.title'),
+            description: t('pricingTable.software_services.desc'),
+            services: [
+                { 
+                    name: t('pricingTable.software_services.price_table.service1_name'), 
+                    price: t('pricingTable.software_services.price_table.service1_price'),
+                    info: t('pricingTable.software_services.price_table.service1_info')
 
-          },
-          { 
-            name: t('pricingTable.software_services.price_table.service2_name'), 
-            price: t('pricingTable.software_services.price_table.service2_price'),
-            info: t('pricingTable.web_services.price_table.service2_info')
+                },
+                { 
+                    name: t('pricingTable.software_services.price_table.service2_name'), 
+                    price: t('pricingTable.software_services.price_table.service2_price'),
+                    info: t('pricingTable.software_services.price_table.service2_info')
 
-          },
-          { 
-            name: t('pricingTable.software_services.price_table.service3_name'), 
-            price: t('pricingTable.software_services.price_table.service3_price'),
-            info: t('pricingTable.web_services.price_table.service3_info')
-
-          },
-      ]
-    }
-  };
+                },
+                { 
+                    name: t('pricingTable.software_services.price_table.service3_name'), 
+                    price: t('pricingTable.software_services.price_table.service3_price'),
+                    info: t('pricingTable.software_services.price_table.service3_info')
+                },
+            ]
+        }
+    };
 
   return (
     <section id="pricing" className="py-20 bg-secondary/50">
@@ -117,21 +116,21 @@ export function Body() {
         </div>
 
         <Tabs defaultValue="tech" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-10 max-w-2xl mx-auto h-auto gap-1">
-            <TabsTrigger value="tech" className="py-2 hover:bg-primary hover:text-white">{t('pricingTable.technical_assistance.tab')}</TabsTrigger>
-            <TabsTrigger value="web" className="py-2 hover:bg-primary hover:text-white">{t('pricingTable.web_services.tab')}</TabsTrigger>
-            <TabsTrigger value="software" className="py-2 hover:bg-primary hover:text-white">{t('pricingTable.software_services.tab')}</TabsTrigger>
-          </TabsList>
+            <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-10 max-w-2xl mx-auto h-auto gap-1">
+                <TabsTrigger value="tech" className="py-2 hover:bg-primary hover:text-white">{t('pricingTable.technical_assistance.tab')}</TabsTrigger>
+                <TabsTrigger value="web" className="py-2 hover:bg-primary hover:text-white">{t('pricingTable.web_services.tab')}</TabsTrigger>
+                <TabsTrigger value="software" className="py-2 hover:bg-primary hover:text-white">{t('pricingTable.software_services.tab')}</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="tech">
-            <PricingCategory category={pricingData.tech} t={t} isTechTab={true} />
-          </TabsContent>
-          <TabsContent value="web">
-            <PricingCategory category={pricingData.web} t={t} />
-          </TabsContent>
-          <TabsContent value="software">
-            <PricingCategory category={pricingData.software} t={t} />
-          </TabsContent>
+            <TabsContent value="tech">
+                <PricingCategory category={pricingData.tech} t={t} isTechTab={true} />
+            </TabsContent>
+            <TabsContent value="web">
+                <PricingCategory category={pricingData.web} t={t} />
+            </TabsContent>
+            <TabsContent value="software">
+                <PricingCategory category={pricingData.software} t={t} />
+            </TabsContent>
         </Tabs>
 
         <Card className="mt-16 bg-background/70 border-primary/50 shadow-lg">

@@ -100,22 +100,22 @@
                     "service1_desktop_price": "35€",
                     "service1_laptop_price": "45€",
                     "service1_console_price": "45€",
-                    "service1_info": "Inclui diagnóstico e reparação",
+                    "service1_info": "A manuntenção inclui limpeza profunda dos componentes e troca de pasta térmica",
                     "service2_name": "Substituição de Componentes",
                     "service2_desktop_price": "35€",
-                    "service2_laptop_price": "40€",
+                    "service2_laptop_price": "45€",
                     "service2_console_price": "-",
-                    "service2_info": "Inclui diagnóstico e substituição",
+                    "service2_info": "O preço da subistituição dos componentes é referente ao valor de mão de obra, naturalmente o custo da peça será adicionado a este valor.",
                     "service3_name": "Diagnostico e Resolução de Avarias",
-                    "service3_desktop_price": "50€",
-                    "service3_laptop_price": "50€",
-                    "service3_console_price": "60€",
-                    "service3_info": "Inclui diagnóstico e reparação",
+                    "service3_desktop_price": "70€",
+                    "service3_laptop_price": "80€",
+                    "service3_console_price": "70€",
+                    "service3_info": "Inlcui o diagnostico do problema e a sua resolução, possibilidade tambem de identificar o problema e se o cliente não o quiser resolver, não é cobrado o valor da resolução.",
                     "service4_name": "Montagem Personalizada",
-                    "service4_desktop_price": "100€ - 120€",
+                    "service4_desktop_price": "100€ - 150€",
                     "service4_laptop_price": "-",
                     "service4_console_price": "-",
-                    "service4_info": "Inclui consulta e montagem"
+                    "service4_info": "Aconselhamento de peças que melhor se adequam as necessidades e requisições do cliente e a sua montagem, incluindo SO, drivers e testes. O valor varia conforme a complexidade do sistema a montar. Ao valor da montagem completa será adicionado o custo das peças selecionadas."
                 }
             },
             "web_services": {
@@ -124,17 +124,17 @@
                 "desc": "A sua presença digital, construída com profissionalismo.",
                 "price_table" : {
                     "service1_name": "Alojamento e Manutenção Mensal",
-                    "service1_price": "30€/mês",
-                    "service1_info": "Inclui atualizações e suporte técnico",
+                    "service1_price": "40€/mês",
+                    "service1_info": "Tratamos do alojamento e manutenção técnica do seu site, garantindo que está sempre atualizado e seguro.",
                     "service2_name": "Website Institucional (One-Page)",
                     "service2_price": "Sob Consulta",
-                    "service2_info": "Inclui atualizações e suporte técnico",
-                    "service3_name": "Loja Online (E-commerce)",
+                    "service2_info": "Uma página ou site de apresentação básico, tipo um blogue para apresentar a sua empresa, projeto ou marca na internet.",
+                    "service3_name": "Website ou Aplicação",
                     "service3_price": "Sob Consulta",
-                    "service3_info": "Inclui atualizações e suporte técnico",
-                    "service4_name": "Sob Consulta",
-                    "service4_price": "80€-150€",
-                    "service4_info": "Inclui análise e otimização SEO"
+                    "service3_info": "Criamos aplicações ou websites adaptados às suas necessidades, com design responsivo, funcionalidades personalizadas e otimização para motores de busca (SEO).",
+                    "service4_name": "Otimização SEO",
+                    "service4_price": "Sob consulta",
+                    "service4_info": "Otimizamos o SEO do seu site para melhorar a sua visibilidade nos motores de busca, atraindo mais visitantes e potenciais clientes."
                 }
             },
             "software_services" : {
@@ -144,21 +144,21 @@
                 "price_table" : {
                     "service1_name": "Instalação de Software",
                     "service1_price": "20€",
-                    "service1_info": "Inclui configuração e otimização",
+                    "service1_info": "Inclui a instalação e configuração de software que o cliente precise no seu equipamento",
                     "service2_name": "Formatação e Instalação de SO",
-                    "service2_price": "45€",
-                    "service2_info": "Inclui formatação e instalação do sistema operativo",
+                    "service2_price": "50€",
+                    "service2_info": "Inclui formatação e instalação do sistema operativo, controladores e teste de estabilidade do sistema",
                     "service3_name": "Recuperação de Dados Básica",
                     "service3_price": "60€",
-                    "service3_info": "Inclui recuperação de dados de discos formatados ou corrompidos"
+                    "service3_info": ""
                 }
             }
         },
         "customProjectCard" : {
             "title": "Não encontrou o que procura?",
-            "desc": "Temos soluções à medida para projetos complexos e necessidades específicas.",
-            "text": "Se o seu projeto não se encaixa nos pacotes acima, entre em contato connosco. Teremos todo o gosto em analisar as suas necessidades e apresentar um orçamento personalizado.",
-            "cta": "Pedir Orçamento Personalizado"
+            "desc": "Caso tenha um problema ou projeto específico, temos soluções personalizadas para necessidades complexas.",
+            "text": "Se não se encaixa nos pacotes acima, entre em contato connosco. Teremos todo o gosto em analisar a sua necessidade e apresentar uma solução personalizada.",
+            "cta": "Conte-nos o seu problema"
         }
     },
     "Footer": {
