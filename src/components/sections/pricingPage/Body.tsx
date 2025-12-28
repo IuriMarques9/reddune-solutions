@@ -14,11 +14,11 @@ export function Body() {
       title: t('pricingTable.technical_assistance.title'),
       description: t('pricingTable.technical_assistance.desc'),
       services: [
-        { name: t('pricingTable.technical_assistance.price_table.service1_name'), desktop: t('pricingTable.technical_assistance.price_table.service1_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service1_laptop_price') },
-        { name: t('pricingTable.technical_assistance.price_table.service2_name'), desktop: t('pricingTable.technical_assistance.price_table.service2_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service2_laptop_price') },
-        { name: t('pricingTable.technical_assistance.price_table.service3_name'), desktop: t('pricingTable.technical_assistance.price_table.service3_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service3_laptop_price') },
-        { name: t('pricingTable.technical_assistance.price_table.service4_name'), desktop: t('pricingTable.technical_assistance.price_table.service4_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service4_laptop_price') },
-        { name: t('pricingTable.technical_assistance.price_table.service5_name'), desktop: t('pricingTable.technical_assistance.price_table.service5_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service5_laptop_price')  },
+        { name: t('pricingTable.technical_assistance.price_table.service1_name'), desktop: t('pricingTable.technical_assistance.price_table.service1_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service1_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service1_console_price') },
+        { name: t('pricingTable.technical_assistance.price_table.service2_name'), desktop: t('pricingTable.technical_assistance.price_table.service2_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service2_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service2_console_price') },
+        { name: t('pricingTable.technical_assistance.price_table.service3_name'), desktop: t('pricingTable.technical_assistance.price_table.service3_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service3_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service3_console_price') },
+        { name: t('pricingTable.technical_assistance.price_table.service4_name'), desktop: t('pricingTable.technical_assistance.price_table.service4_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service4_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service4_console_price') },
+        { name: t('pricingTable.technical_assistance.price_table.service5_name'), desktop: t('pricingTable.technical_assistance.price_table.service5_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service5_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service5_console_price') },
       ]
     },
     web: {
@@ -123,6 +123,7 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                                 <TableHead className="w-[50%]">{t('pricingTable.technical_assistance.price_table.header_service')}</TableHead>
                                 <TableHead className="text-center">{t('pricingTable.technical_assistance.price_table.header_tower')}</TableHead>
                                 <TableHead className="text-center">{t('pricingTable.technical_assistance.price_table.header_laptop')}</TableHead>
+                                <TableHead className="text-center">{t('pricingTable.technical_assistance.price_table.header_console')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -132,10 +133,12 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                                         <div className="flex items-center gap-3">
                                             <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                                             <span>{service.name}</span>
+                                            <InfoIcon className="h-3 w-3 text-muted-foreground" />
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.torre}</TableCell>
-                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.portatil}</TableCell>
+                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.desktop}</TableCell>
+                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.laptop}</TableCell>
+                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.console}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -154,7 +157,6 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                                 <p className="font-semibold text-primary text-lg mt-2 md:mt-0 md:ml-4">
                                     {service.price}
                                 </p>
-                                
                             </li>
                         ))}
                     </ul>
