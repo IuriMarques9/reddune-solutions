@@ -29,8 +29,8 @@
                     "description": "Assistência técnica especializada para computadores, consolas e outros equipamentos eletrónicos. Diagnosticamos e resolvemos problemas com rapidez e precisão, garantindo que o seu dispositivo volte a funcionar no máximo desempenho, com a transparência que esperas de uma equipa profissional."
                 },
                 "webDigital": {
-                    "title": "Aplicações Móveis",
-                    "description": "Desenvolvimento de aplicações móveis nativas e híbridas para iOS e Android."
+                    "title": "Web e Serviços Digitais",
+                    "description": "Oferecemos uma variedade de soluções digitais, incluindo websites modernos, e-commerce e sistemas personalizados."
                 },
                 "dataRecovery": {
                     "title": "Software e Recuperação",
@@ -126,7 +126,7 @@
                     "service1_name": "Alojamento e Manutenção Mensal",
                     "service1_price": "40€/mês",
                     "service1_info": "Tratamos do alojamento e manutenção técnica do seu site, garantindo que está sempre atualizado e seguro.",
-                    "service2_name": "Website Institucional (One-Page)",
+                    "service2_name": "Website Institucional (Pagina Unica)",
                     "service2_price": "Sob Consulta",
                     "service2_info": "Uma página ou site de apresentação básico, tipo um blogue para apresentar a sua empresa, projeto ou marca na internet.",
                     "service3_name": "Website ou Aplicação",

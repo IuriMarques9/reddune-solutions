@@ -29,8 +29,8 @@
                     "description": "Specialized technical support for computers, consoles and other electronic equipment. We diagnose and resolve issues quickly and accurately, ensuring your device works at peak performance, with the transparency you expect from a professional team."
                 },
                 "webDigital": {
-                    "title": "Mobile Applications",
-                    "description": "Development of native and hybrid mobile applications for iOS and Android."
+                    "title": "Web and Digital Services",
+                    "description": "We offer a variety of digital solutions, including modern websites, e-commerce and custom systems."
                 },
                 "dataRecovery": {
                     "title": "Software and Recovery",
@@ -126,10 +126,10 @@
                     "service1_name": "Monthly Hosting and Maintenance",
                     "service1_price": "€40/month",
                     "service1_info": "We take care of hosting and technical maintenance of your website, ensuring it is always up-to-date and secure.",
-                    "service2_name": "Institutional Website (One-Page)",
+                    "service2_name": "Institutional Website (Single-Page)",
                     "service2_price": "On Consultation",
                     "service2_info": "A basic presentation page or website, like a blog to present your company, project or brand on the internet.",
-                    "service3_name": "Online Store (E-commerce)",
+                    "service3_name": "Website or Application",
                     "service3_price": "On Consultation",
                     "service3_info": "We create applications or websites tailored to your needs, with responsive design, custom features and search engine optimization (SEO).",
                     "service4_name": "SEO Optimization",
