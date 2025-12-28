@@ -19,11 +19,11 @@ export function Header() {
     const isMobile = useIsMobile();
 
 	const navLinks = [
-		{ href: "#home", key: t("home") },
-		{ href: "#services", key: t("services") },
-		{ href: "#portfolio", key: t("portfolio") },
-		{ href: "#about", key: t("about") },
-		{ href: "#contact", key: t("contact") },
+		{ href: "/#home", key: t("home") },
+		{ href: "/#services", key: t("services") },
+		{ href: "/#portfolio", key: t("portfolio") },
+		{ href: "/#about", key: t("about") },
+		{ href: "/#contact", key: t("contact") },
 	];
 
     useEffect(() => {
@@ -65,7 +65,7 @@ export function Header() {
                                 </Link>
                             ))}
                         </div>
-                        <div className={cn("h-6 border-l", scrolled ? "border-border" : "border-white/20")} />
+                        <div className="h-7 border-l border-primary mx-1" />
                         <LanguageSwitcher />
                     </nav>
                 )}
@@ -73,7 +73,7 @@ export function Header() {
                 {isMobile && (
                     <div className="flex items-center gap-2">
                         <LanguageSwitcher />
-                        <div className="h-5 border-l border-white/20 mx-1" />
+                        <div className="h-7 border-l border-primary mx-1" />
                         <Button 
                             variant="ghost" 
                             size="icon" 

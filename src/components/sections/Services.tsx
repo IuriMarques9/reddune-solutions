@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HardDriveUpload, Server, Wrench, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { HardDriveUpload, Server, Wrench, Sparkles, ArrowRight } from "lucide-react";
 
 export function Services() {
 
@@ -49,7 +50,12 @@ export function Services() {
             </Card>
           ))}
         </div>
-        <div className="mt-20 text-center">
+        <div className="mt-20 text-center flex flex-col items-center gap-8">
+            <Button asChild size="lg">
+                <Link href="/pricingPage">
+                    {t('cta')} <ArrowRight className="ml-2" />
+                </Link>
+            </Button>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               <Sparkles className="inline-block h-5 w-5 text-primary mr-2" />
               {t.rich('quote', {

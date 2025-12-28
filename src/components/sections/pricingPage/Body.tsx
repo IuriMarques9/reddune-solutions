@@ -42,10 +42,10 @@ export function Body() {
   };
 
   return (
-    <section id="pricing" className="py-20 md:py-32 bg-secondary/50">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <section id="pricing" className="py-20 bg-secondary/50">
+      <div className="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
         <div className="text-center mb-16">
-          <div className="mb-4 flex items-center text-sm text-muted-foreground">
+          <div className="flex items-center text-sm text-muted-foreground">
             <Link href="/" className="hover:text-primary transition-colors">{t('breadcrumbHome')}</Link>
             <ChevronRight className="h-4 w-4 mx-1" />
             <span>{t('breadcrumbPricing')}</span>
@@ -57,10 +57,10 @@ export function Body() {
         </div>
 
         <Tabs defaultValue="tech" className="w-full">
-          <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-10 max-w-2xl mx-auto h-auto">
-            <TabsTrigger value="tech" className="py-2">{t('pricingTable.technical_assistance.tab')}</TabsTrigger>
-            <TabsTrigger value="web" className="py-2">{t('pricingTable.web_services.tab')}</TabsTrigger>
-            <TabsTrigger value="software" className="py-2">{t('pricingTable.software_services.tab')}</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-10 max-w-2xl mx-auto h-auto gap-1">
+            <TabsTrigger value="tech" className="py-2 hover:bg-primary hover:text-white">{t('pricingTable.technical_assistance.tab')}</TabsTrigger>
+            <TabsTrigger value="web" className="py-2 hover:bg-primary hover:text-white">{t('pricingTable.web_services.tab')}</TabsTrigger>
+            <TabsTrigger value="software" className="py-2 hover:bg-primary hover:text-white">{t('pricingTable.software_services.tab')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="tech">
@@ -131,7 +131,7 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                                         <div className="flex items-center gap-3">
                                             <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                                             <span>{service.name}</span>
-                                            <InfoIcon className="h-3 w-3 text-muted-foreground" />
+                                            <InfoIcon tabIndex={0} className="h-3 w-3 text-muted-foreground" />
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-center font-semibold text-primary text-lg">{service.desktop}</TableCell>
@@ -150,7 +150,7 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                                         <CheckCircle className="h-full w-5 text-primary flex-shrink-0" />
                                         <span className="font-medium text-foreground">{service.name}</span>
                                     </div>
-                                    <InfoIcon className="h-3 w-3 text-muted-foreground" />
+                                    <InfoIcon tabIndex={0} className="h-3 w-3 text-muted-foreground" />
                                 </div>
                                 <p className="font-semibold text-primary text-lg mt-2 md:mt-0 md:ml-4">
                                     {service.price}
