@@ -1,10 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, ArrowRight, ChevronRight, InfoIcon, Laptop } from "lucide-react";
+import { CheckCircle, ArrowRight, ChevronRight, InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export function Body() {
   const t = useTranslations('PricingPage');
@@ -14,29 +19,84 @@ export function Body() {
       title: t('pricingTable.technical_assistance.title'),
       description: t('pricingTable.technical_assistance.desc'),
       services: [
-        { name: t('pricingTable.technical_assistance.price_table.service1_name'), desktop: t('pricingTable.technical_assistance.price_table.service1_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service1_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service1_console_price') },
-        { name: t('pricingTable.technical_assistance.price_table.service2_name'), desktop: t('pricingTable.technical_assistance.price_table.service2_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service2_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service2_console_price') },
-        { name: t('pricingTable.technical_assistance.price_table.service3_name'), desktop: t('pricingTable.technical_assistance.price_table.service3_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service3_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service3_console_price') },
-        { name: t('pricingTable.technical_assistance.price_table.service4_name'), desktop: t('pricingTable.technical_assistance.price_table.service4_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service4_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service4_console_price') },
+        { 
+            name: t('pricingTable.technical_assistance.price_table.service1_name'), 
+            desktop: t('pricingTable.technical_assistance.price_table.service1_desktop_price'), 
+            laptop: t('pricingTable.technical_assistance.price_table.service1_laptop_price'), 
+            console: t('pricingTable.technical_assistance.price_table.service1_console_price'),
+            info: t('pricingTable.technical_assistance.price_table.service1_info'),
+        },
+        { 
+            name: t('pricingTable.technical_assistance.price_table.service2_name'), 
+            desktop: t('pricingTable.technical_assistance.price_table.service2_desktop_price'), 
+            laptop: t('pricingTable.technical_assistance.price_table.service2_laptop_price'), 
+            console: t('pricingTable.technical_assistance.price_table.service2_console_price'),
+            info: t('pricingTable.technical_assistance.price_table.service2_info'),
+        },
+        { 
+            name: t('pricingTable.technical_assistance.price_table.service3_name'), 
+            desktop: t('pricingTable.technical_assistance.price_table.service3_desktop_price'), 
+            laptop: t('pricingTable.technical_assistance.price_table.service3_laptop_price'), 
+            console: t('pricingTable.technical_assistance.price_table.service3_console_price'),
+            info: t('pricingTable.technical_assistance.price_table.service3_info'),
+        },
+        { 
+            name: t('pricingTable.technical_assistance.price_table.service4_name'), 
+            desktop: t('pricingTable.technical_assistance.price_table.service4_desktop_price'), 
+            laptop: t('pricingTable.technical_assistance.price_table.service4_laptop_price'), 
+            console: t('pricingTable.technical_assistance.price_table.service4_console_price'),
+            info: t('pricingTable.technical_assistance.price_table.service4_info'),
+        },
       ]
     },
     web: {
       title: t('pricingTable.web_services.title'),
       description: t('pricingTable.web_services.desc'),
       services: [
-          { name: t('pricingTable.web_services.price_table.service1_name'), price: t('pricingTable.web_services.price_table.service1_price') },
-          { name: t('pricingTable.web_services.price_table.service2_name'), price: t('pricingTable.web_services.price_table.service2_price') },
-          { name: t('pricingTable.web_services.price_table.service3_name'), price: t('pricingTable.web_services.price_table.service3_price') },
-          { name: t('pricingTable.web_services.price_table.service4_name'), price: t('pricingTable.web_services.price_table.service4_price') },
+          { 
+            name: t('pricingTable.web_services.price_table.service1_name'), 
+            price: t('pricingTable.web_services.price_table.service1_price'),
+            info: t('pricingTable.web_services.price_table.service1_info')
+        },
+          { 
+            name: t('pricingTable.web_services.price_table.service2_name'), 
+            price: t('pricingTable.web_services.price_table.service2_price'),
+            info: t('pricingTable.web_services.price_table.service2_info')
+        },
+          { 
+            name: t('pricingTable.web_services.price_table.service3_name'), 
+            price: t('pricingTable.web_services.price_table.service3_price'),
+            info: t('pricingTable.web_services.price_table.service3_info')
+        },
+          { 
+            name: t('pricingTable.web_services.price_table.service4_name'), 
+            price: t('pricingTable.web_services.price_table.service4_price'),
+            info: t('pricingTable.web_services.price_table.service4_info')
+        },
       ]
     },
     software: {
       title: t('pricingTable.software_services.title'),
       description: t('pricingTable.software_services.desc'),
       services: [
-          { name: t('pricingTable.software_services.price_table.service1_name'), price: t('pricingTable.software_services.price_table.service1_price') },
-          { name: t('pricingTable.software_services.price_table.service2_name'), price: t('pricingTable.software_services.price_table.service2_price') },
-          { name: t('pricingTable.software_services.price_table.service3_name'), price: t('pricingTable.software_services.price_table.service3_price') },
+          { 
+            name: t('pricingTable.software_services.price_table.service1_name'), 
+            price: t('pricingTable.software_services.price_table.service1_price'),
+            info: t('pricingTable.web_services.price_table.service1_info')
+
+          },
+          { 
+            name: t('pricingTable.software_services.price_table.service2_name'), 
+            price: t('pricingTable.software_services.price_table.service2_price'),
+            info: t('pricingTable.web_services.price_table.service2_info')
+
+          },
+          { 
+            name: t('pricingTable.software_services.price_table.service3_name'), 
+            price: t('pricingTable.software_services.price_table.service3_price'),
+            info: t('pricingTable.web_services.price_table.service3_info')
+
+          },
       ]
     }
   };
@@ -131,7 +191,18 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                                         <div className="flex items-center gap-3">
                                             <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                                             <span>{service.name}</span>
-                                            <InfoIcon tabIndex={0} className="h-3 w-3 text-muted-foreground" />
+
+                                            {/* Tooltip for service info */}
+                                            {service.info && (
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <InfoIcon className="hover:scale-105 h-3 w-3 text-muted-foreground cursor-pointer" />
+                                                    </PopoverTrigger>
+                                                    <PopoverContent>
+                                                        <p className="max-w-xs text-justify">{service.info}</p>
+                                                    </PopoverContent>
+                                                </Popover>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-center font-semibold text-primary text-lg">{service.desktop}</TableCell>
@@ -149,8 +220,19 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                                     <div className="flex items-center gap-3">
                                         <CheckCircle className="h-full w-5 text-primary flex-shrink-0" />
                                         <span className="font-medium text-foreground">{service.name}</span>
+                                        
+                                        {/* Tooltip for service info */}
+                                        {service.info && (
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <InfoIcon className="h-3 w-3 text-muted-foreground cursor-pointer" />
+                                                </PopoverTrigger>
+                                                <PopoverContent>
+                                                    <p className="max-w-xs">{service.info}</p>
+                                                </PopoverContent>
+                                            </Popover>
+                                        )}
                                     </div>
-                                    <InfoIcon tabIndex={0} className="h-3 w-3 text-muted-foreground" />
                                 </div>
                                 <p className="font-semibold text-primary text-lg mt-2 md:mt-0 md:ml-4">
                                     {service.price}

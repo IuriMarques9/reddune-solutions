@@ -100,18 +100,22 @@
                     "service1_desktop_price": "35€",
                     "service1_laptop_price": "45€",
                     "service1_console_price": "45€",
+                    "service1_info": "Includes diagnosis and repair",
                     "service2_name": "Component Replacement",
                     "service2_desktop_price": "35€",
                     "service2_laptop_price": "40€",
                     "service2_console_price": "-",
+                    "service2_info": "Includes diagnosis and replacement",
                     "service3_name": "Formatting and OS Installation",
                     "service3_desktop_price": "50€",
                     "service3_laptop_price": "50€",
                     "service3_console_price": "50€",
+                    "service3_info": "Includes formatting and OS installation",
                     "service4_name": "Custom Assembly",
                     "service4_desktop_price": "100€ - 120€",
                     "service4_laptop_price": "-",
-                    "service4_console_price": "-"
+                    "service4_console_price": "-",
+                    "service4_info": "Includes consultation and assembly"
                 }
             },
             "web_services": {
@@ -121,12 +125,16 @@
                 "price_table": {
                     "service1_name": "Monthly Hosting and Maintenance",
                     "service1_price": "€30/month",
+                    "service1_info": "Includes hosting and maintenance",
                     "service2_name": "Institutional Website (One-Page)",
                     "service2_price": "On Consultation",
+                    "service2_info": "Includes design and development",
                     "service3_name": "Online Store (E-commerce)",
                     "service3_price": "On Consultation",
+                    "service3_info": "Includes design and development",
                     "service4_name": "SEO Optimization",
-                    "service4_price": "80€-150€"
+                    "service4_price": "80€-150€",
+                    "service4_info": "Includes analysis and SEO optimization"
                 }
             },
             "software_services": {
@@ -136,10 +144,13 @@
                     "price_table": {
                     "service1_name": "Software Installation",
                     "service1_price": "€20",
+                    "service1_info": "Includes configuration and optimization",
                     "service2_name": "Formatation and OS Installation",
                     "service2_price": "45€",
+                    "service2_info": "Includes formatting and OS installation",
                     "service3_name": "Basic Data Recovery",
-                    "service3_price": "€60"
+                    "service3_price": "€60",
+                    "service3_info": "Includes data recovery and restoration"
                 }
             }
         },
