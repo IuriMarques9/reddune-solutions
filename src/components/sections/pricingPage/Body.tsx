@@ -18,7 +18,6 @@ export function Body() {
         { name: t('pricingTable.technical_assistance.price_table.service2_name'), desktop: t('pricingTable.technical_assistance.price_table.service2_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service2_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service2_console_price') },
         { name: t('pricingTable.technical_assistance.price_table.service3_name'), desktop: t('pricingTable.technical_assistance.price_table.service3_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service3_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service3_console_price') },
         { name: t('pricingTable.technical_assistance.price_table.service4_name'), desktop: t('pricingTable.technical_assistance.price_table.service4_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service4_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service4_console_price') },
-        { name: t('pricingTable.technical_assistance.price_table.service5_name'), desktop: t('pricingTable.technical_assistance.price_table.service5_desktop_price'), laptop: t('pricingTable.technical_assistance.price_table.service5_laptop_price'), console: t('pricingTable.technical_assistance.price_table.service5_console_price') },
       ]
     },
     web: {
@@ -38,7 +37,6 @@ export function Body() {
           { name: t('pricingTable.software_services.price_table.service1_name'), price: t('pricingTable.software_services.price_table.service1_price') },
           { name: t('pricingTable.software_services.price_table.service2_name'), price: t('pricingTable.software_services.price_table.service2_price') },
           { name: t('pricingTable.software_services.price_table.service3_name'), price: t('pricingTable.software_services.price_table.service3_price') },
-          { name: t('pricingTable.software_services.price_table.service4_name'), price: t('pricingTable.software_services.price_table.service4_price') },
       ]
     }
   };

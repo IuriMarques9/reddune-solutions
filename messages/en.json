@@ -110,11 +110,7 @@
                     "service4_name": "Custom Assembly",
                     "service4_desktop_price": "100€ - 120€",
                     "service4_laptop_price": "-",
-                    "service4_console_price": "-",
-                    "service5_name": "-",
-                    "service5_desktop_price": "-",
-                    "service5_laptop_price": "-",
-                    "service5_console_price": "-"
+                    "service4_console_price": "-"
                 }
             },
             "web_services": {
@@ -125,11 +121,11 @@
                     "service1_name": "Monthly Hosting and Maintenance",
                     "service1_price": "€30/month",
                     "service2_name": "Institutional Website (One-Page)",
-                    "service2_price": "From €250",
+                    "service2_price": "On Consultation",
                     "service3_name": "Online Store (E-commerce)",
-                    "service3_price": "From €600",
+                    "service3_price": "On Consultation",
                     "service4_name": "SEO Optimization",
-                    "service4_price": "On Consultation"
+                    "service4_price": "80€-150€"
                 }
             },
             "software_services": {
@@ -137,14 +133,12 @@
                 "title": "Software and Recovery",
                 "desc": "Protect and recover your data and systems.",
                     "price_table": {
-                    "service1_name": "Specific Software Installation",
-                    "service1_price": "€20 per app",
-                    "service2_name": "Home Network Setup",
-                    "service2_price": "€60",
-                    "service3_name": "Data Recovery (Basic)",
-                    "service3_price": "€80",
-                    "service4_name": "Data Recovery (Advanced)",
-                    "service4_price": "On Consultation"
+                    "service1_name": "Software Installation",
+                    "service1_price": "€20",
+                    "service2_name": "Formatation and OS Installation",
+                    "service2_price": "45€",
+                    "service3_name": "Basic Data Recovery",
+                    "service3_price": "€60"
                 }
             }
         },

@@ -110,26 +110,22 @@
                     "service4_name": "Montagem Personalizada",
                     "service4_desktop_price": "100€ - 120€",
                     "service4_laptop_price": "-",
-                    "service4_console_price": "-",
-                    "service5_name": "-",
-                    "service5_desktop_price": "-",
-                    "service5_laptop_price": "-",
-                    "service5_console_price": "-"
+                    "service4_console_price": "-"
                 }
             },
             "web_services": {
-                "tab": "Web e Serviços",
-                "title": "Web e Serviços",
+                "tab": "Web e Serviços Digitais",
+                "title": "Web e Serviços Digitais",
                 "desc": "A sua presença digital, construída com profissionalismo.",
                 "price_table" : {
                     "service1_name": "Alojamento e Manutenção Mensal",
                     "service1_price": "30€/mês",
                     "service2_name": "Website Institucional (One-Page)",
-                    "service2_price": "A partir de 250€",
+                    "service2_price": "Sob Consulta",
                     "service3_name": "Loja Online (E-commerce)",
-                    "service3_price": "A partir de 600€",
-                    "service4_name": "Otimização SEO",
-                    "service4_price": "Sob Consulta"
+                    "service3_price": "Sob Consulta",
+                    "service4_name": "Sob Consulta",
+                    "service4_price": "80€-150€"
                 }
             },
             "software_services" : {
@@ -137,14 +133,12 @@
                 "title": "Software e Recuperação",
                 "desc": "Proteja e recupere os seus dados e sistemas.",
                 "price_table" : {
-                    "service1_name": "Instalação de Software Específico",
-                    "service1_price": "20€ por app",
-                    "service2_name": "Configuração de Redes Domésticas",
-                    "service2_price": "60€",
-                    "service3_name": "Recuperação de Dados (Básico)",
-                    "service3_price": "80€",
-                    "service4_name": "Recuperação de Dados (Avançado)",
-                    "service4_price": "Sob Consulta"
+                    "service1_name": "Instalação de Software",
+                    "service1_price": "20€",
+                    "service2_name": "Formatação e Instalação de SO",
+                    "service2_price": "45€",
+                    "service3_name": "Recuperação de Dados Básica",
+                    "service3_price": "60€"
                 }
             }
         },
