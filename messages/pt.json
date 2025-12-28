@@ -21,7 +21,7 @@
             } 
         },
         "ServicesSection": {
-            "title": "Nossos Serviços",
+            "title": "Os Nossos Serviços",
             "description": "Oferecemos uma gama completa de serviços para dar resposta aos seus problemas.",
             "services": {
                 "tecAssist": {
@@ -41,7 +41,7 @@
             "quote": "Não encontrou o que procurava? A nossa paixão é criar soluções à medida. <contactLink>Fale connosco</contactLink> e vamos transformar a sua ideia em realidade."
         },
         "PortfolioSection": {
-            "title": "Nosso Portfólio",
+            "title": "O Nosso Portfólio",
             "description": "Um vislumbre do nosso mundo de soluções e profissionalismo.",
             "cards" : {
                 "portfolioCard-1": "Construção de computadores",
