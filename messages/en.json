@@ -107,7 +107,7 @@
                     "service2_console_price": "-",
                     "service2_info": "The price of component replacement is related to the labor cost, naturally the cost of the part will be added to this value.",
                     "service3_name": "Diagnosis and Fault Resolution",
-                    "service3_desktop_price": "70€",
+                    "service3_desktop_price": "50€ / 70€",
                     "service3_laptop_price": "80€",
                     "service3_console_price": "70€",
                     "service3_info": "Includes problem diagnosis and resolution, possibility also to identify the problem and if the client does not want to resolve it, the resolution cost is not charged.",

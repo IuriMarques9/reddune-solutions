@@ -41,7 +41,7 @@ export function Header() {
                 // Blur forte (md ou lg) para separar o texto do Hero
                 "backdrop-blur-md", 
                 // No topo: fundo branco muito leve para dar corpo ao blur e sombra branca
-                "bg-white/20 border-b-2 border-red-900 shadow-[0_4px_30px_rgba(255,255,255,0.05)]",
+                "bg-white border-b-2 border-red-900 shadow-[0_4px_30px_rgba(255,255,255,0.05)]",
                 // Ao scrollar: fundo mais sólido e sombra escura padrão
                 scrolled && "bg-background/90 border-border/40 shadow-lg"
             )}

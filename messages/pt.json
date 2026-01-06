@@ -107,7 +107,7 @@
                     "service2_console_price": "-",
                     "service2_info": "O preço da subistituição dos componentes é referente ao valor de mão de obra, naturalmente o custo da peça será adicionado a este valor.",
                     "service3_name": "Diagnostico e Resolução de Avarias",
-                    "service3_desktop_price": "70€",
+                    "service3_desktop_price": "50€ / 70€",
                     "service3_laptop_price": "80€",
                     "service3_console_price": "70€",
                     "service3_info": "Inlcui o diagnostico do problema e a sua resolução, possibilidade tambem de identificar o problema e se o cliente não o quiser resolver, não é cobrado o valor da resolução.",

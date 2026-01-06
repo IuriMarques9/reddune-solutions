@@ -198,7 +198,7 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                                                         <InfoIcon className="hover:scale-105 h-3 w-3 text-muted-foreground cursor-pointer" />
                                                     </PopoverTrigger>
                                                     <PopoverContent>
-                                                        <p className="max-w-xs text-justify">{service.info}</p>
+                                                        <p className="max-w-xs text-justify text-xs">{service.info}</p>
                                                     </PopoverContent>
                                                 </Popover>
                                             )}
