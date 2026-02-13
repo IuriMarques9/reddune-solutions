@@ -111,11 +111,16 @@
                     "service3_laptop_price": "80€",
                     "service3_console_price": "70€",
                     "service3_info": "Includes problem diagnosis and resolution, possibility also to identify the problem and if the client does not want to resolve it, the resolution cost is not charged.",
-                    "service4_name": "Custom Assembly",
-                    "service4_desktop_price": "100€ - 150€",
+                    "service4_name": "Assembly",
+                    "service4_desktop_price": "50€",
                     "service4_laptop_price": "-",
                     "service4_console_price": "-",
-                    "service4_info": "Advice on components that best suit the client's needs and requests, and their assembly, including OS, drivers and tests. The value varies according to the complexity of the system to be assembled. The cost of the selected parts will be added to the total cost of the complete assembly."
+                    "service4_info": "Assembly of a computer with pre-selected components, including installation of drivers and essential software. The value varies according to the complexity of the system to be assembled. The cost of the selected parts will be added to the total cost of the complete assembly.",
+                    "service5_name": "Custom Assembly",
+                    "service5_desktop_price": "100€ - 150€",
+                    "service5_laptop_price": "-",
+                    "service5_console_price": "-",
+                    "service5_info": "Advice on components that best suit the client's needs and requests, and their assembly, including OS, drivers and tests. The value varies according to the complexity of the system to be assembled. The cost of the selected parts will be added to the total cost of the complete assembly."
                 }
             },
             "web_services": {

@@ -111,11 +111,16 @@
                     "service3_laptop_price": "80€",
                     "service3_console_price": "70€",
                     "service3_info": "Inlcui o diagnostico do problema e a sua resolução, possibilidade tambem de identificar o problema e se o cliente não o quiser resolver, não é cobrado o valor da resolução.",
-                    "service4_name": "Montagem Personalizada",
-                    "service4_desktop_price": "100€ - 150€",
+                    "service4_name": "Montagem",
+                    "service4_desktop_price": "50€",
                     "service4_laptop_price": "-",
                     "service4_console_price": "-",
-                    "service4_info": "Aconselhamento de peças que melhor se adequam as necessidades e requisições do cliente e a sua montagem, incluindo SO, drivers e testes. O valor varia conforme a complexidade do sistema a montar. Ao valor da montagem completa será adicionado o custo das peças selecionadas."
+                    "service4_info": "Montagem de computador com componentes pré-selecionados, incluindo instalação de drivers e software essencial",
+                    "service5_name": "Montagem Personalizada",
+                    "service5_desktop_price": "100€ - 150€",
+                    "service5_laptop_price": "-",
+                    "service5_console_price": "-",
+                    "service5_info": "Aconselhamento de peças que melhor se adequam as necessidades e requisições do cliente e a sua montagem, incluindo SO, drivers e testes. O valor varia conforme a complexidade do sistema a montar. Ao valor da montagem completa será adicionado o custo das peças selecionadas."
                 }
             },
             "web_services": {
