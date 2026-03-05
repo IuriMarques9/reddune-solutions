@@ -11,7 +11,7 @@ export function Portfolio() {
   const t = useTranslations("HomePage.PortfolioSection");
 
   return (
-    <section id="portfolio" className="py-20 md:py-32 bg-secondary/50">
+    <section id="portfolio" className="py-12 md:py-24 bg-secondary/50">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">{t("title")}</h2>

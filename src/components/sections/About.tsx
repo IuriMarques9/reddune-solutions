@@ -4,7 +4,7 @@ export function About() {
   const t = useTranslations("HomePage.AboutUsSection");
 
   return (
-    <section id="about" className="py-20 md:py-32 bg-background">
+    <section id="about" className="py-12 md:py-24 bg-background">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">{t("title")} </h2>

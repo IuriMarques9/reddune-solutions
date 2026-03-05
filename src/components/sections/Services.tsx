@@ -27,7 +27,7 @@ export function Services() {
   ];
 
   return (
-    <section id="services" className="py-20 md:py-32 bg-background">
+    <section id="services" className="py-12 md:py-24 bg-background">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="font-headline text-3xl md:text-4xl font-bold">{t('title')}</h2>
@@ -50,7 +50,7 @@ export function Services() {
             </Card>
           ))}
         </div>
-        <div className="mt-20 text-center flex flex-col items-center gap-8">
+        <div className="mt-16 text-center flex flex-col items-center gap-8">
             <Button asChild size="lg">
                 <Link href="/pricingPage">
                     {t('cta')} <ArrowRight className="ml-2" />
