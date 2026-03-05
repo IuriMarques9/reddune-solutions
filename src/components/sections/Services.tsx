@@ -51,9 +51,9 @@ export function Services() {
           ))}
         </div>
         <div className="mt-16 text-center flex flex-col items-center gap-8">
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="group">
                 <Link href="/pricingPage">
-                    {t('cta')} <ArrowRight className="ml-2" />
+                    {t('cta')} <ArrowRight className="ml-2 transition-transform duration-300 group-hover:translate-x-1" />
                 </Link>
             </Button>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">

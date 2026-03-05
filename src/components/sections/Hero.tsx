@@ -29,9 +29,9 @@ export function Hero() {
           {t('description')}
         </p>
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold shadow-lg">
+          <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold shadow-lg group">
             <Link href="#portfolio">
-              {t('cta.seeWork')} <ArrowRight className="ml-2" />
+              {t('cta.seeWork')} <ArrowRight className="ml-2 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-colors duration-300">
