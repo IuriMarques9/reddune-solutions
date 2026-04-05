@@ -10,8 +10,9 @@ export async function generateMetadata({
   params: { locale: string };
 }) {
   const messages: AbstractIntlMessages = await getMessages({ locale });
-  const title = messages.TabTitles?.pricing;
-  const description = messages.TabDescription;
+  const messagesObj = messages as Record<string, any>;
+  const title = messagesObj.TabTitles?.pricing;
+  const description = messagesObj.TabDescription;
   return {
     title,
     description,

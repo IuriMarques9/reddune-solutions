@@ -5,7 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 
-const portfolioItems = PlaceHolderImages.filter((img) => img.id.startsWith("portfolioCard-"));
+const portfolioItems = PlaceHolderImages.filter((img) => img.id.startsWith("portfolioCard-") && img.serviceUrl);
 
 export function Portfolio() {
   const t = useTranslations("HomePage.PortfolioSection");
@@ -22,7 +22,7 @@ export function Portfolio() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           {portfolioItems.map((item) => (
             <Card key={item.id} className="overflow-hidden group transition-shadow duration-300 hover:shadow-2xl rounded-lg">
-              <Link href={item.serviceUrl} target="_blank">
+              <Link href={item.serviceUrl!} target="_blank">
                 <CardContent className="p-0 relative">
                   <Image
                     src={item.imageUrl}

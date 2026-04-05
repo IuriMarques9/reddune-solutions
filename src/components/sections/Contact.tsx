@@ -29,7 +29,7 @@ export function Contact() {
     };
 
     setStatus("loading");
-    
+
     try{
         const response = await fetch('/api/sendEmail', {
             method: 'POST',
@@ -44,6 +44,7 @@ export function Contact() {
           variant: "success",
         });
         (event.target as HTMLFormElement).reset(); // Limpa o formulário
+        setTimeout(() => setStatus("idle"), 2000);
       } else {
         throw new Error("A resposta da rede não foi bem-sucedida.");
       }
@@ -55,14 +56,7 @@ export function Contact() {
             description: t("useToast.errorDescription"),
             variant: "destructive",
         });
-        return;
-    } finally {
-        // Atraso para o utilizador ver o sucesso antes de reativar o botão
-        if (status === 'success') {
-            setTimeout(() => setStatus("idle"), 2000);
-        } else {
-            setStatus("idle");
-        }
+        setStatus("idle");
     }
   };
 

@@ -3,21 +3,10 @@
 import { Instagram } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import { useTranslations } from "use-intl";
 
 export function Footer() {
     const t = useTranslations("Footer");
-
-    const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-      const handleScroll = () => {
-        setScrolled(window.scrollY > 10);
-      };
-      window.addEventListener("scroll", handleScroll);
-      return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-    
 
   return (
     <footer className="bg-secondary/50 text-secondary-foreground py-8">
@@ -25,7 +14,7 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between md:flex-row">
           <div className="flex items-center gap-2 mb-4 md:mb-0">
             <Link href="/">
-              <Image src="/logo.png" alt="Reddune Solutions Logo" width={150} height={150} className=""/>
+              <Image src="/logo.png" alt="Reddune Solutions Logo" width={150} height={150} />
             </Link>
           </div>
           <div className="flex space-x-4">

@@ -1,12 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useScrollPosition } from "@/hooks/use-scroll-position";
 import LanguageSwitcher from "../templates/language-switcher";
 import { useTranslations } from "next-intl";
 
@@ -14,7 +15,7 @@ import { useTranslations } from "next-intl";
 
 export function Header() {
     const t = useTranslations("Navigation");
-    const [scrolled, setScrolled] = useState(false);
+    const scrolled = useScrollPosition(20);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const isMobile = useIsMobile();
 
@@ -25,14 +26,6 @@ export function Header() {
 		{ href: "/#about", key: t("about") },
 		{ href: "/#contact", key: t("contact") },
 	];
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 20);
-        };
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
 
     return (
         <header

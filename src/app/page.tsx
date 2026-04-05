@@ -14,8 +14,9 @@ export async function generateMetadata({
   params: { locale: string };
 }) {
   const messages: AbstractIntlMessages = await getMessages({ locale });
-  const title = messages.TabTitles?.home;
-  const description = messages.TabDescription;
+  const messagesObj = messages as Record<string, any>;
+  const title = messagesObj.TabTitles?.home;
+  const description = messagesObj.TabDescription;
   return {
     title,
     description,

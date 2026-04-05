@@ -36,8 +36,8 @@ export function Services() {
           </p>
         </div>
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {services.map((service, index) => (
-            <Card key={index} className="text-center shadow-md hover:shadow-xl transition-shadow duration-300 border-0 bg-secondary/50 rounded-lg">
+          {services.map((service) => (
+            <Card key={service.title} className="text-center shadow-md hover:shadow-xl transition-shadow duration-300 border-0 bg-secondary/50 rounded-lg">
               <CardHeader>
                 <div className="mx-auto bg-accent/20 p-4 rounded-full w-fit">
                     {service.icon}

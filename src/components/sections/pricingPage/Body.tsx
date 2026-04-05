@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CheckCircle, ArrowRight, ChevronRight, InfoIcon } from "lucide-react";
 import Link from "next/link";
@@ -162,11 +162,20 @@ export function Body() {
   );
 }
 
+interface PricingService {
+    name: string;
+    info: string;
+    desktop?: string;
+    laptop?: string;
+    console?: string;
+    price?: string;
+}
+
 interface PricingCategoryProps {
     category: {
         title: string;
         description: string;
-        services: any[];
+        services: PricingService[];
     };
     t: (key: string) => string;
     isTechTab?: boolean;
@@ -191,8 +200,8 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {category.services.map((service, index) => (
-                                <TableRow key={index} className="hover:bg-secondary/50">
+                            {category.services.map((service) => (
+                                <TableRow key={service.name} className="hover:bg-secondary/50">
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-3">
                                             <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
@@ -220,25 +229,23 @@ function PricingCategory({ category, t, isTechTab }: PricingCategoryProps) {
                     </Table>
                 ) : (
                     <ul className="space-y-4">
-                        {category.services.map((service, index) => (
-                            <li key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition-colors hover:bg-secondary/50">
+                        {category.services.map((service) => (
+                            <li key={service.name} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition-colors hover:bg-secondary/50">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-3">
-                                        <CheckCircle className="h-full w-5 text-primary flex-shrink-0" />
-                                        <span className="font-medium text-foreground">{service.name}</span>
-                                        
-                                        {/* Tooltip for service info */}
-                                        {service.info && (
-                                            <Popover>
-                                                <PopoverTrigger asChild>
-                                                    <InfoIcon className="h-3 w-3 text-muted-foreground cursor-pointer" />
-                                                </PopoverTrigger>
-                                                <PopoverContent>
-                                                    <p className="max-w-xs">{service.info}</p>
-                                                </PopoverContent>
-                                            </Popover>
-                                        )}
-                                    </div>
+                                    <CheckCircle className="h-full w-5 text-primary flex-shrink-0" />
+                                    <span className="font-medium text-foreground">{service.name}</span>
+
+                                    {/* Tooltip for service info */}
+                                    {service.info && (
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <InfoIcon className="h-3 w-3 text-muted-foreground cursor-pointer" />
+                                            </PopoverTrigger>
+                                            <PopoverContent>
+                                                <p className="max-w-xs">{service.info}</p>
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
                                 </div>
                                 <p className="font-semibold text-primary text-lg mt-2 md:mt-0 md:ml-4">
                                     {service.price}
