@@ -23,9 +23,12 @@ export function Body() {
             headerDesktop: t('pricingTable.maintenance.price_table.header_tower'),
             headerLaptop: t('pricingTable.maintenance.price_table.header_laptop'),
             headerConsole: t('pricingTable.maintenance.price_table.header_console'),
+            groupCleaning: t('pricingTable.maintenance.price_table.group_cleaning'),
+            groupFormatting: t('pricingTable.maintenance.price_table.group_formatting'),
             services: [
                 {
                     name: t('pricingTable.maintenance.price_table.service1_name'),
+                    group: t('pricingTable.maintenance.price_table.service1_group'),
                     desktop: t('pricingTable.maintenance.price_table.service1_desktop_price'),
                     laptop: t('pricingTable.maintenance.price_table.service1_laptop_price'),
                     console: t('pricingTable.maintenance.price_table.service1_console_price'),
@@ -33,6 +36,7 @@ export function Body() {
                 },
                 {
                     name: t('pricingTable.maintenance.price_table.service2_name'),
+                    group: t('pricingTable.maintenance.price_table.service2_group'),
                     desktop: t('pricingTable.maintenance.price_table.service2_desktop_price'),
                     laptop: t('pricingTable.maintenance.price_table.service2_laptop_price'),
                     console: t('pricingTable.maintenance.price_table.service2_console_price'),
@@ -54,6 +58,7 @@ export function Body() {
                 },
                 {
                     name: t('pricingTable.maintenance.price_table.service5_name'),
+                    group: t('pricingTable.maintenance.price_table.service5_group'),
                     desktop: t('pricingTable.maintenance.price_table.service5_desktop_price'),
                     laptop: t('pricingTable.maintenance.price_table.service5_laptop_price'),
                     console: t('pricingTable.maintenance.price_table.service5_console_price'),
@@ -61,6 +66,7 @@ export function Body() {
                 },
                 {
                     name: t('pricingTable.maintenance.price_table.service6_name'),
+                    group: t('pricingTable.maintenance.price_table.service6_group'),
                     desktop: t('pricingTable.maintenance.price_table.service6_desktop_price'),
                     laptop: t('pricingTable.maintenance.price_table.service6_laptop_price'),
                     console: t('pricingTable.maintenance.price_table.service6_console_price'),
@@ -79,13 +85,6 @@ export function Body() {
                     laptop: t('pricingTable.maintenance.price_table.service8_laptop_price'),
                     console: t('pricingTable.maintenance.price_table.service8_console_price'),
                     info: t('pricingTable.maintenance.price_table.service8_info'),
-                },
-                {
-                    name: t('pricingTable.maintenance.price_table.service9_name'),
-                    desktop: t('pricingTable.maintenance.price_table.service9_desktop_price'),
-                    laptop: t('pricingTable.maintenance.price_table.service9_laptop_price'),
-                    console: t('pricingTable.maintenance.price_table.service9_console_price'),
-                    info: t('pricingTable.maintenance.price_table.service9_info'),
                 },
             ]
         },
@@ -197,6 +196,7 @@ export function Body() {
 
 interface PricingService {
     name: string;
+    group?: string;
     info: string;
     desktop?: string;
     laptop?: string;
@@ -213,12 +213,16 @@ interface PricingCategoryProps {
         headerDesktop?: string;
         headerLaptop?: string;
         headerConsole?: string;
+        groupCleaning?: string;
+        groupFormatting?: string;
         services: PricingService[];
     };
     t: (key: string) => string;
 }
 
 function PricingCategory({ category, t }: PricingCategoryProps) {
+    let lastGroup: string | undefined = '';
+
     return (
         <Card className="border-0 shadow-lg bg-background">
             <CardHeader className="text-center">
@@ -237,30 +241,48 @@ function PricingCategory({ category, t }: PricingCategoryProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {category.services.map((service) => (
-                                <TableRow key={service.name} className="hover:bg-secondary/50">
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center gap-3">
-                                            <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                                            <span>{service.name}</span>
+                            {category.services.map((service) => {
+                                const isNewGroup = service.group && service.group !== lastGroup;
+                                lastGroup = service.group;
+                                const groupLabel =
+                                    service.group === 'group_cleaning' ? category.groupCleaning :
+                                    service.group === 'group_formatting' ? category.groupFormatting :
+                                    undefined;
 
-                                            {service.info && (
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <InfoIcon className="hover:scale-105 h-3 w-3 text-muted-foreground cursor-pointer" />
-                                                    </PopoverTrigger>
-                                                    <PopoverContent>
-                                                        <p className="max-w-xs text-justify text-xs">{service.info}</p>
-                                                    </PopoverContent>
-                                                </Popover>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.desktop}</TableCell>
-                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.laptop}</TableCell>
-                                    <TableCell className="text-center font-semibold text-primary text-lg">{service.console}</TableCell>
-                                </TableRow>
-                            ))}
+                                return (
+                                    <div key={service.name}>
+                                        {isNewGroup && (
+                                            <TableRow className="bg-primary/10">
+                                                <TableCell colSpan={4} className="font-semibold text-primary py-3">
+                                                    {groupLabel}
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                        <TableRow className="hover:bg-secondary/50">
+                                            <TableCell className="font-medium">
+                                                <div className="flex items-center gap-3">
+                                                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                                                    <span>{service.name}</span>
+
+                                                    {service.info && (
+                                                        <Popover>
+                                                            <PopoverTrigger asChild>
+                                                                <InfoIcon className="hover:scale-105 h-3 w-3 text-muted-foreground cursor-pointer" />
+                                                            </PopoverTrigger>
+                                                            <PopoverContent>
+                                                                <p className="max-w-xs text-justify text-xs">{service.info}</p>
+                                                            </PopoverContent>
+                                                        </Popover>
+                                                    )}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-center font-semibold text-primary text-lg">{service.desktop}</TableCell>
+                                            <TableCell className="text-center font-semibold text-primary text-lg">{service.laptop}</TableCell>
+                                            <TableCell className="text-center font-semibold text-primary text-lg">{service.console}</TableCell>
+                                        </TableRow>
+                                    </div>
+                                );
+                            })}
                         </TableBody>
                     </Table>
                 ) : (
