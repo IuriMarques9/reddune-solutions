@@ -241,7 +241,7 @@ function PricingCategory({ category, t }: PricingCategoryProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {category.services.map((service) => {
+                            {category.services.flatMap((service) => {
                                 const isNewGroup = service.group && service.group !== lastGroup;
                                 lastGroup = service.group;
                                 const groupLabel =
@@ -249,39 +249,44 @@ function PricingCategory({ category, t }: PricingCategoryProps) {
                                     service.group === 'group_formatting' ? category.groupFormatting :
                                     undefined;
 
-                                return (
-                                    <div key={service.name}>
-                                        {isNewGroup && (
-                                            <TableRow className="bg-primary/10">
-                                                <TableCell colSpan={4} className="font-semibold text-primary py-3">
-                                                    {groupLabel}
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                        <TableRow className="hover:bg-secondary/50">
-                                            <TableCell className="font-medium">
-                                                <div className="flex items-center gap-3">
-                                                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
-                                                    <span>{service.name}</span>
+                                const rows = [];
 
-                                                    {service.info && (
-                                                        <Popover>
-                                                            <PopoverTrigger asChild>
-                                                                <InfoIcon className="hover:scale-105 h-3 w-3 text-muted-foreground cursor-pointer" />
-                                                            </PopoverTrigger>
-                                                            <PopoverContent>
-                                                                <p className="max-w-xs text-justify text-xs">{service.info}</p>
-                                                            </PopoverContent>
-                                                        </Popover>
-                                                    )}
-                                                </div>
+                                if (isNewGroup) {
+                                    rows.push(
+                                        <TableRow key={`header-${groupLabel}`} className="bg-primary/10">
+                                            <TableCell colSpan={4} className="font-semibold text-primary py-3">
+                                                {groupLabel}
                                             </TableCell>
-                                            <TableCell className="text-center font-semibold text-primary text-lg">{service.desktop}</TableCell>
-                                            <TableCell className="text-center font-semibold text-primary text-lg">{service.laptop}</TableCell>
-                                            <TableCell className="text-center font-semibold text-primary text-lg">{service.console}</TableCell>
                                         </TableRow>
-                                    </div>
+                                    );
+                                }
+
+                                rows.push(
+                                    <TableRow key={service.name} className="hover:bg-secondary/50">
+                                        <TableCell className="font-medium">
+                                            <div className="flex items-center gap-3">
+                                                <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                                                <span>{service.name}</span>
+
+                                                {service.info && (
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <InfoIcon className="hover:scale-105 h-3 w-3 text-muted-foreground cursor-pointer" />
+                                                        </PopoverTrigger>
+                                                        <PopoverContent>
+                                                            <p className="max-w-xs text-justify text-xs">{service.info}</p>
+                                                        </PopoverContent>
+                                                    </Popover>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center font-semibold text-primary text-lg">{service.desktop}</TableCell>
+                                        <TableCell className="text-center font-semibold text-primary text-lg">{service.laptop}</TableCell>
+                                        <TableCell className="text-center font-semibold text-primary text-lg">{service.console}</TableCell>
+                                    </TableRow>
                                 );
+
+                                return rows;
                             })}
                         </TableBody>
                     </Table>
