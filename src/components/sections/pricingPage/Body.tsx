@@ -172,29 +172,36 @@ export function Body() {
             </TabsContent>
         </Tabs>
 
-        <div className="mt-16">
-            <h3 className="font-headline text-2xl font-bold text-center mb-8">{t('pricingTable.extraServices.title')}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                    { name: t('pricingTable.extraServices.service1_name'), price: t('pricingTable.extraServices.service1_price'), info: t('pricingTable.extraServices.service1_info') },
-                    { name: t('pricingTable.extraServices.service2_name'), price: t('pricingTable.extraServices.service2_price'), info: t('pricingTable.extraServices.service2_info') }
-                ].map((service, index) => (
-                    <Card key={index} className="border-0 shadow-md hover:shadow-lg transition-shadow duration-300 bg-background">
-                        <CardContent className="pt-6">
-                            <div className="flex justify-between items-start gap-4">
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-foreground mb-2">{service.name}</h4>
-                                    <p className="text-sm text-muted-foreground mb-3">{service.info}</p>
-                                </div>
-                                <p className="font-bold text-primary text-lg whitespace-nowrap">{service.price}</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
+        <div className="mt-16 mb-16">
+            <div className="text-center mb-8">
+                <h3 className="font-headline text-2xl font-bold mb-2">{t('pricingTable.extraServices.title')}</h3>
             </div>
+            <Card className="border-0 shadow-md bg-background">
+                <CardContent className="pt-6">
+                    <ul className="space-y-4">
+                        {[
+                            { name: t('pricingTable.extraServices.service1_name'), price: t('pricingTable.extraServices.service1_price'), info: t('pricingTable.extraServices.service1_info') },
+                            { name: t('pricingTable.extraServices.service2_name'), price: t('pricingTable.extraServices.service2_price'), info: t('pricingTable.extraServices.service2_info') }
+                        ].map((service, index) => (
+                            <li key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition-colors hover:bg-secondary/50">
+                                <div className="flex items-center gap-3 mb-3 md:mb-0">
+                                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
+                                    <div className="flex-1">
+                                        <span className="font-medium text-foreground block">{service.name}</span>
+                                        <p className="text-sm text-muted-foreground mt-1">{service.info}</p>
+                                    </div>
+                                </div>
+                                <p className="font-semibold text-primary text-lg mt-2 md:mt-0 md:ml-4">
+                                    {service.price}
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
+                </CardContent>
+            </Card>
         </div>
 
-        <Card className="mt-16 bg-background/70 border-primary/50 shadow-lg">
+        <Card className="mt-8 bg-background/70 border-primary/50 shadow-lg">
             <CardHeader className="text-center">
                 <CardTitle className="font-headline text-2xl">{t('customProjectCard.title')}</CardTitle>
                 <CardDescription>
