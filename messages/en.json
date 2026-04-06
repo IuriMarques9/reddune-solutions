@@ -102,13 +102,13 @@
                     "service1_group": "group_cleaning",
                     "service1_desktop_price": "20€ - 30€",
                     "service1_laptop_price": "25€ - 35€",
-                    "service1_console_price": "",
+                    "service1_console_price": "25€ - 35€",
                     "service1_info": "Cleaning of fans and heatsinks without dismantling components, cabinet windows only",
                     "service2_name": "Deep Cleaning",
                     "service2_group": "group_cleaning",
                     "service2_desktop_price": "35€ - 50€",
                     "service2_laptop_price": "50€ - 75€",
-                    "service2_console_price": "",
+                    "service2_console_price": "50€ - 75€",
                     "service2_info": "Cleaning of all components, opening of graphics card, power supply etc. Includes total disassembly and high quality thermal paste",
                     "service3_name": "Component Installation",
                     "service3_desktop_price": "15€ - 30€",
@@ -179,6 +179,21 @@
                     "service4_info": "Portal, member area, built-from-scratch features with scope, integrations and specific functionality"
                 }
             }
+        },
+        "extraServices": {
+            "title": "Additional Services",
+            "services": [
+                {
+                    "name": "Service within 24 - 48 hours",
+                    "price": "€15 - €25",
+                    "info": "Urgent service with expedited support"
+                },
+                {
+                    "name": "On-site service at customer's location",
+                    "price": "€15 to €30 (same urban area) or €0.65/km",
+                    "info": "Technical visit for on-site support"
+                }
+            ]
         },
         "customProjectCard" : {
             "title": "Didn't find what you're looking for?",

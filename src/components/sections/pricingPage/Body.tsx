@@ -172,6 +172,28 @@ export function Body() {
             </TabsContent>
         </Tabs>
 
+        <div className="mt-16">
+            <h3 className="font-headline text-2xl font-bold text-center mb-8">{t('pricingTable.extraServices.title')}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[
+                    { name: t('pricingTable.extraServices.services.0.name'), price: t('pricingTable.extraServices.services.0.price'), info: t('pricingTable.extraServices.services.0.info') },
+                    { name: t('pricingTable.extraServices.services.1.name'), price: t('pricingTable.extraServices.services.1.price'), info: t('pricingTable.extraServices.services.1.info') }
+                ].map((service, index) => (
+                    <Card key={index} className="border-0 shadow-md hover:shadow-lg transition-shadow duration-300 bg-background">
+                        <CardContent className="pt-6">
+                            <div className="flex justify-between items-start gap-4">
+                                <div className="flex-1">
+                                    <h4 className="font-semibold text-foreground mb-2">{service.name}</h4>
+                                    <p className="text-sm text-muted-foreground mb-3">{service.info}</p>
+                                </div>
+                                <p className="font-bold text-primary text-lg whitespace-nowrap">{service.price}</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        </div>
+
         <Card className="mt-16 bg-background/70 border-primary/50 shadow-lg">
             <CardHeader className="text-center">
                 <CardTitle className="font-headline text-2xl">{t('customProjectCard.title')}</CardTitle>
