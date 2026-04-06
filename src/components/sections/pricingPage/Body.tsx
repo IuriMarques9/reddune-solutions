@@ -185,7 +185,6 @@ export function Body() {
                         ].map((service, index) => (
                             <li key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition-colors hover:bg-secondary/50">
                                 <div className="flex items-center gap-3 mb-3 md:mb-0">
-                                    <CheckCircle className="h-5 w-5 text-primary flex-shrink-0" />
                                     <div className="flex-1">
                                         <span className="font-medium text-foreground block">{service.name}</span>
                                         <p className="text-sm text-muted-foreground mt-1">{service.info}</p>

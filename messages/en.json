@@ -181,11 +181,11 @@
             },
             "extraServices": {
                 "title": "Additional Services",
-                "service1_name": "Service within 24 - 48 hours",
-                "service1_price": "€15 - €25",
+                "service1_name": "Service within 24h - 48 hours",
+                "service1_price": "€25",
                 "service1_info": "Urgent service with expedited support",
                 "service2_name": "On-site service at customer's location",
-                "service2_price": "€15 to €30 (same urban area) or €0.65/km",
+                "service2_price": "€0.80/km",
                 "service2_info": "Technical visit for on-site support"
             }
         },
