@@ -27,6 +27,34 @@ export function Body() {
             groupFormatting: t('pricingTable.maintenance.price_table.group_formatting'),
             services: [
                 {
+                    name: t('pricingTable.maintenance.price_table.service3_name'),
+                    desktop: t('pricingTable.maintenance.price_table.service3_desktop_price'),
+                    laptop: t('pricingTable.maintenance.price_table.service3_laptop_price'),
+                    console: t('pricingTable.maintenance.price_table.service3_console_price'),
+                    info: t('pricingTable.maintenance.price_table.service3_info'),
+                },
+                {
+                    name: t('pricingTable.maintenance.price_table.service4_name'),
+                    desktop: t('pricingTable.maintenance.price_table.service4_desktop_price'),
+                    laptop: t('pricingTable.maintenance.price_table.service4_laptop_price'),
+                    console: t('pricingTable.maintenance.price_table.service4_console_price'),
+                    info: t('pricingTable.maintenance.price_table.service4_info'),
+                },
+                {
+                    name: t('pricingTable.maintenance.price_table.service7_name'),
+                    desktop: t('pricingTable.maintenance.price_table.service7_desktop_price'),
+                    laptop: t('pricingTable.maintenance.price_table.service7_laptop_price'),
+                    console: t('pricingTable.maintenance.price_table.service7_console_price'),
+                    info: t('pricingTable.maintenance.price_table.service7_info'),
+                },
+                {
+                    name: t('pricingTable.maintenance.price_table.service8_name'),
+                    desktop: t('pricingTable.maintenance.price_table.service8_desktop_price'),
+                    laptop: t('pricingTable.maintenance.price_table.service8_laptop_price'),
+                    console: t('pricingTable.maintenance.price_table.service8_console_price'),
+                    info: t('pricingTable.maintenance.price_table.service8_info'),
+                },
+                {
                     name: t('pricingTable.maintenance.price_table.service1_name'),
                     group: t('pricingTable.maintenance.price_table.service1_group'),
                     desktop: t('pricingTable.maintenance.price_table.service1_desktop_price'),
@@ -43,20 +71,6 @@ export function Body() {
                     info: t('pricingTable.maintenance.price_table.service2_info'),
                 },
                 {
-                    name: t('pricingTable.maintenance.price_table.service3_name'),
-                    desktop: t('pricingTable.maintenance.price_table.service3_desktop_price'),
-                    laptop: t('pricingTable.maintenance.price_table.service3_laptop_price'),
-                    console: t('pricingTable.maintenance.price_table.service3_console_price'),
-                    info: t('pricingTable.maintenance.price_table.service3_info'),
-                },
-                {
-                    name: t('pricingTable.maintenance.price_table.service4_name'),
-                    desktop: t('pricingTable.maintenance.price_table.service4_desktop_price'),
-                    laptop: t('pricingTable.maintenance.price_table.service4_laptop_price'),
-                    console: t('pricingTable.maintenance.price_table.service4_console_price'),
-                    info: t('pricingTable.maintenance.price_table.service4_info'),
-                },
-                {
                     name: t('pricingTable.maintenance.price_table.service5_name'),
                     group: t('pricingTable.maintenance.price_table.service5_group'),
                     desktop: t('pricingTable.maintenance.price_table.service5_desktop_price'),
@@ -71,20 +85,6 @@ export function Body() {
                     laptop: t('pricingTable.maintenance.price_table.service6_laptop_price'),
                     console: t('pricingTable.maintenance.price_table.service6_console_price'),
                     info: t('pricingTable.maintenance.price_table.service6_info'),
-                },
-                {
-                    name: t('pricingTable.maintenance.price_table.service7_name'),
-                    desktop: t('pricingTable.maintenance.price_table.service7_desktop_price'),
-                    laptop: t('pricingTable.maintenance.price_table.service7_laptop_price'),
-                    console: t('pricingTable.maintenance.price_table.service7_console_price'),
-                    info: t('pricingTable.maintenance.price_table.service7_info'),
-                },
-                {
-                    name: t('pricingTable.maintenance.price_table.service8_name'),
-                    desktop: t('pricingTable.maintenance.price_table.service8_desktop_price'),
-                    laptop: t('pricingTable.maintenance.price_table.service8_laptop_price'),
-                    console: t('pricingTable.maintenance.price_table.service8_console_price'),
-                    info: t('pricingTable.maintenance.price_table.service8_info'),
                 },
             ]
         },
