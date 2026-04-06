@@ -176,8 +176,8 @@ export function Body() {
             <h3 className="font-headline text-2xl font-bold text-center mb-8">{t('pricingTable.extraServices.title')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[
-                    { name: t('pricingTable.extraServices.services.0.name'), price: t('pricingTable.extraServices.services.0.price'), info: t('pricingTable.extraServices.services.0.info') },
-                    { name: t('pricingTable.extraServices.services.1.name'), price: t('pricingTable.extraServices.services.1.price'), info: t('pricingTable.extraServices.services.1.info') }
+                    { name: t('pricingTable.extraServices.service1_name'), price: t('pricingTable.extraServices.service1_price'), info: t('pricingTable.extraServices.service1_info') },
+                    { name: t('pricingTable.extraServices.service2_name'), price: t('pricingTable.extraServices.service2_price'), info: t('pricingTable.extraServices.service2_info') }
                 ].map((service, index) => (
                     <Card key={index} className="border-0 shadow-md hover:shadow-lg transition-shadow duration-300 bg-background">
                         <CardContent className="pt-6">

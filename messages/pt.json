@@ -182,18 +182,12 @@
         },
         "extraServices": {
             "title": "Serviços Adicionais",
-            "services": [
-                {
-                    "name": "Atendimento em menos de 24 - 48h",
-                    "price": "15€ - 25€",
-                    "info": "Serviço urgente com atendimento acelerado"
-                },
-                {
-                    "name": "Serviço prestado na casa do cliente",
-                    "price": "15€ a 30€ (mesma zona urbana) ou 0.65€/km",
-                    "info": "Deslocação técnica para atendimento no local"
-                }
-            ]
+            "service1_name": "Atendimento em menos de 24 - 48h",
+            "service1_price": "15€ - 25€",
+            "service1_info": "Serviço urgente com atendimento acelerado",
+            "service2_name": "Serviço prestado na casa do cliente",
+            "service2_price": "15€ a 30€ (mesma zona urbana) ou 0.65€/km",
+            "service2_info": "Deslocação técnica para atendimento no local"
         },
         "customProjectCard" : {
             "title": "Não encontrou o que procura?",
