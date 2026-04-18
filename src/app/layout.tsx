@@ -1,9 +1,17 @@
 import "./globals.css";
+import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
-import {NextIntlClientProvider} from 'next-intl';
+import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
+import { inter, poppins } from "@/config/fonts";
+import { StructuredData } from "@/components/structured-data";
+import { publicEnv } from "@/lib/env";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(publicEnv.baseUrl),
+};
 
 export default async function RootLayout({
   children,
@@ -14,20 +22,12 @@ export default async function RootLayout({
   const locale = await getLocale();
 
   return (
-    <html lang={locale} className="!scroll-smooth">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@400;700;900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang={locale}
+      className={cn("!scroll-smooth", inter.variable, poppins.variable)}
+    >
       <body className={cn("font-body antialiased")}>
+        <StructuredData />
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>

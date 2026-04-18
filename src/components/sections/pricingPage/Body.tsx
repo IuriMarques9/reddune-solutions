@@ -182,8 +182,8 @@ export function Body() {
                         {[
                             { name: t('pricingTable.extraServices.service1_name'), price: t('pricingTable.extraServices.service1_price'), info: t('pricingTable.extraServices.service1_info') },
                             { name: t('pricingTable.extraServices.service2_name'), price: t('pricingTable.extraServices.service2_price'), info: t('pricingTable.extraServices.service2_info') }
-                        ].map((service, index) => (
-                            <li key={index} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition-colors hover:bg-secondary/50">
+                        ].map((service) => (
+                            <li key={service.name} className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 rounded-lg transition-colors hover:bg-secondary/50">
                                 <div className="flex items-center gap-3 mb-3 md:mb-0">
                                     <div className="flex-1">
                                         <span className="font-medium text-foreground block">{service.name}</span>

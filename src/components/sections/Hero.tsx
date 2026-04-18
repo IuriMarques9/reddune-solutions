@@ -14,9 +14,11 @@ export function Hero() {
       {heroImage && (
         <Image
           src={heroImage.imageUrl}
-          alt={heroImage.description}
+          alt=""
           fill
           priority
+          sizes="100vw"
+          quality={75}
           className="object-cover opacity-20"
           data-ai-hint={heroImage.imageHint}
         />
@@ -31,7 +33,7 @@ export function Hero() {
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-bold shadow-lg group">
             <Link href="#portfolio">
-              {t('cta.seeWork')} <ArrowRight className="ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+              {t('cta.seeWork')} <ArrowRight className="ml-2 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-colors duration-300">

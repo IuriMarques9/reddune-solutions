@@ -1,4 +1,3 @@
-import { SubContent } from '@radix-ui/react-dropdown-menu';
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -11,8 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Poppins', 'serif'],
+        body: ['var(--font-inter)', 'Inter', 'sans-serif'],
+        headline: ['var(--font-poppins)', 'Poppins', 'serif'],
         code: ['monospace'],
       },
       colors: {

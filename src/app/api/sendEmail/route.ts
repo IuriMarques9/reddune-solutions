@@ -1,31 +1,46 @@
-import { EmailTemplate } from "../../../components/templates/email-template";
-import { Resend } from 'resend';
-import { render } from '@react-email/render';
+import { EmailTemplate } from "@/components/templates/email-template";
+import { Resend } from "resend";
+import { render } from "@react-email/render";
+import { validateContact } from "@/lib/validation";
+import { serverEnv } from "@/lib/env";
+import { businessEmail } from "@/config/contact";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+const resend = new Resend(serverEnv.RESEND_API_KEY);
 
+export async function POST(request: Request) {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
 
-export async function POST(data: Request) {
-  
-  const { name, email, message } = await data.json();
-  
+  const result = validateContact(body);
+  if (!result.ok) {
+    return Response.json({ error: result.error }, { status: 400 });
+  }
+
+  const { name, email, message } = result.data;
+
   try {
     const emailHtml = await render(EmailTemplate({ name, email, message }));
 
-
     const { data, error } = await resend.emails.send({
-      from: 'Website Form <onboarding@resend.dev>',
-      to: 'reddunesolutions@hotmail.com',
-      subject: 'Contact Form Submission',
+      from: "Website Form <onboarding@resend.dev>",
+      to: businessEmail,
+      subject: "Contact Form Submission",
+      replyTo: email,
       html: emailHtml,
     });
 
     if (error) {
-      return Response.json({ error }, { status: 400 });
+      console.error("Resend error:", error);
+      return Response.json({ error: "Failed to send email" }, { status: 502 });
     }
 
-    return Response.json(data);
+    return Response.json({ id: data?.id });
   } catch (error) {
-    return Response.json({ error }, { status: 500 });
+    console.error("sendEmail error:", error);
+    return Response.json({ error: "Failed to send email" }, { status: 500 });
   }
 }
