@@ -5,7 +5,7 @@ import { Hero } from "@/components/sections/Hero";
 import { Services } from "@/components/sections/Services";
 import { Portfolio } from "@/components/sections/Portfolio";
 import { About } from "@/components/sections/About";
-import { Contact } from "@/components/sections/Contact";
+import { ContactCTA } from "@/components/sections/ContactCTA";
 import { getLocale, getMessages } from "next-intl/server";
 import type { SiteMessages } from "@/types/i18n";
 
@@ -46,7 +46,7 @@ export default function Home() {
         <Services />
         <Portfolio />
         <About />
-        <Contact />
+        <ContactCTA />
       </main>
       <Footer />
     </div>

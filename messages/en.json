@@ -2,14 +2,14 @@
     "TabDescription" : "Official RedDune Solutions website. Professional technological solutions to help with your projects.",
     "TabTitles": {
         "home" : "RedDune Solutions - Home",
-        "pricing" : "RedDune Solutions - Pricing"
+        "pricing" : "RedDune Solutions - Pricing",
+        "shop" : "RedDune Solutions - Shop",
+        "contact" : "RedDune Solutions - Contact"
     },
     "Navigation": {
         "home": "Home",
         "services": "Services",
-        "portfolio": "Portfolio",
-        "about": "About Us",
-        "contact": "Contact"
+        "shop": "Shop"
     },
     "HomePage": {
         "Hero": {
@@ -53,6 +53,11 @@
             "title": "About Us",
             "description": "RedDune Solutions is a technology and digital innovation company, focused on providing complete solutions for computer maintenance, electronic equipment repair, and modern and efficient website creation. We combine technical knowledge, creativity, and commitment to ensure quality results tailored to each client's needs. Our goal is to simplify technology and help people and businesses make the most of the digital world."
         },
+        "ContactCTA": {
+            "title": "Have a project in mind?",
+            "description": "Talk to us and we'll find the right solution for you. We're always available to help.",
+            "cta": "Get in touch"
+        },
         "ContactSection": {
             "title": "Get in Touch",
             "description": "Have a project in mind or need assistance? We're here to help! Get in touch with us and we'll discuss how we can work together to bring your ideas to life.",
@@ -64,6 +69,14 @@
                 "emailPlaceholder": "email@example.com",
                 "messageTitle": "Message",
                 "messagePlaceholder": "Tell us about your project...",
+                "subjectTitle": "Subject",
+                "subjectPlaceholder": "Select a subject",
+                "subjects": {
+                    "support": "Technical Support",
+                    "quote": "Quote Request",
+                    "shop": "Product Inquiry from Shop",
+                    "other": "Other"
+                },
                 "submitButton": "Send Message",
                 "submitButtonLoading": "Sending..."
             },
@@ -194,6 +207,36 @@
             "desc": "In case of a specific problem or project, we have custom solutions for complex needs.",
             "text": "If your project doesn't fit the above packages, contact us. We'll be happy to analyze your needs and provide a customized solution.",
             "cta": "Tell us your problem"
+        }
+    },
+    "ShopPage": {
+        "hero": {
+            "title": "Our Shop",
+            "description": "Discover our computers, components and accessories. Contact us to purchase any product."
+        },
+        "categories": {
+            "all": "All",
+            "pc": "PCs",
+            "componente": "Components",
+            "acessorio": "Accessories",
+            "outro": "Other"
+        },
+        "featuredBadge": "Featured",
+        "contactPrice": "Contact for price",
+        "contactButton": "Contact about this product",
+        "searchPlaceholder": "Search products...",
+        "noResults": "No products found matching your search.",
+        "emptyState": "No products available at the moment.",
+        "filters": {
+            "categoryLabel": "Category",
+            "conditionLabel": "Condition",
+            "allCategories": "All categories",
+            "allConditions": "All conditions"
+        },
+        "conditions": {
+            "novo": "New",
+            "segunda-mao": "Second Hand",
+            "recondicionado": "Refurbished"
         }
     },
     "Footer": {

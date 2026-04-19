@@ -2,14 +2,14 @@
     "TabDescription" : "Site Oficial da RedDune Solutions. Soluções tecnologicas profissionais para ajudar nos seus projetos.",
     "TabTitles": {
         "home" : "RedDune Solutions - Inicio",
-        "pricing" : "RedDune Solutions - Preços"
+        "pricing" : "RedDune Solutions - Preços",
+        "shop" : "RedDune Solutions - Loja",
+        "contact" : "RedDune Solutions - Contacto"
     },
     "Navigation": {
         "home": "Início",
         "services": "Serviços",
-        "portfolio": "Portofólio",
-        "about": "Sobre Nós",
-        "contact": "Contacto"
+        "shop": "Loja"
     },
     "HomePage": {
         "Hero": {
@@ -53,6 +53,11 @@
             "title": "Sobre a Reddune Solutions",
             "description": "A Reddune Solutions é uma empresa especializada em tecnologia e inovação digital, focada em oferecer soluções completas em manutenção de computadores, reparação de equipamentos eletrónicos e criação de websites modernos e eficientes. Combinamos conhecimento técnico, criatividade e compromisso para garantir resultados de qualidade, adaptados às necessidades de cada cliente. O nosso objetivo é simplificar a tecnologia e ajudar pessoas e negócios a tirarem o máximo proveito do mundo digital."
         },
+        "ContactCTA": {
+            "title": "Tem um projeto em mente?",
+            "description": "Fale connosco e encontramos a solução certa para si. Estamos sempre disponíveis para ajudar.",
+            "cta": "Entre em contacto"
+        },
         "ContactSection": {
             "title": "Entre em contacto",
             "description": "Tem um projeto em mente ou precisa de assistência? Estamos aqui para ajudar! Entre em contacto connosco e vamos discutir como podemos trabalhar juntos para dar vida às suas ideias.",
@@ -64,6 +69,14 @@
                 "emailPlaceholder": "email@exemplo.com",
                 "messageTitle": "Mensagem",
                 "messagePlaceholder": "Conte-nos sobre o seu projeto...",
+                "subjectTitle": "Assunto",
+                "subjectPlaceholder": "Selecione o assunto",
+                "subjects": {
+                    "support": "Suporte Técnico",
+                    "quote": "Orçamento",
+                    "shop": "Dúvida sobre produto da Loja",
+                    "other": "Outro"
+                },
                 "submitButton": "Enviar Mensagem",
                 "submitButtonLoading": "A enviar..."
             },
@@ -194,6 +207,36 @@
             "desc": "Caso tenha um problema ou projeto específico, temos soluções personalizadas para necessidades complexas.",
             "text": "Se não se encaixa nos pacotes acima, entre em contato connosco. Teremos todo o gosto em analisar a sua necessidade e apresentar uma solução personalizada.",
             "cta": "Conte-nos o seu problema"
+        }
+    },
+    "ShopPage": {
+        "hero": {
+            "title": "A Nossa Loja",
+            "description": "Descubra os nossos computadores, componentes e acessórios. Contacte-nos para adquirir qualquer produto."
+        },
+        "categories": {
+            "all": "Todos",
+            "pc": "PCs",
+            "componente": "Componentes",
+            "acessorio": "Acessórios",
+            "outro": "Outros"
+        },
+        "featuredBadge": "Destaque",
+        "contactPrice": "Consultar preço",
+        "contactButton": "Contactar sobre este produto",
+        "searchPlaceholder": "Pesquisar produtos...",
+        "noResults": "Nenhum produto encontrado com essa pesquisa.",
+        "emptyState": "Nenhum produto disponível de momento.",
+        "filters": {
+            "categoryLabel": "Categoria",
+            "conditionLabel": "Condição",
+            "allCategories": "Todas as categorias",
+            "allConditions": "Todas as condições"
+        },
+        "conditions": {
+            "novo": "Novo",
+            "segunda-mao": "Segunda Mão",
+            "recondicionado": "Recondicionado"
         }
     },
     "Footer": {
