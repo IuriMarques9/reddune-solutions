@@ -1,7 +1,7 @@
 import { EmailTemplate } from "@/components/templates/email-template";
 import { Resend } from "resend";
 import { render } from "@react-email/render";
-import { validateContact } from "@/lib/validation";
+import { validateContact, SUBJECT_LABELS } from "@/lib/validation";
 import { serverEnv } from "@/lib/env";
 import { businessEmail } from "@/config/contact";
 
@@ -20,15 +20,18 @@ export async function POST(request: Request) {
     return Response.json({ error: result.error }, { status: 400 });
   }
 
-  const { name, email, message } = result.data;
+  const { name, email, subject, message } = result.data;
+  const subjectLabel = SUBJECT_LABELS[subject];
 
   try {
-    const emailHtml = await render(EmailTemplate({ name, email, message }));
+    const emailHtml = await render(
+      EmailTemplate({ name, email, subject: subjectLabel, message })
+    );
 
     const { data, error } = await resend.emails.send({
       from: "Website Form <onboarding@resend.dev>",
       to: businessEmail,
-      subject: "Contact Form Submission",
+      subject: `Contacto: ${subjectLabel}`,
       replyTo: email,
       html: emailHtml,
     });

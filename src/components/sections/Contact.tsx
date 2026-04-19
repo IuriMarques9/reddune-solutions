@@ -7,17 +7,37 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, MapPin, Phone, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { contactInfo } from "@/config/contact";
-import { CONTACT_LIMITS, validateContact } from "@/lib/validation";
+import {
+  CONTACT_LIMITS,
+  CONTACT_SUBJECTS,
+  type ContactSubject,
+  validateContact,
+} from "@/lib/validation";
 
 type SubmissionStatus = "idle" | "loading" | "success" | "error";
 
+function resolveSubject(param: string | null): ContactSubject {
+  if (param === "loja" || param === "shop") return "shop";
+  if (param === "support" || param === "suporte") return "support";
+  if (param === "quote" || param === "orcamento") return "quote";
+  return "other";
+}
+
 export function Contact() {
   const [status, setStatus] = useState<SubmissionStatus>("idle");
+  const [subject, setSubject] = useState<ContactSubject>("other");
   const { toast } = useToast();
   const t = useTranslations("HomePage.ContactSection");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const param = searchParams.get("subject");
+    if (param) setSubject(resolveSubject(param));
+  }, [searchParams]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -27,6 +47,7 @@ export function Contact() {
     const payload = {
       name: String(formData.get("name") ?? ""),
       email: String(formData.get("email") ?? ""),
+      subject,
       message: String(formData.get("message") ?? ""),
     };
 
@@ -58,6 +79,7 @@ export function Contact() {
         variant: "success",
       });
       form.reset();
+      setSubject("other");
       setTimeout(() => setStatus("idle"), 2000);
     } catch {
       setStatus("error");
@@ -117,6 +139,24 @@ export function Contact() {
                       autoComplete="email"
                       disabled={isLoading}
                     />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="subject">{t("form.subjectTitle")}</Label>
+                    <select
+                      id="subject"
+                      name="subject"
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value as ContactSubject)}
+                      disabled={isLoading}
+                      className="w-full border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {CONTACT_SUBJECTS.map((s) => (
+                        <option key={s} value={s}>
+                          {t(`form.subjects.${s}`)}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className="space-y-2">

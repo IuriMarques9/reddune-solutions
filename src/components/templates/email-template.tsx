@@ -12,14 +12,14 @@ import {
 } from "@react-email/components";
 
 
-export function EmailTemplate(data: { name: string; email: string; message: string }) {
-  
-  const { name, email, message } = data;
-  
+export function EmailTemplate(data: { name: string; email: string; subject: string; message: string }) {
+
+  const { name, email, subject, message } = data;
+
   return (
     <Html>
     <Head />
-    <Preview>Nova mensagem de contato de {name}</Preview>
+    <Preview>Nova mensagem de contato de {name} — {subject}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>Novo Contato de {name}</Heading>
@@ -29,6 +29,9 @@ export function EmailTemplate(data: { name: string; email: string; message: stri
           </Text>
           <Text style={text}>
             <strong>E-mail:</strong> {email}
+          </Text>
+          <Text style={text}>
+            <strong>Assunto:</strong> {subject}
           </Text>
           <Hr style={hr} />
           <Text style={text}>

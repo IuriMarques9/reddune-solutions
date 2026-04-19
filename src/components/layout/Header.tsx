@@ -19,11 +19,9 @@ export function Header() {
   const isMobile = useIsMobile();
 
   const navLinks = [
-    { href: "/#home", key: t("home") },
-    { href: "/#services", key: t("services") },
-    { href: "/#portfolio", key: t("portfolio") },
-    { href: "/#about", key: t("about") },
-    { href: "/#contact", key: t("contact") },
+    { href: "/", key: t("home") },
+    { href: "/pricingPage", key: t("services") },
+    { href: "/loja", key: t("shop") },
   ];
 
   return (
