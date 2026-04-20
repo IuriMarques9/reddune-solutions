@@ -9,7 +9,7 @@ export function StructuredData() {
     "@type": "LocalBusiness",
     name: "Reddune Solutions",
     description:
-      "Assistência técnica informática, montagem de PCs, desenvolvimento web e recuperação de dados no Algarve.",
+      "Assistência técnica informática, montagem de PCs, desenvolvimento web/app e recuperação de dados no Algarve.",
     url: base,
     logo: `${base}/logo.png`,
     image: `${base}/og-image.png`,
@@ -24,8 +24,8 @@ export function StructuredData() {
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: 37.0566,
-      longitude: -7.7389,
+      latitude: 37.053490,
+      longitude: -7.745656
     },
     openingHoursSpecification: [
       {
