@@ -13,7 +13,7 @@ export function Footer() {
   const origin =
     pathname?.startsWith("/loja")
       ? "shop"
-      : pathname?.startsWith("/pricingPage")
+      : pathname?.startsWith("/servicos")
         ? "pricing"
         : "home";
   const contactHref = origin === "home" ? "/contacto" : `/contacto?from=${origin}`;

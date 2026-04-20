@@ -4,30 +4,42 @@ import { Footer } from "@/components/layout/Footer";
 import { ShopHero } from "@/components/sections/shop/ShopHero";
 import { ProductGrid } from "@/components/sections/shop/ProductGrid";
 import { getAllProducts } from "@/lib/mongodb/products";
-import { getLocale, getMessages } from "next-intl/server";
-import type { SiteMessages } from "@/types/i18n";
+import { getLocale } from "next-intl/server";
+import { publicEnv } from "@/lib/env";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const messages = (await getMessages()) as unknown as SiteMessages;
-  const title =
-    (messages.TabTitles as Record<string, string> | undefined)?.shop ??
-    "RedDune Solutions - Loja";
-  const description =
-    messages.TabDescription ??
-    "Loja de computadores, componentes e acessórios.";
+  const base = publicEnv.baseUrl;
+  const isPt = locale !== "en";
+
+  const title = isPt
+    ? "Loja — RedDune Solutions | Computadores, Componentes e Acessórios"
+    : "Shop — RedDune Solutions | Computers, Components & Accessories";
+  const description = isPt
+    ? "Compre computadores novos, recondicionados e segunda mão, componentes e acessórios em Fuseta, Algarve. Preços justos e qualidade garantida."
+    : "Buy new, refurbished and second-hand computers, components and accessories in Fuseta, Algarve. Fair prices and guaranteed quality.";
 
   return {
     title,
     description,
-    alternates: { canonical: "/loja" },
+    keywords: isPt
+      ? ["loja informática", "comprar computador", "componentes PC", "segunda mão", "recondicionado", "Algarve", "Fuseta"]
+      : ["computer shop", "buy computer", "PC components", "second hand", "refurbished", "Algarve", "Fuseta"],
+    alternates: {
+      canonical: `${base}/loja`,
+      languages: { pt: `${base}/loja`, en: `${base}/loja` },
+    },
     openGraph: {
       title,
       description,
       type: "website",
       locale,
-      url: "/loja",
-      siteName: "Reddune Solutions",
+      url: `${base}/loja`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
   };
 }

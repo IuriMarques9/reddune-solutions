@@ -7,28 +7,37 @@ import { Portfolio } from "@/components/sections/Portfolio";
 import { About } from "@/components/sections/About";
 import { ContactCTA } from "@/components/sections/ContactCTA";
 import { getAllPortfolioItems } from "@/lib/mongodb/portfolio";
-import { getLocale, getMessages } from "next-intl/server";
-import type { SiteMessages } from "@/types/i18n";
+import { getLocale } from "next-intl/server";
+import { publicEnv } from "@/lib/env";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const messages = (await getMessages()) as unknown as SiteMessages;
-  const title = messages.TabTitles?.home ?? "Reddune Solutions";
-  const description =
-    messages.TabDescription ??
-    "Assistência técnica, serviços web e recuperação de dados.";
+  const base = publicEnv.baseUrl;
+  const isPt = locale !== "en";
+
+  const title = isPt
+    ? "RedDune Solutions — Assistência Técnica & Serviços Web no Algarve"
+    : "RedDune Solutions — IT Support & Web Services in Algarve";
+  const description = isPt
+    ? "Assistência técnica informática, montagem de PCs, desenvolvimento web e recuperação de dados em Fuseta, Algarve. Serviço personalizado para particulares e empresas."
+    : "Computer repair, PC assembly, web development and data recovery in Fuseta, Algarve. Personalised IT service for individuals and businesses.";
 
   return {
     title,
     description,
-    alternates: { canonical: "/" },
+    keywords: isPt
+      ? ["assistência técnica informática", "reparação computadores", "Fuseta", "Algarve", "serviços web", "recuperação de dados", "RedDune Solutions", "montagem PC"]
+      : ["computer repair", "IT support", "Fuseta", "Algarve", "web services", "data recovery", "RedDune Solutions", "PC assembly"],
+    alternates: {
+      canonical: `${base}/`,
+      languages: { pt: `${base}/`, en: `${base}/` },
+    },
     openGraph: {
       title,
       description,
       type: "website",
       locale,
-      url: "/",
-      siteName: "Reddune Solutions",
+      url: `${base}/`,
     },
     twitter: {
       card: "summary_large_image",

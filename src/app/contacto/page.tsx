@@ -4,29 +4,43 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Contact } from "@/components/sections/Contact";
 import { PageBreadcrumb } from "@/components/ui/page-breadcrumb";
-import { getLocale, getMessages, getTranslations } from "next-intl/server";
-import type { SiteMessages } from "@/types/i18n";
+import { getLocale, getTranslations } from "next-intl/server";
 import type { PageBreadcrumbCrumb } from "@/components/ui/page-breadcrumb";
+import { publicEnv } from "@/lib/env";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
-  const messages = (await getMessages()) as unknown as SiteMessages;
-  const title =
-    (messages.TabTitles as Record<string, string> | undefined)?.contact ??
-    "RedDune Solutions - Contacto";
-  const description = messages.TabDescription ?? "Entre em contacto com a RedDune Solutions.";
+  const base = publicEnv.baseUrl;
+  const isPt = locale !== "en";
+
+  const title = isPt
+    ? "Contacto — RedDune Solutions | Orçamentos e Suporte Técnico"
+    : "Contact — RedDune Solutions | Quotes and Technical Support";
+  const description = isPt
+    ? "Entre em contacto com a RedDune Solutions para orçamentos, suporte técnico ou dúvidas sobre produtos. Respondemos rapidamente."
+    : "Contact RedDune Solutions for quotes, technical support or product enquiries. We respond quickly.";
 
   return {
     title,
     description,
-    alternates: { canonical: "/contacto" },
+    keywords: isPt
+      ? ["contacto RedDune Solutions", "suporte técnico", "orçamento informático", "Fuseta", "Algarve"]
+      : ["contact RedDune Solutions", "technical support", "IT quote", "Fuseta", "Algarve"],
+    alternates: {
+      canonical: `${base}/contacto`,
+      languages: { pt: `${base}/contacto`, en: `${base}/contacto` },
+    },
     openGraph: {
       title,
       description,
       type: "website",
       locale,
-      url: "/contacto",
-      siteName: "Reddune Solutions",
+      url: `${base}/contacto`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
     },
   };
 }
@@ -43,7 +57,7 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
   const originCrumbMap: Record<string, PageBreadcrumbCrumb> = {
     shop: { label: tNavigation("shop"), href: "/loja" },
-    pricing: { label: tNavigation("services"), href: "/pricingPage" },
+    pricing: { label: tNavigation("services"), href: "/servicos" },
     home: { label: t("home"), href: "/" },
   };
 

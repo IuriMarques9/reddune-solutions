@@ -11,6 +11,15 @@ import { publicEnv } from "@/lib/env";
 
 export const metadata: Metadata = {
   metadataBase: new URL(publicEnv.baseUrl),
+  openGraph: {
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    siteName: "Reddune Solutions",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og-image.png"],
+  },
 };
 
 export default async function RootLayout({

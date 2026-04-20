@@ -20,7 +20,7 @@ export function Header() {
 
   const navLinks = [
     { href: "/", key: t("home") },
-    { href: "/pricingPage", key: t("services") },
+    { href: "/servicos", key: t("services") },
     { href: "/loja", key: t("shop") },
   ];
 
