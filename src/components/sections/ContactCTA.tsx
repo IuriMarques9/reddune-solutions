@@ -22,7 +22,7 @@ export function ContactCTA() {
             variant="outline"
             className="border-primary-foreground text-[rgb(132,21,21)] hover:bg-primary-foreground hover:text-primary transition-colors duration-300 font-bold group"
           >
-            <Link href="/contacto">
+            <Link href="/contacto?from=home">
               {t("cta")}
               <ArrowRight
                 className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"

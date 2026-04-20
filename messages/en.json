@@ -43,6 +43,7 @@
         "PortfolioSection": {
             "title": "Our Portfolio",
             "description": "A glimpse into our world of solutions and professionalism.",
+            "emptyState": "Coming soon.",
             "cards" : {
                 "portfolioCard-1": "Computer Building",
                 "portfolioCard-2": "Website Development",
@@ -239,7 +240,12 @@
             "recondicionado": "Refurbished"
         }
     },
+    "Breadcrumb": {
+        "home": "Home",
+        "contact": "Contact"
+    },
     "Footer": {
-        "rights": "All rights reserved."
+        "rights": "All rights reserved.",
+        "contactButton": "Contacts"
     }
 }

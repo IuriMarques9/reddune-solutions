@@ -47,7 +47,7 @@ export function Header() {
         </Link>
 
         {!isMobile && (
-          <nav className="flex items-center gap-8" aria-label="Main navigation">
+          <nav className="flex items-center gap-4" aria-label="Main navigation">
             <div className="flex items-center gap-6">
               {navLinks.map((link) => (
                 <Link

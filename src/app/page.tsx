@@ -6,6 +6,7 @@ import { Services } from "@/components/sections/Services";
 import { Portfolio } from "@/components/sections/Portfolio";
 import { About } from "@/components/sections/About";
 import { ContactCTA } from "@/components/sections/ContactCTA";
+import { getAllPortfolioItems } from "@/lib/mongodb/portfolio";
 import { getLocale, getMessages } from "next-intl/server";
 import type { SiteMessages } from "@/types/i18n";
 
@@ -37,14 +38,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function Home() {
+export default async function Home() {
+  const portfolioItems = await getAllPortfolioItems();
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-grow">
         <Hero />
         <Services />
-        <Portfolio />
+        <Portfolio items={portfolioItems} />
         <About />
         <ContactCTA />
       </main>

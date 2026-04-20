@@ -1,13 +1,12 @@
-export const PRODUCT_CATEGORIES = ["pc", "componente", "acessorio", "outro"] as const;
-export type ProductCategory = (typeof PRODUCT_CATEGORIES)[number];
 
-export const PRODUCT_CONDITIONS = ["novo", "segunda-mao", "recondicionado"] as const;
-export type ProductCondition = (typeof PRODUCT_CONDITIONS)[number];
 
 export type LocalizedText = {
   pt: string;
   en: string;
 };
+
+export type ProductCondition = LocalizedText;
+export type ProductCategory = LocalizedText;
 
 export type Product = {
   id: string;
@@ -16,7 +15,7 @@ export type Product = {
   category: ProductCategory;
   condition: ProductCondition;
   price: number;
-  imageUrl: string;
+  imageUrls: string[];
   available: boolean;
   featured: boolean;
   createdAt: string;

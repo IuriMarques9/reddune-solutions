@@ -10,33 +10,35 @@ type Props = {
   products: Product[];
 };
 
+const getCategoryKey = (v: ProductCategory) => `${v.pt}:::${v.en}`;
+const getConditionKey = (v: ProductCondition) => `${v.pt}:::${v.en}`;
+
 export function ProductGrid({ products }: Props) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<CategoryValue>("all");
   const [condition, setCondition] = useState<ConditionValue>("all");
   const t = useTranslations("ShopPage");
   const locale = useLocale() === "en" ? "en" : "pt";
-
   const availableCategories = useMemo(() => {
-    const cats = new Set<ProductCategory>();
-    products.forEach((p) => cats.add(p.category));
-    return Array.from(cats);
+    const cats = new Map<string, ProductCategory>();
+    products.forEach((p) => cats.set(getCategoryKey(p.category), p.category));
+    return Array.from(cats.values());
   }, [products]);
 
   const availableConditions = useMemo(() => {
-    const conds = new Set<ProductCondition>();
-    products.forEach((p) => conds.add(p.condition));
-    return Array.from(conds);
+    const conds = new Map<string, ProductCondition>();
+    products.forEach((p) => conds.set(getConditionKey(p.condition), p.condition));
+    return Array.from(conds.values());
   }, [products]);
 
   const filtered = useMemo(() => {
     let result = products;
 
     if (category !== "all") {
-      result = result.filter((p) => p.category === category);
+      result = result.filter((p) => getCategoryKey(p.category) === category);
     }
     if (condition !== "all") {
-      result = result.filter((p) => p.condition === condition);
+      result = result.filter((p) => getConditionKey(p.condition) === condition);
     }
     if (search.trim()) {
       const query = search.toLowerCase();
@@ -59,6 +61,7 @@ export function ProductGrid({ products }: Props) {
         onCategoryChange={setCategory}
         condition={condition}
         onConditionChange={setCondition}
+        locale={locale}
         availableCategories={availableCategories}
         availableConditions={availableConditions}
       />

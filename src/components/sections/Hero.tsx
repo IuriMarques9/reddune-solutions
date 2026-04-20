@@ -37,7 +37,7 @@ export function Hero() {
             </Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-colors duration-300">
-            <Link href="/contacto">
+            <Link href="/contacto?from=home">
               {t('cta.contactUs')}
             </Link>
           </Button>

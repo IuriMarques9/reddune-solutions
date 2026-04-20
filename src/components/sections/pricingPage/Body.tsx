@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, ArrowRight, ChevronRight, InfoIcon } from "lucide-react";
+import { CheckCircle, ArrowRight, InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -142,17 +142,6 @@ export function Body() {
   return (
     <section id="pricing" className="py-20 bg-secondary/50">
       <div className="container mx-auto max-w-7xl p-4 sm:p-6 lg:p-8">
-        <div className="text-center mb-16">
-          <div className="flex items-center text-sm text-muted-foreground mb-4">
-            <Link href="/" className="hover:text-primary transition-colors">{t('breadcrumbHome')}</Link>
-            <ChevronRight className="h-4 w-4 mx-1" />
-            <span>{t('breadcrumbPricing')}</span>
-          </div>
-          <h2 className="font-headline text-3xl md:text-4xl font-bold">{t('title')}</h2>
-          <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t('subtitle')}
-          </p>
-        </div>
 
         <Tabs defaultValue="maintenance" className="w-full">
             <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 mb-10 max-w-3xl mx-auto h-auto gap-1">
@@ -212,7 +201,7 @@ export function Body() {
                     {t('customProjectCard.text')}
                 </p>
                 <Button asChild>
-                    <Link href="/#contact">{t('customProjectCard.cta')} <ArrowRight className="ml-2" /></Link>
+                    <Link href="/contacto?from=pricing">{t('customProjectCard.cta')} <ArrowRight className="ml-2" /></Link>
                 </Button>
             </CardContent>
         </Card>

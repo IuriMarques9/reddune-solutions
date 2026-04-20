@@ -5,8 +5,8 @@ import { Input } from "@/components/ui/input";
 import { useTranslations } from "next-intl";
 import type { ProductCategory, ProductCondition } from "@/types/product";
 
-export type CategoryValue = ProductCategory | "all";
-export type ConditionValue = ProductCondition | "all";
+export type CategoryValue = string | "all";
+export type ConditionValue = string | "all";
 
 type Props = {
   search: string;
@@ -15,12 +15,16 @@ type Props = {
   onCategoryChange: (v: CategoryValue) => void;
   condition: ConditionValue;
   onConditionChange: (v: ConditionValue) => void;
+  locale: "pt" | "en";
   availableCategories: ProductCategory[];
   availableConditions: ProductCondition[];
 };
 
 const selectClass =
   "border border-input rounded-md px-3 py-2 text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+
+const getCategoryKey = (category: ProductCategory) => `${category.pt}:::${category.en}`;
+const getConditionKey = (condition: ProductCondition) => `${condition.pt}:::${condition.en}`;
 
 export function ShopFilters({
   search,
@@ -29,6 +33,7 @@ export function ShopFilters({
   onCategoryChange,
   condition,
   onConditionChange,
+  locale,
   availableCategories,
   availableConditions,
 }: Props) {
@@ -60,8 +65,8 @@ export function ShopFilters({
         >
           <option value="all">{t("filters.allCategories")}</option>
           {availableCategories.map((cat) => (
-            <option key={cat} value={cat}>
-              {t(`categories.${cat}`)}
+            <option key={getCategoryKey(cat)} value={getCategoryKey(cat)}>
+              {cat[locale]}
             </option>
           ))}
         </select>
@@ -76,8 +81,8 @@ export function ShopFilters({
         >
           <option value="all">{t("filters.allConditions")}</option>
           {availableConditions.map((cond) => (
-            <option key={cond} value={cond}>
-              {t(`conditions.${cond}`)}
+            <option key={getConditionKey(cond)} value={getConditionKey(cond)}>
+              {cond[locale]}
             </option>
           ))}
         </select>

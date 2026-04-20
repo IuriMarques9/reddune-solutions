@@ -1,17 +1,18 @@
 import "server-only";
 import clientPromise from "./client";
 import type { Product, ProductCategory, ProductCondition } from "@/types/product";
-import { PRODUCT_CATEGORIES, PRODUCT_CONDITIONS } from "@/types/product";
 import { WithId, Document } from "mongodb";
 
-const DB_NAME = "loja";
-const COLLECTION = "produtos";
+const DB_NAME = "website";
+const COLLECTION = "loja";
 
 const isValidCategory = (v: unknown): v is ProductCategory =>
-  typeof v === "string" && PRODUCT_CATEGORIES.includes(v as ProductCategory);
+  typeof (v as ProductCategory | undefined)?.pt === "string" &&
+  typeof (v as ProductCategory | undefined)?.en === "string";
 
 const isValidCondition = (v: unknown): v is ProductCondition =>
-  typeof v === "string" && PRODUCT_CONDITIONS.includes(v as ProductCondition);
+  typeof (v as ProductCondition | undefined)?.pt === "string" &&
+  typeof (v as ProductCondition | undefined)?.en === "string";
 
 function mapDoc(doc: WithId<Document>): Product | null {
   if (
@@ -27,10 +28,10 @@ function mapDoc(doc: WithId<Document>): Product | null {
     id: doc._id.toString(),
     name: { pt: doc.name.pt, en: doc.name.en },
     description: { pt: doc.description.pt, en: doc.description.en },
-    category: doc.category,
-    condition: isValidCondition(doc.condition) ? doc.condition : "novo",
+    category: { pt: doc.category.pt, en: doc.category.en },
+    condition: isValidCondition(doc.condition) ? { pt: doc.condition.pt, en: doc.condition.en } : { pt: "novo", en: "new" },
     price: typeof doc.price === "number" ? doc.price : 0,
-    imageUrl: typeof doc.imageUrl === "string" ? doc.imageUrl : "",
+    imageUrls: Array.isArray(doc.imageUrls) ? doc.imageUrls : [],
     available: doc.available === true,
     featured: doc.featured === true,
     createdAt:

@@ -3,6 +3,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { getLocale, getMessages } from "next-intl/server";
 import { Body } from "@/components/sections/pricingPage/Body";
+import { PricingHero } from "@/components/sections/pricingPage/PricingHero";
 import type { SiteMessages } from "@/types/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -33,6 +34,7 @@ export default function PricingPage() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <main className="flex-grow">
+        <PricingHero />
         <Body />
       </main>
       <Footer />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import type { Locale } from "@/types/i18n";
@@ -9,6 +10,11 @@ const COOKIE_NAME = "MYNEXTAPP_LOCALE";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 const SUPPORTED: ReadonlyArray<Locale> = ["pt", "en"];
 const DEFAULT_LOCALE: Locale = "pt";
+
+const FLAGS: Record<Locale, { src: string; label: string }> = {
+  pt: { src: "https://flagcdn.com/w40/pt.png", label: "Português" },
+  en: { src: "https://flagcdn.com/w40/gb.png", label: "English" },
+};
 
 const readCookie = (name: string): string | undefined =>
   document.cookie
@@ -40,28 +46,31 @@ const LanguageSwitcher = () => {
     router.refresh();
   }, [router]);
 
-  const changeLocale = (newLocale: Locale) => {
-    if (newLocale === locale) return;
-    setLocale(newLocale);
-    writeCookie(COOKIE_NAME, newLocale);
+  const toggle = () => {
+    const next = locale === "pt" ? "en" : "pt";
+    setLocale(next);
+    writeCookie(COOKIE_NAME, next);
     router.refresh();
   };
 
+  const { src, label } = FLAGS[locale];
+
   return (
-    <div className="flex align-middle gap-2" role="group" aria-label="Language selector">
-      {SUPPORTED.map((code) => (
-        <Button
-          key={code}
-          variant={locale === code ? "default" : "ghost"}
-          size="sm"
-          className={locale === code ? "text-white" : "text-black"}
-          onClick={() => changeLocale(code)}
-          aria-pressed={locale === code}
-        >
-          {code.toUpperCase()}
-        </Button>
-      ))}
-    </div>
+    <Button
+      variant="ghost"
+      size="sm"
+      className="px-1 py-1 h-auto"
+      onClick={toggle}
+      aria-label={label}
+    >
+      <Image
+        src={src}
+        alt={label}
+        width={28}
+        height={20}
+        className="rounded-sm object-cover"
+      />
+    </Button>
   );
 };
 
