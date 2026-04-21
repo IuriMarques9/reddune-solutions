@@ -113,8 +113,8 @@ export function ProductCard({ product, locale }: Props) {
           </h3>
         </div>
 
-        {/* Descrição com flex-grow para empurrar conteúdo para baixo */}
-        <p className="text-sm text-muted-foreground flex-grow whitespace-pre-line line-clamp-3">
+        {/* Descrição sempre completa */}
+        <p className="text-sm text-muted-foreground flex-grow whitespace-pre-line">
           {formattedDescription}
         </p>
 
