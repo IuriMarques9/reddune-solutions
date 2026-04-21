@@ -7,7 +7,17 @@
       "Bash(npm install *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(rm -f C:/Users/asus/source/repos/Projetos/reddune-solutions/.git/index.lock)"
+      "Bash(rm -f C:/Users/asus/source/repos/Projetos/reddune-solutions/.git/index.lock)",
+      "Read(//c/Users/asus/Downloads/**)",
+      "Bash(unzip -q \"Inter,Poppins.zip\")",
+      "Bash(pip install *)",
+      "Bash(npx ttf2woff2 *)",
+      "Bash(npm list *)",
+      "Bash(cp \"C:\\\\Users\\\\asus\\\\Downloads\\\\Inter\\\\static\\\\Inter_18pt-Regular.ttf\" \"C:\\\\Users\\\\asus\\\\source\\\\repos\\\\Projetos\\\\reddune-solutions\\\\public\\\\fonts\\\\Inter-Regular.ttf\")",
+      "Bash(cp \"C:\\\\Users\\\\asus\\\\Downloads\\\\Inter\\\\static\\\\Inter_18pt-Medium.ttf\" \"C:\\\\Users\\\\asus\\\\source\\\\repos\\\\Projetos\\\\reddune-solutions\\\\public\\\\fonts\\\\Inter-Medium.ttf\")",
+      "Bash(cp \"C:\\\\Users\\\\asus\\\\Downloads\\\\Inter\\\\static\\\\Inter_18pt-SemiBold.ttf\" \"C:\\\\Users\\\\asus\\\\source\\\\repos\\\\Projetos\\\\reddune-solutions\\\\public\\\\fonts\\\\Inter-SemiBold.ttf\")",
+      "Bash(cp \"C:\\\\Users\\\\asus\\\\Downloads\\\\Inter\\\\static\\\\Inter_18pt-Bold.ttf\" \"C:\\\\Users\\\\asus\\\\source\\\\repos\\\\Projetos\\\\reddune-solutions\\\\public\\\\fonts\\\\Inter-Bold.ttf\")",
+      "Bash(cp \"C:\\\\Users\\\\asus\\\\Downloads\\\\Poppins\\\\Poppins-Regular.ttf\" \"C:\\\\Users\\\\asus\\\\source\\\\repos\\\\Projetos\\\\reddune-solutions\\\\public\\\\fonts\\\\Poppins-Regular.ttf\")"
     ]
   }
 }

@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { Analytics } from "@vercel/analytics/next";
-import { inter, poppins } from "@/config/fonts";
 import { StructuredData } from "@/components/structured-data";
 import { publicEnv } from "@/lib/env";
 
@@ -33,7 +32,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={cn("!scroll-smooth", inter.variable, poppins.variable)}
+      className={cn("!scroll-smooth")}
     >
       <body className={cn("font-body antialiased")}>
         <StructuredData />
