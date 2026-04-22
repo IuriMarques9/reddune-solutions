@@ -1,5 +1,5 @@
 export const contactInfo = {
-  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "reddunesolutions@hotmail.com",
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "reddunesolutions@gmail.com",
   phone: process.env.NEXT_PUBLIC_CONTACT_PHONE ?? "(+351) 961 531 235",
   city: process.env.NEXT_PUBLIC_CONTACT_CITY ?? "Fuseta",
   instagramUrl:
@@ -8,4 +8,4 @@ export const contactInfo = {
 } as const;
 
 export const businessEmail =
-  process.env.BUSINESS_EMAIL ?? "reddunesolutions@hotmail.com";
+  process.env.BUSINESS_EMAIL ?? "reddunesolutions@gmail.com";

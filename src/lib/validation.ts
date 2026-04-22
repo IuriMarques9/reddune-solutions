@@ -22,10 +22,10 @@ export type ValidationResult =
   | { ok: false; error: string };
 
 export const CONTACT_LIMITS = {
-  nameMin: 2,
+  nameMin: 1,
   nameMax: 100,
   emailMax: 254,
-  messageMin: 10,
+  messageMin: 1,
   messageMax: 5000,
 } as const;
 

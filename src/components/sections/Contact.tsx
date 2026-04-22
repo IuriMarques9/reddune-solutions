@@ -81,7 +81,8 @@ export function Contact() {
       form.reset();
       setSubject("other");
       setTimeout(() => setStatus("idle"), 2000);
-    } catch {
+    } catch (err) {
+      console.error("[Contact] sendEmail error:", err);
       setStatus("error");
       toast({
         title: t("useToast.errorTitle"),
