@@ -242,10 +242,28 @@
     },
     "Breadcrumb": {
         "home": "Home",
-        "contact": "Contact"
+        "contact": "Contact",
+        "warrantyPolicy": "Warranty Policy"
     },
     "Footer": {
         "rights": "All rights reserved.",
-        "contactButton": "Contacts"
+        "contactButton": "Contacts",
+        "warrantyPolicy": "Warranty Policy"
+    },
+    "WarrantyPolicyPage": {
+        "metaTitle": "Warranty Policy — RedDune Solutions | New and Refurbished Equipment",
+        "metaDescription": "Learn about RedDune Solutions' warranty policy: 3 years for new equipment and 6 months for refurbished. Shop with complete peace of mind.",
+        "title": "Warranty Policy",
+        "subtitle": "Your satisfaction and peace of mind are our priority.",
+        "intro": "All of our products come with a warranty. Shop with confidence, knowing you're covered.",
+        "newLabel": "New Equipment",
+        "newDuration": "3 years",
+        "newCaption": "warranty",
+        "refurbishedLabel": "Refurbished Equipment",
+        "refurbishedDuration": "6 months",
+        "refurbishedCaption": "warranty",
+        "closingTitle": "Complete confidence in your choice",
+        "closingBody": "With this policy, we aim to ensure your complete peace of mind when choosing your equipment. For more information, reach out to us anytime.",
+        "ctaContact": "Get in touch"
     }
 }

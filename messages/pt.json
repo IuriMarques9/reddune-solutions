@@ -242,10 +242,28 @@
     },
     "Breadcrumb": {
         "home": "Início",
-        "contact": "Contacto"
+        "contact": "Contacto",
+        "warrantyPolicy": "Política de Garantia"
     },
     "Footer": {
         "rights": "Todos os direitos reservados.",
-        "contactButton": "Contactos"
+        "contactButton": "Contactos",
+        "warrantyPolicy": "Política de Garantia"
+    },
+    "WarrantyPolicyPage": {
+        "metaTitle": "Política de Garantia — RedDune Solutions | Equipamentos Novos e Recondicionados",
+        "metaDescription": "Conheça a política de garantia da RedDune Solutions: 3 anos para equipamentos novos e 6 meses para recondicionados. Compre com total segurança.",
+        "title": "Política de Garantia",
+        "subtitle": "A sua satisfação e tranquilidade são a nossa prioridade.",
+        "intro": "Todos os nossos produtos contam com garantia. Compre com confiança, sabendo que está protegido.",
+        "newLabel": "Equipamentos Novos",
+        "newDuration": "3 anos",
+        "newCaption": "de garantia",
+        "refurbishedLabel": "Equipamentos Recondicionados",
+        "refurbishedDuration": "6 meses",
+        "refurbishedCaption": "de garantia",
+        "closingTitle": "Total segurança na sua escolha",
+        "closingBody": "Com esta política, queremos garantir a sua total tranquilidade na escolha do seu equipamento. Para mais informações, contacte-nos a qualquer momento.",
+        "ctaContact": "Falar connosco"
     }
 }

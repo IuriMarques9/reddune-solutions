@@ -15,8 +15,11 @@ export function Footer() {
       ? "shop"
       : pathname?.startsWith("/servicos")
         ? "pricing"
-        : "home";
+        : pathname?.startsWith("/contacto")
+          ? "contact"
+          : "home";
   const contactHref = origin === "home" ? "/contacto" : `/contacto?from=${origin}`;
+  const warrantyHref = `/loja/politica-garantia?from=${origin}`;
 
   return (
     <footer className="bg-secondary/50 text-secondary-foreground py-8">
@@ -32,6 +35,10 @@ export function Footer() {
         <div className="flex items-center gap-4">
           <Link href={contactHref}>
             <p className="text-muted-foreground hover:text-primary transition-colors">{t("contactButton")}</p>
+          </Link>
+
+          <Link href={warrantyHref}>
+            <p className="text-muted-foreground hover:text-primary transition-colors">{t("warrantyPolicy")}</p>
           </Link>
 
             <Link
