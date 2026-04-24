@@ -243,12 +243,14 @@
     "Breadcrumb": {
         "home": "Home",
         "contact": "Contact",
-        "warrantyPolicy": "Warranty Policy"
+        "warrantyPolicy": "Warranty Policy",
+        "privacyPolicy": "Privacy Policy"
     },
     "Footer": {
         "rights": "All rights reserved.",
         "contactButton": "Contacts",
-        "warrantyPolicy": "Warranty Policy"
+        "warrantyPolicy": "Warranty Policy",
+        "privacyPolicy": "Privacy Policy"
     },
     "WarrantyPolicyPage": {
         "metaTitle": "Warranty Policy — RedDune Solutions | New and Refurbished Equipment",
@@ -264,6 +266,42 @@
         "refurbishedCaption": "warranty",
         "closingTitle": "Complete confidence in your choice",
         "closingBody": "With this policy, we aim to ensure your complete peace of mind when choosing your equipment. For more information, reach out to us anytime.",
+        "ctaContact": "Get in touch"
+    },
+    "PrivacyPolicyPage": {
+        "metaTitle": "Privacy Policy — Reddune Solutions",
+        "metaDescription": "Learn how Reddune Solutions collects, processes and protects your personal data in compliance with the GDPR.",
+        "title": "Privacy Policy",
+        "subtitle": "Your privacy is our priority. Learn how we handle your personal data.",
+        "section1Title": "1. Identification of the Data Controller",
+        "section1Company": "Company",
+        "section1CompanyValue": "Reddune Solutions",
+        "section1Office": "Head Office",
+        "section1OfficeValue": "Fuseta",
+        "section1Contact": "Data Protection Officer Contact",
+        "section1ContactValue": "reddunesolutions@gmail.com / (+351) 961 531 235",
+        "section2Title": "2. Information and Consent",
+        "section2P1": "The Personal Data Protection Law and the General Data Protection Regulation (Regulation (EU) 2016/679 of the European Parliament and of the Council of 27 April 2016, hereinafter \"GDPR\") guarantee protection regarding the processing of personal data and the free movement of such data.",
+        "section2P2": "Under the law, \"personal data\" is considered to be any and all information (including sound and image) relating to an identified or identifiable natural person; protection does not extend to data of legal persons.",
+        "section2P3": "By providing your personal data through the website https://www.reddunesolutions.pt/, namely by filling in forms or by contacting us, the user declares that this information is provided freely, in an informed and explicit manner, authorising its collection and processing under the terms described herein.",
+        "section2P4": "Reddune Solutions undertakes to process users' personal data with full transparency and responsibility, in compliance with the General Data Protection Regulation and other applicable legislation.",
+        "section2P5": "Users may, at any time, withdraw their consent without affecting the lawfulness of processing carried out on the basis of consent previously given. To do so, they should contact us through the means available on this website.",
+        "section2P6": "If you do not agree with the terms of this Privacy Policy, we recommend that you do not use this site or provide any personal data.",
+        "section3Title": "3. Purposes of Personal Data Processing",
+        "section3Intro": "Personal data collected by Reddune Solutions is processed solely and exclusively for the following purposes:",
+        "section3Item1": "Execution and management of sales contracts or service provision;",
+        "section3Item2": "Order processing;",
+        "section3Item3": "Management of contacts and information requests;",
+        "section3Item4": "Provision of services;",
+        "section3Item5": "Administrative and operational management;",
+        "section3Item6": "Communications and marketing (when applicable);",
+        "section3Item7": "Compliance with legal obligations;",
+        "section3Item8": "Improvement of the website and user experience through the analysis of navigation data, statistics and site usage.",
+        "section3Outro": "Reddune Solutions guarantees the confidentiality of all data provided by its clients and undertakes not to use such data for purposes other than those described above, except where there is new consent from the user or a legal obligation permitting it.",
+        "section4Title": "4. Data Retention Period",
+        "section4P1": "Reddune Solutions retains your personal data only for the period strictly necessary to fulfil the purpose for which it was collected. Once this retention period has elapsed, Reddune Solutions ensures that your personal data is deleted.",
+        "closingTitle": "Questions about your data?",
+        "closingBody": "We are available to clarify any doubts about the processing of your personal data or to help you exercise your rights under the GDPR.",
         "ctaContact": "Get in touch"
     }
 }

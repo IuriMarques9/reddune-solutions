@@ -20,6 +20,7 @@ export function Footer() {
           : "home";
   const contactHref = origin === "home" ? "/contacto" : `/contacto?from=${origin}`;
   const warrantyHref = `/loja/politica-garantia?from=${origin}`;
+  const privacyHref = `/politica-privacidade?from=${origin}`;
 
   return (
     <footer className="bg-secondary/50 text-secondary-foreground py-8">
@@ -39,6 +40,10 @@ export function Footer() {
 
           <Link href={warrantyHref}>
             <p className="text-muted-foreground hover:text-primary transition-colors">{t("warrantyPolicy")}</p>
+          </Link>
+
+          <Link href={privacyHref}>
+            <p className="text-muted-foreground hover:text-primary transition-colors">{t("privacyPolicy")}</p>
           </Link>
 
             <Link
