@@ -113,12 +113,28 @@ describe("toPortalProjeto", () => {
     expect(dto.tipoLabels).toEqual(["Web", "slug-custom"]);
   });
 
-  it("arquivos só com id/nome/tipo/tamanho e hardware sem serial", () => {
+  it("arquivos só com id/nome/tipo/tamanho/origem e hardware sem serial", () => {
     const dto = toPortalProjeto(makeProjeto(), pagamentos);
     expect(dto.arquivos).toEqual([
-      { id: "a1", nome: "orcamento.pdf", tipo: "application/pdf", tamanho: 1234 },
+      { id: "a1", nome: "orcamento.pdf", tipo: "application/pdf", tamanho: 1234, origem: "nos" },
     ]);
     expect(dto.hardware).toEqual({ marca: "Asus", modelo: "X515" });
+  });
+
+  it("marca como 'cliente' só o que o cliente enviou (pathname/blobUrl nunca saem)", () => {
+    const p = makeProjeto();
+    const base = p.arquivos![0]!;
+    p.arquivos = [
+      base,
+      { ...base, id: "a2", nome: "foto-avaria.jpg", tipo: "image/jpeg", origem: "cliente" },
+    ];
+    const dto = toPortalProjeto(p, pagamentos);
+    expect(dto.arquivos.map((a) => a.origem)).toEqual(["nos", "cliente"]);
+    for (const a of dto.arquivos) {
+      expect(a).not.toHaveProperty("pathname");
+      expect(a).not.toHaveProperty("blobUrl");
+      expect(a).not.toHaveProperty("url");
+    }
   });
 });
 

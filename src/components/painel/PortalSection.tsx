@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Link2, MessageSquare, Plus, RefreshCw, Trash2, Globe, FolderUp, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -15,12 +15,21 @@ export type SandboxResumo = { id: string; nome: string; entry: string; totalFich
 type Props = {
   projetoId: string;
   portalAtivo: boolean;
+  /** Token em claro (decifrado no servidor). null = portal antigo, sem token recuperável. */
+  portalToken: string | null;
   links: ProjetoLink[];
   comentarios: PortalComentario[];
   sandboxes: SandboxResumo[];
 };
 
-export function PortalSection({ projetoId, portalAtivo, links, comentarios, sandboxes }: Props) {
+export function PortalSection({
+  projetoId,
+  portalAtivo,
+  portalToken,
+  links,
+  comentarios,
+  sandboxes,
+}: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
@@ -32,7 +41,13 @@ export function PortalSection({ projetoId, portalAtivo, links, comentarios, sand
   const zipRef = useRef<HTMLInputElement>(null);
 
   const naoLidos = comentarios.filter((c) => !c.lidoEm).length;
-  const linkCompleto = tokenGerado ? `${window.location.origin}/p/${tokenGerado}` : null;
+  // O link fica SEMPRE visível: o token acabado de gerar (antes do refresh) ou o
+  // que veio decifrado do servidor. O `origin` só existe no browser — resolvido
+  // num efeito para não haver mismatch de hidratação.
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const token = tokenGerado ?? (portalAtivo ? portalToken : null);
+  const linkCompleto = token ? `${origin}/p/${token}` : null;
 
   async function gerar() {
     if (portalAtivo) {
@@ -186,11 +201,11 @@ export function PortalSection({ projetoId, portalAtivo, links, comentarios, sand
         </span>
       </div>
 
-      {/* Caixa do portal */}
-      {tokenGerado && linkCompleto ? (
+      {/* Caixa do portal — o link fica sempre aqui enquanto o portal estiver activo */}
+      {linkCompleto ? (
         <div className="portal-box">
           <div style={{ fontSize: 12.5, color: "var(--ink-soft)" }}>
-            Guarda este link agora — só é mostrado uma vez:
+            Link do cliente (fica sempre aqui — envia por WhatsApp/email):
           </div>
           <span className="lnk">{linkCompleto}</span>
           <div style={{ display: "flex", gap: 8 }}>
@@ -199,7 +214,7 @@ export function PortalSection({ projetoId, portalAtivo, links, comentarios, sand
             </button>
             <a
               className="btn-primary"
-              href={linkCompleto}
+              href={`/p/${token}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{ textDecoration: "none" }}
@@ -212,7 +227,7 @@ export function PortalSection({ projetoId, portalAtivo, links, comentarios, sand
         <div className="portal-box">
           <div style={{ fontSize: 12.5, color: "var(--ink-soft)" }}>
             {portalAtivo
-              ? "Portal activo. O link foi mostrado quando o geraste — se o perdeste, regenera (o antigo deixa de funcionar)."
+              ? "Portal activo, mas o link foi gerado antes de guardarmos a cópia cifrada — regenera para o voltares a ver aqui (o antigo deixa de funcionar)."
               : "Sem portal. Gera um link secreto e envia ao cliente por WhatsApp/email."}
           </div>
         </div>

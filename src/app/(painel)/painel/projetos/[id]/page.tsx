@@ -25,6 +25,7 @@ import { ArquivosCard } from "@/components/painel/ArquivosCard";
 import { PortalSection } from "@/components/painel/PortalSection";
 import { getComentariosByProjeto } from "@/lib/mongodb/portal";
 import { getSandboxesByProjeto } from "@/lib/mongodb/portal-sandbox";
+import { decryptPortalToken } from "@/lib/portal-token";
 import { HardwareSection } from "@/components/painel/HardwareSection";
 import { sanitizeArquivo } from "@/types/projeto";
 import { gastoEmpresaDoProjeto } from "@/lib/gastos";
@@ -63,6 +64,10 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
     ]);
 
   if (!projeto) notFound();
+
+  // Link do portal sempre à mão: decifrado aqui (server), nunca guardado em claro.
+  const portalAtivo = !!projeto.portal && !projeto.portal.revogadoEm;
+  const portalToken = portalAtivo ? decryptPortalToken(projeto.portal?.tokenEnc) : null;
 
   const totalLembretes = lembretes.length;
   const lembretesFeitas = lembretes.filter((t) => t.feita).length;
@@ -105,7 +110,8 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
           <div id="portal" className="scroll-mt-6">
             <PortalSection
               projetoId={projeto.id}
-              portalAtivo={!!projeto.portal && !projeto.portal.revogadoEm}
+              portalAtivo={portalAtivo}
+              portalToken={portalToken}
               links={projeto.links ?? []}
               comentarios={comentarios}
               sandboxes={sandboxes.map((s) => ({

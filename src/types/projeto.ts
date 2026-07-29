@@ -201,6 +201,10 @@ export interface ProjetoArquivo {
   tamanho: number; // bytes
   tipo: string; // MIME
   dataUpload: string; // ISO
+  // Quem carregou. Ausente/null = nós (entregável). "cliente" = enviado pelo
+  // próprio cliente no portal — no portal aparece em "Os seus ficheiros", não
+  // como entregável, e no painel leva o chip "cliente".
+  origem?: "cliente" | null;
 }
 
 /** Remove campos server-only antes de enviar arquivos ao cliente. */
@@ -217,7 +221,12 @@ export interface ProjetoLink {
 }
 
 export interface ProjetoPortal {
-  tokenHash: string; // SHA-256 hex do token; o token em claro nunca é guardado
+  tokenHash: string; // SHA-256 hex do token — é ele que resolve o /p/[token]
+  // Token CIFRADO (AES-256-GCM, chave em PORTAL_TOKEN_KEY) para o painel poder
+  // voltar a mostrar o link sempre que for preciso. Uma fuga da BD sozinha não
+  // abre portais — sem a chave de env o campo é inútil. null/ausente = portal
+  // gerado antes desta funcionalidade (só recuperável regenerando).
+  tokenEnc?: string | null;
   criadoEm: string; // ISO
   revogadoEm: string | null;
 }

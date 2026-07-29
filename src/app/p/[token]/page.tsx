@@ -14,6 +14,8 @@ import { PreviewFrame } from "@/components/portal/PreviewFrame";
 import { SandboxFrame } from "@/components/portal/SandboxFrame";
 import { ComentarioForm } from "@/components/portal/ComentarioForm";
 import { FichaClienteForm } from "@/components/portal/FichaClienteForm";
+import { UploadForm } from "@/components/portal/UploadForm";
+import { ArquivoPortalDeleteButton } from "@/components/portal/ArquivoPortalDeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +27,10 @@ export const metadata: Metadata = {
 type Params = Promise<{ token: string }>;
 
 const eur = (n: number) => `${n.toLocaleString("pt-PT")} €`;
+const tamanhoPt = (bytes: number) =>
+  bytes < 1024 * 1024
+    ? `${Math.max(1, Math.round(bytes / 1024))} KB`
+    : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 const dataPt = (iso: string | null) =>
   iso
     ? new Date(iso).toLocaleDateString("pt-PT", { day: "2-digit", month: "long", year: "numeric" })
@@ -45,6 +51,10 @@ export default async function PortalPage({ params }: { params: Params }) {
     getSandboxesByProjeto(projeto.id),
   ]);
   const dto = toPortalProjeto(projeto, pagamentos);
+  // Entregáveis = o que NÓS pusemos lá. O que o cliente enviou tem secção
+  // própria (senão o cliente via as próprias fotos listadas como entrega nossa).
+  const entregaveis = dto.arquivos.filter((a) => a.origem !== "cliente");
+  const meusFicheiros = dto.arquivos.filter((a) => a.origem === "cliente");
   const arquivoSrc = (id: string) => `/api/portal/arquivo/${id}?t=${encodeURIComponent(token)}`;
   // Sandbox: capability própria no URL (não o token). entry codificado por segmento.
   const sandboxSrc = (s: { id: string; entry: string }) =>
@@ -123,7 +133,7 @@ export default async function PortalPage({ params }: { params: Params }) {
         </Reveal>
 
         {/* Entregáveis */}
-        {(dto.arquivos.length > 0 || dto.links.length > 0 || sandboxes.length > 0) && (
+        {(entregaveis.length > 0 || dto.links.length > 0 || sandboxes.length > 0) && (
           <section className="flex flex-col gap-4">
             <Reveal as="h2" className={labelCls}>
               Entregáveis
@@ -151,7 +161,7 @@ export default async function PortalPage({ params }: { params: Params }) {
                 <ComentarioForm token={token} linkId={k.id} compact />
               </Reveal>
             ))}
-            {dto.arquivos.map((a) => (
+            {entregaveis.map((a) => (
               <Reveal as="article" key={a.id} className={`${cardCls} flex flex-col gap-3.5 p-6`}>
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="font-display text-[17px] font-semibold tracking-[-0.01em] text-ink [overflow-wrap:anywhere]">
@@ -185,6 +195,36 @@ export default async function PortalPage({ params }: { params: Params }) {
             ))}
           </section>
         )}
+
+        {/* Os seus ficheiros — o que o cliente nos envia */}
+        <Reveal as="section" className={`${cardCls} p-7`}>
+          <h2 className={`${labelCls} mb-1.5`}>Os seus ficheiros</h2>
+          <p className="mb-4 text-sm text-ink-soft">
+            Envie fotos do equipamento, documentos ou material para o projeto — chega-nos de
+            imediato.
+          </p>
+          <UploadForm token={token} />
+          {meusFicheiros.length > 0 && (
+            <ul className="mt-[18px] flex flex-col gap-2.5 border-t border-dashed border-[rgba(90,14,14,0.16)] pt-4 text-sm">
+              {meusFicheiros.map((a) => (
+                <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-[rgba(90,14,14,0.10)] bg-[rgba(255,250,240,0.70)] px-3 py-2.5">
+                  <a
+                    href={arquivoSrc(a.id)}
+                    className="font-medium text-ink transition-colors hover:text-ember hover:underline [overflow-wrap:anywhere]"
+                  >
+                    {a.nome}
+                  </a>
+                  <div className="flex items-center gap-2">
+                    <span className="shrink-0 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-mute">
+                      {tamanhoPt(a.tamanho)}
+                    </span>
+                    <ArquivoPortalDeleteButton token={token} arquivo={{ id: a.id, nome: a.nome }} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Reveal>
 
         {/* Observações gerais */}
         <Reveal as="section" className={`${cardCls} p-7`}>

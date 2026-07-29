@@ -191,6 +191,23 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
               >
                 {arquivo.nome}
               </a>
+              {arquivo.origem === "cliente" && (
+                <span
+                  title="Enviado pelo cliente no portal"
+                  style={{
+                    fontSize: 10.5,
+                    textTransform: "uppercase",
+                    letterSpacing: ".08em",
+                    padding: "2px 7px",
+                    borderRadius: 999,
+                    background: "rgba(214,66,42,.12)",
+                    color: "var(--ember)",
+                    flexShrink: 0,
+                  }}
+                >
+                  cliente
+                </span>
+              )}
               <button
                 type="button"
                 className="icon-mini"

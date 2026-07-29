@@ -14,7 +14,15 @@ import type { Pagamento } from "@/types/pagamento";
 // Campos de texto livre (bodyMd, notasResumo, proximaAccao, descricao de linhas,
 // notas de cliente/pagamento) ficam SEMPRE fora — podem conter notas internas.
 
-export type PortalArquivoDTO = { id: string; nome: string; tipo: string; tamanho: number };
+export type PortalArquivoDTO = {
+  id: string;
+  nome: string;
+  tipo: string;
+  tamanho: number;
+  // "cliente" = enviado pelo próprio cliente no portal (secção "Os seus
+  // ficheiros"); "nos" = entregável nosso.
+  origem: "cliente" | "nos";
+};
 export type PortalLinkDTO = { id: string; label: string; url: string };
 export type PortalValoresDTO = {
   orcado: number;
@@ -92,6 +100,7 @@ export function toPortalProjeto(projeto: Projeto, pagamentos: Pagamento[]): Port
       nome: a.nome,
       tipo: a.tipo,
       tamanho: a.tamanho,
+      origem: a.origem === "cliente" ? ("cliente" as const) : ("nos" as const),
     })),
     links: (projeto.links ?? []).map((k) => ({ id: k.id, label: k.label, url: k.url })),
     valores,

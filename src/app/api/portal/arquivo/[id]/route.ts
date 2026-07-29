@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { resolvePortalToken } from "@/lib/portal-auth";
 import { rateLimitDistributed, getClientIp } from "@/lib/rate-limit";
+import { pullArquivo } from "@/lib/mongodb/projetos";
+import { deleteManagedBlob } from "@/lib/blob";
+import { logMutation } from "@/lib/mongodb/mutation-audit";
 
 export const dynamic = "force-dynamic";
 
@@ -59,4 +63,42 @@ export async function GET(request: Request, { params }: { params: Params }) {
   }
 
   return new NextResponse(upstream.body, { status: 200, headers });
+}
+
+export async function DELETE(request: Request, { params }: { params: Params }) {
+  const ip = getClientIp(request);
+  const rl = await rateLimitDistributed(`portal-arquivo-delete:${ip}`, 20, 60 * 1000);
+  if (!rl.allowed) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+
+  const { id } = await params;
+  const token = new URL(request.url).searchParams.get("t");
+  const projeto = await resolvePortalToken(token);
+  if (!projeto) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+
+  const arquivo = projeto.arquivos?.find((a) => a.id === id);
+  if (!arquivo) return NextResponse.json({ error: "Ficheiro não encontrado" }, { status: 404 });
+  if (arquivo.origem !== "cliente") {
+    return NextResponse.json({ error: "Só pode remover ficheiros enviados por si" }, { status: 403 });
+  }
+
+  const ok = await pullArquivo(projeto.id, id);
+  if (!ok) {
+    return NextResponse.json({ error: "Falha ao actualizar projeto" }, { status: 500 });
+  }
+
+  if (arquivo.blobUrl) {
+    await deleteManagedBlob(arquivo.blobUrl);
+  }
+
+  await logMutation({
+    collection: "projetos",
+    entityId: projeto.id,
+    op: "update",
+    userEmail: `portal:${projeto.id}`,
+    after: { arquivoRemovido: { id, nome: arquivo.nome } },
+  });
+
+  revalidatePath(`/painel/projetos/${projeto.id}`);
+
+  return NextResponse.json({ ok: true });
 }

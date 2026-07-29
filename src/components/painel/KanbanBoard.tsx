@@ -198,6 +198,7 @@ function KanbanCard({
   const { setNodeRef, listeners, isDragging } = useDraggable({ id: projeto.id });
 
   const showConcluir = !DONE_STATUSES.includes(projeto.status);
+  const portalAtivo = !!projeto.portal && !projeto.portal.revogadoEm;
 
   function quickAction(e: React.MouseEvent, run: () => void) {
     // Botões dentro de um <Link>: não deixar o clique navegar para a ficha.
@@ -247,10 +248,23 @@ function KanbanCard({
         <button
           type="button"
           className="kc-act"
-          title="Portal do cliente"
+          title={portalAtivo ? "Abrir portal do cliente" : "Portal do cliente (gerar link)"}
           aria-label={`Portal do cliente de ${projeto.titulo}`}
           onClick={(e) =>
-            quickAction(e, () => router.push(`/painel/projetos/${projeto.id}#portal`))
+            quickAction(e, () => {
+              // Com portal activo abre o /p/[token] numa aba nova: a rota decifra
+              // o token no servidor (nunca viaja na lista de projectos). Sem
+              // portal vai à ficha, onde se gera o link.
+              if (portalAtivo) {
+                window.open(
+                  `/api/projetos/portal/abrir?projetoId=${encodeURIComponent(projeto.id)}`,
+                  "_blank",
+                  "noopener"
+                );
+              } else {
+                router.push(`/painel/projetos/${projeto.id}#portal`);
+              }
+            })
           }
         >
           <Globe className="ic" aria-hidden="true" />

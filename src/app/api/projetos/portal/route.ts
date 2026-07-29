@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { getProjetoById } from "@/lib/mongodb/projetos";
 import { setProjetoPortal, revokeProjetoPortal } from "@/lib/mongodb/portal";
-import { generatePortalToken, hashPortalToken } from "@/lib/portal-token";
+import { generatePortalToken, hashPortalToken, encryptPortalToken } from "@/lib/portal-token";
 import { logMutation } from "@/lib/mongodb/mutation-audit";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +32,9 @@ export async function POST(request: Request) {
     const token = generatePortalToken();
     const ok = await setProjetoPortal(projetoId, {
       tokenHash: hashPortalToken(token),
+      // Sem PORTAL_TOKEN_KEY fica null: o portal funciona na mesma, só não se
+      // consegue voltar a ver o link (comportamento antigo).
+      tokenEnc: encryptPortalToken(token),
       criadoEm: new Date().toISOString(),
       revogadoEm: null,
     });
