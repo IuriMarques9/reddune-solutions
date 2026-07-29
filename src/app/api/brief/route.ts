@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createHash, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { publicEnv } from "@/lib/env";
 import { getLembretesParaBrief } from "@/lib/mongodb/lembretes";
 import { getProjetosParaBrief, getProjetosBriefByIds } from "@/lib/mongodb/projetos";
@@ -8,8 +8,11 @@ export const dynamic = "force-dynamic";
 
 // Endpoint SÓ DE LEITURA para o Resumo Matinal (tarefa agendada do Claude):
 // devolve projectos no fluxo activo + lembretes pendentes/resolvidos há <48h.
-// Auth por token (env BRIEF_TOKEN), sem sessão NextAuth — a tarefa agendada não
-// tem cookies. O rate limit global de /api (middleware) também cobre esta rota.
+// Auth sem sessão NextAuth (a tarefa agendada não tem cookies), por UMA de duas
+// vias sobre o mesmo segredo (env BRIEF_TOKEN): header Bearer/X-Brief-Token
+// para callers que enviem headers, OU URL assinado de curta duração (exp+sig)
+// para o WebFetch do Claude, que não envia headers — ver assinaturaValida.
+// O rate limit global de /api (middleware) também cobre esta rota.
 // A classificação (atenção vs resolvido) é feita pelo consumidor; isto só
 // devolve dados crus, sem campos sensíveis (valores, linhas, bodyMd, contactos).
 
@@ -26,16 +29,47 @@ function tokenValido(candidato: string | null): boolean {
   return timingSafeEqual(a, b);
 }
 
-// Auth SÓ por header — nunca via query string (o token vazaria em logs de
-// acesso e no Referer). O caller do Resumo Matinal (tarefa cowork) chama por
-// curl com `Authorization: Bearer`; `X-Brief-Token` fica como alternativa para
-// fetchers que reservem o header Authorization.
+// Auth por header, para chamadas manuais/ferramentas que enviem headers. O
+// token em claro nunca via query string (vazaria em logs de acesso e Referer);
+// `X-Brief-Token` fica como alternativa para fetchers que reservem o header
+// Authorization. O caller real do Resumo Matinal não consegue enviar headers —
+// usa o URL assinado abaixo.
 function extrairToken(request: Request): string | null {
   const auth = request.headers.get("authorization");
   if (auth?.startsWith("Bearer ")) return auth.slice("Bearer ".length).trim();
   const custom = request.headers.get("x-brief-token");
   if (custom) return custom.trim();
   return null;
+}
+
+// Janela de validade do URL assinado (segundos): curta para que uma sig vazada
+// em logs de acesso seja inútil minutos depois; folga que chegue p/ clock skew.
+const SIG_WINDOW_S = 300;
+
+// URL assinado de curta duração — o caminho de auth do Resumo Matinal. O caller
+// é o WebFetch do Claude, que NÃO consegue enviar headers; a alternativa por
+// query string tem de ser uma assinatura efémera, nunca o token em claro (o
+// antigo ?token= vazava o segredo em logs e Referer — removido em 1ada126).
+//   ?exp={unix_s}&sig=hex( HMAC-SHA256( "brief:" + exp, BRIEF_TOKEN ) )
+// O parâmetro chama-se `exp` e NÃO `ts`: o pipeline de fetch do Claude remove
+// silenciosamente parâmetros com nome de cache-buster (`ts`, `t`) antes de o
+// pedido sair — verificado a 2026-07-24 contra um servidor de eco. NÃO renomear
+// de volta para `ts`; o prompt da tarefa agendada usa `exp` de propósito.
+function assinaturaValida(url: URL): boolean {
+  const secreto = process.env.BRIEF_TOKEN?.trim();
+  const exp = url.searchParams.get("exp");
+  const sig = url.searchParams.get("sig");
+  if (!secreto || !exp || !sig) return false;
+  // Formato primeiro (falha barata e sem branches dependentes do segredo):
+  // exp = unix seconds; sig = 32 bytes em hex (SHA-256).
+  if (!/^\d{1,12}$/.test(exp) || !/^[0-9a-f]{64}$/i.test(sig)) return false;
+  const agoraS = Math.floor(Date.now() / 1000);
+  if (Math.abs(agoraS - Number(exp)) > SIG_WINDOW_S) return false;
+  const esperada = createHmac("sha256", secreto)
+    .update(`brief:${exp}`)
+    .digest();
+  // Ambos têm 32 bytes garantidos (regex acima) — timingSafeEqual não lança.
+  return timingSafeEqual(Buffer.from(sig, "hex"), esperada);
 }
 
 // Sanitização leve dos campos de texto livre antes de os devolver ao LLM
@@ -52,7 +86,8 @@ function sanitizeBriefText(s: string | null | undefined): string | null {
 }
 
 export async function GET(request: Request) {
-  if (!tokenValido(extrairToken(request))) {
+  const urlPedido = new URL(request.url);
+  if (!tokenValido(extrairToken(request)) && !assinaturaValida(urlPedido)) {
     return NextResponse.json(
       { error: "unauthorized" },
       { status: 401, headers: NO_STORE }
