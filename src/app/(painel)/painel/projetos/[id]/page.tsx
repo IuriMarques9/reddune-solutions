@@ -21,7 +21,6 @@ import { CustosCard } from "@/components/painel/CustosCard";
 import { ProjetoRowMenu } from "@/components/painel/ProjetoRowMenu";
 import { LembreteChecklist } from "@/components/painel/LembreteChecklist";
 import { ProjetoForm } from "@/components/painel/ProjetoForm";
-import { ArquivosCard } from "@/components/painel/ArquivosCard";
 import { PortalSection } from "@/components/painel/PortalSection";
 import { getComentariosByProjeto } from "@/lib/mongodb/portal";
 import { getSandboxesByProjeto } from "@/lib/mongodb/portal-sandbox";
@@ -100,18 +99,15 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
             <ProjetoForm projeto={projeto} clientes={clientes} />
           </section>
 
-          {/* Ficheiros / Orçamentos */}
-          <ArquivosCard
-            projetoId={projeto.id}
-            arquivos={(projeto.arquivos ?? []).map(sanitizeArquivo)}
-          />
-
-          {/* Portal do cliente (âncora #portal — linkado a partir do kanban) */}
+          {/* Portal do cliente (âncora #portal — linkado a partir do kanban).
+              Ficheiros/Orçamentos vive aqui dentro: é a mesma lista que o cliente
+              vê no portal, não fazia sentido em cartão separado. */}
           <div id="portal" className="scroll-mt-6">
             <PortalSection
               projetoId={projeto.id}
               portalAtivo={portalAtivo}
               portalToken={portalToken}
+              arquivos={(projeto.arquivos ?? []).map(sanitizeArquivo)}
               links={projeto.links ?? []}
               comentarios={comentarios}
               sandboxes={sandboxes.map((s) => ({

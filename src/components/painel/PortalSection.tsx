@@ -2,12 +2,23 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Link2, MessageSquare, Plus, RefreshCw, Trash2, Globe, FolderUp, Loader2 } from "lucide-react";
+import {
+  Link2,
+  MessageSquare,
+  Paperclip,
+  Plus,
+  RefreshCw,
+  Trash2,
+  Globe,
+  FolderUp,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { safeJsonPost, safeFetch } from "@/lib/safe-fetch";
-import type { ProjetoLink } from "@/types/projeto";
+import { ArquivosUploadZone } from "./ArquivosUploadZone";
+import type { ProjetoArquivo, ProjetoLink } from "@/types/projeto";
 import type { PortalComentario } from "@/types/portal";
 
 export type SandboxResumo = { id: string; nome: string; entry: string; totalFicheiros: number };
@@ -17,6 +28,8 @@ type Props = {
   portalAtivo: boolean;
   /** Token em claro (decifrado no servidor). null = portal antigo, sem token recuperável. */
   portalToken: string | null;
+  /** Já sanitizados (sem blobUrl). */
+  arquivos: ProjetoArquivo[];
   links: ProjetoLink[];
   comentarios: PortalComentario[];
   sandboxes: SandboxResumo[];
@@ -26,6 +39,7 @@ export function PortalSection({
   projetoId,
   portalAtivo,
   portalToken,
+  arquivos: arquivosIniciais,
   links,
   comentarios,
   sandboxes,
@@ -37,6 +51,12 @@ export function PortalSection({
   const [tokenGerado, setTokenGerado] = useState<string | null>(null);
   const [novoLabel, setNovoLabel] = useState("");
   const [novoUrl, setNovoUrl] = useState("");
+  // Ficheiros/orçamentos vivem aqui desde 2026-07-29: são a mesma lista que o
+  // cliente vê no portal (os nossos como entregáveis, os dele com chip "cliente").
+  const [arquivos, setArquivos] = useState<ProjetoArquivo[]>(arquivosIniciais);
+  // O cliente também acrescenta/remove ficheiros pelo portal — quando o servidor
+  // manda lista nova (router.refresh, revalidate) a local tem de acompanhar.
+  useEffect(() => setArquivos(arquivosIniciais), [arquivosIniciais]);
   const [uploading, setUploading] = useState(false);
   const zipRef = useRef<HTMLInputElement>(null);
 
@@ -335,6 +355,19 @@ export function PortalSection({
         </button>
         <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "6px 0 0" }}>
           Comprime a pasta do projeto (index.html + assets) num ZIP. Abre no site sem GitHub. Até 30MB.
+        </p>
+      </div>
+
+      {/* Ficheiros / Orçamentos — mesma lista que o portal mostra ao cliente */}
+      <div className="psub">
+        <p className="plabel">
+          <Paperclip style={{ width: 13, height: 13 }} aria-hidden="true" />
+          Ficheiros / Orçamentos
+        </p>
+        <ArquivosUploadZone projetoId={projetoId} value={arquivos} onChange={setArquivos} />
+        <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "8px 0 0" }}>
+          O que carregas aqui aparece ao cliente como <b>entregável</b> no portal. Os que ele envia
+          entram nesta mesma lista com o chip <b>cliente</b> (e ele pode apagar só os dele).
         </p>
       </div>
 
