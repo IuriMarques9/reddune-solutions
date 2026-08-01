@@ -127,6 +127,22 @@ export const TIPO_TO_CATEGORIA: Record<ProjetoTipo, ServicoSlug | null> = {
   outro: null,
 };
 
+/**
+ * Primeiro tipo BASE de uma selecção — ignora os tipos personalizados
+ * (Definições → tipos custom), cujos slugs não existem em PROJETO_TIPO.
+ *
+ * O campo legado `projeto.tipo` é `z.enum(PROJETO_TIPO)` no schema do upsert:
+ * mandar-lhe um slug personalizado devolvia 400 "Invalid payload" e o projecto
+ * não guardava. `projeto.tipos` é que aceita base + custom.
+ */
+export function firstBaseTipo(
+  tipos: readonly string[] | null | undefined
+): ProjetoTipo | null {
+  if (!tipos) return null;
+  const base: readonly string[] = PROJETO_TIPO;
+  return (tipos.find((t) => base.includes(t)) as ProjetoTipo | undefined) ?? null;
+}
+
 export const CATEGORIA_TIPOS: Record<ServicoSlug, ProjetoTipo[]> = {
   "assistencia-tecnica": ["diagnostico", "montagem", "reparacao", "troca-pecas", "acessorios"],
   "web-digital": ["web", "app", "automacao", "marketing", "redes-sociais", "consultoria", "formacao"],

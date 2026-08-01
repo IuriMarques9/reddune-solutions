@@ -21,6 +21,7 @@ import {
   PROJETO_TIPO_LABEL,
   CATEGORIA_TIPOS,
   TIPO_TO_CATEGORIA,
+  firstBaseTipo,
   isProjetoIdeia,
   type Projeto,
   type ProjetoStatus,
@@ -28,6 +29,7 @@ import {
 } from "@/types/projeto";
 import { SERVICO_SLUG_LABEL, type ServicoSlug } from "@/types/servico";
 import type { Cliente } from "@/types/cliente";
+import { ClientePicker } from "./ClientePicker";
 import { ClienteQuickForm } from "./ClienteQuickForm";
 import { safeFetch, safeJsonPost } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
@@ -174,7 +176,10 @@ export function ProjetoForm({ projeto, clientes = [], onSaved, onCancel }: Props
       clienteNome: selectedCliente?.nome ?? projeto?.clienteNome ?? null,
       status,
       categoria: categoria,
-      tipo: tipos.length > 0 ? tipos[0] : null,
+      // Campo legado: só aceita slugs BASE (z.enum no schema). Mandar aqui um
+      // tipo personalizado dava 400 "Invalid payload" ao guardar. O servidor
+      // deriva o mesmo valor de `tipos` — mandar null é seguro.
+      tipo: firstBaseTipo(tipos),
       tipos: tipos.length > 0 ? tipos : null,
       prazo: prazo || null,
       proximaAccao: proximaAccao.trim() || null,
@@ -322,7 +327,7 @@ export function ProjetoForm({ projeto, clientes = [], onSaved, onCancel }: Props
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1 col-span-2">
           <div className="flex items-center justify-between">
-            <Label>Cliente</Label>
+            <Label htmlFor="cliente">Cliente</Label>
             {!showQuickClient && (
               <button
                 type="button"
@@ -341,19 +346,13 @@ export function ProjetoForm({ projeto, clientes = [], onSaved, onCancel }: Props
               onCancel={() => setShowQuickClient(false)}
             />
           ) : (
-            <Select
-              value={clienteId || "__none"}
-              onValueChange={(v) => setClienteId(v === "__none" ? "" : v)}
+            <ClientePicker
+              id="cliente"
+              clientes={clientesList}
+              value={clienteId}
+              onChange={setClienteId}
               disabled={isBusy}
-            >
-              <SelectTrigger><SelectValue placeholder="— Sem cliente —" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none">— Sem cliente —</SelectItem>
-                {clientesList.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
           )}
         </div>
         <div className="space-y-1">

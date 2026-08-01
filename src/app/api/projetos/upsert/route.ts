@@ -5,7 +5,13 @@ import { auth } from "@/lib/auth";
 import { upsertProjeto, getProjetoById, nextRefForPrefix } from "@/lib/mongodb/projetos";
 import { logMutation } from "@/lib/mongodb/mutation-audit";
 import { projetoInputSchema } from "@/lib/validation-projeto";
-import { TIPO_TO_CATEGORIA, refPrefixForCategoria, type Projeto, type ProjetoTipo } from "@/types/projeto";
+import {
+  TIPO_TO_CATEGORIA,
+  firstBaseTipo,
+  refPrefixForCategoria,
+  type Projeto,
+  type ProjetoTipo,
+} from "@/types/projeto";
 
 export const dynamic = "force-dynamic";
 
@@ -60,8 +66,7 @@ export async function POST(request: Request) {
   let tipoFinal: ProjetoTipo | null = pick("tipo", null) as ProjetoTipo | null;
   // If tipos provided, derive tipo from first base element for compat
   if (tiposInput !== undefined && tiposFinal && tiposFinal.length > 0) {
-    const firstBase = tiposFinal.find((t) => t in TIPO_TO_CATEGORIA) as ProjetoTipo | undefined;
-    tipoFinal = firstBase ?? null;
+    tipoFinal = firstBaseTipo(tiposFinal);
   }
 
   let categoriaFinal = pick("categoria", null);
