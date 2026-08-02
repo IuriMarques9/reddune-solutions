@@ -32,6 +32,11 @@ function getAllowedEmails(): Set<string> {
   );
 }
 
+// Formato de um hash bcrypt: $2a$/$2b$/$2y$ + custo (2 dígitos) + 53 chars.
+// bcrypt.compare devolve false em silêncio para um hash malformado, por isso
+// validamos o formato à parte para conseguir dizê-lo nos logs.
+const BCRYPT_HASH_RE = /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/;
+
 function timingSafeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let mismatch = 0;
@@ -73,6 +78,9 @@ const authConfig: NextAuthConfig = {
           LOGIN_WINDOW_MS
         );
         if (!rl.allowed) {
+          console.warn(
+            `[auth] Login rejeitado (rate-limit ${LOGIN_LIMIT}/min) ip=${ip}`
+          );
           await logAuthEvent({
             email,
             type: "signin-rejected",
@@ -83,6 +91,17 @@ const authConfig: NextAuthConfig = {
 
         const allowed = getAllowedEmails();
         if (!allowed.has(email)) {
+          // Distinguir "email errado" de "allowlist por configurar" — sem isto
+          // ambos aparecem ao utilizador como "Credenciais inválidas".
+          if (allowed.size === 0) {
+            console.error(
+              "[auth] AUTH_ALLOWED_EMAILS vazio ou por definir — todos os logins são rejeitados."
+            );
+          } else {
+            console.warn(
+              `[auth] Login rejeitado (email fora da allowlist): ${email}`
+            );
+          }
           await logAuthEvent({
             email,
             type: "signin-rejected",
@@ -93,15 +112,29 @@ const authConfig: NextAuthConfig = {
 
         // Preferir hash bcrypt (AUTH_PASSWORD_HASH); fallback a texto simples
         // (AUTH_PASSWORD) para não quebrar deploys existentes — com aviso.
-        const hash = process.env.AUTH_PASSWORD_HASH;
-        const expected = process.env.AUTH_PASSWORD;
+        // trim() nos valores de env: um espaço/newline colado por engano ao
+        // definir a variável fazia o compare falhar sempre, sem pista nenhuma.
+        const hash = process.env.AUTH_PASSWORD_HASH?.trim();
+        const expected = process.env.AUTH_PASSWORD?.trim();
         if (!hash && !expected) {
           console.error("Nem AUTH_PASSWORD_HASH nem AUTH_PASSWORD definidos");
           return null;
         }
+        if (hash && expected) {
+          console.warn(
+            "[auth] AUTH_PASSWORD_HASH e AUTH_PASSWORD ambos definidos — o hash tem precedência; mudar AUTH_PASSWORD não muda a password."
+          );
+        }
 
         let valid = false;
         if (hash) {
+          if (!BCRYPT_HASH_RE.test(hash)) {
+            console.error(
+              `[auth] AUTH_PASSWORD_HASH não parece um hash bcrypt válido (comprimento ${hash.length}, esperado 60${
+                hash.startsWith("$2") ? "" : '; devia começar por "$2"'
+              }) — provável corte nos "$" ao definir a variável. Gera um novo com: node scripts/auth-hash.mjs`
+            );
+          }
           valid = await bcrypt.compare(password, hash);
         } else {
           console.warn(
@@ -111,6 +144,9 @@ const authConfig: NextAuthConfig = {
         }
 
         if (!valid) {
+          console.warn(
+            `[auth] Login rejeitado (password errada) para ${email}`
+          );
           await logAuthEvent({
             email,
             type: "signin-rejected",
