@@ -6,8 +6,10 @@ type Props = { projeto: ReactNode; dados?: ReactNode };
 
 /**
  * Tabs do cartão principal do portal (Projeto / Os seus dados). Os dois painéis
- * ficam empilhados na mesma célula da grelha (o inativo só fica invisible) para
- * o cartão manter altura constante ao trocar de tab — requisito do design.
+ * ficam montados (estado do formulário sobrevive à troca de tab) mas o inativo
+ * usa `hidden`: o cartão encolhe para a altura da tab ativa. A altura constante
+ * original fazia a tab "Projeto" ocupar o tamanho do formulário de dados — um
+ * cartão meio vazio, sobretudo no telemóvel (feedback de cliente, 2026-08).
  */
 export function PortalTabs({ projeto, dados }: Props) {
   const [ativa, setAtiva] = useState<"projeto" | "dados">("projeto");
@@ -51,7 +53,7 @@ export function PortalTabs({ projeto, dados }: Props) {
             role="tabpanel"
             id={`painel-${t.id}`}
             aria-labelledby={`tab-${t.id}`}
-            className={`col-start-1 row-start-1 ${ativa === t.id ? "visible" : "invisible"}`}
+            className={`col-start-1 row-start-1 ${ativa === t.id ? "" : "hidden"}`}
           >
             {t.painel}
           </div>
