@@ -222,8 +222,9 @@ export interface ProjetoArquivo {
   // como entregável, e no painel leva o chip "cliente".
   origem?: "cliente" | null;
   // Marcação manual no painel. "orcamento" ganha cartão destacado no portal
-  // (com o valor total ao lado) — feedback de cliente que não encontrava o
-  // orçamento no meio dos entregáveis (2026-08). Só para ficheiros nossos.
+  // (o total fica só no cartão "Valores") — feedback de cliente que não
+  // encontrava o orçamento no meio dos entregáveis (2026-08). Só para
+  // ficheiros nossos.
   categoria?: "orcamento" | null;
 }
 

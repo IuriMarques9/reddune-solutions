@@ -59,8 +59,8 @@ export default async function PortalPage({ params }: { params: Params }) {
   // própria (senão o cliente via as próprias fotos listadas como entrega nossa).
   const todosEntregaveis = dto.arquivos.filter((a) => a.origem !== "cliente");
   // Orçamentos marcados no painel saem da lista normal: cartão destacado no
-  // topo da secção, com o total ao lado — feedback de cliente que não os
-  // encontrava no meio dos restantes ficheiros (2026-08).
+  // topo da secção — feedback de cliente que não os encontrava no meio dos
+  // restantes ficheiros (2026-08). O total aparece só no cartão "Valores".
   const orcamentos = todosEntregaveis.filter((a) => a.orcamento);
   const entregaveis = todosEntregaveis.filter((a) => !a.orcamento);
   const meusFicheiros = dto.arquivos.filter((a) => a.origem === "cliente");
@@ -160,25 +160,13 @@ export default async function PortalPage({ params }: { params: Params }) {
                   as="article"
                   className="flex flex-col gap-3.5 rounded-card border-2 border-[rgba(214,66,42,0.38)] bg-sand-warm p-6 shadow-warm"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                    <div className="flex min-w-0 flex-wrap items-center gap-3">
-                      <span className="rounded-full bg-ember px-3.5 py-[5px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white">
-                        Orçamento
-                      </span>
-                      <p className="font-display text-[17px] font-semibold tracking-[-0.01em] text-ink [overflow-wrap:anywhere]">
-                        {a.nome}
-                      </p>
-                    </div>
-                    {dto.valores && (
-                      <p className="shrink-0 text-right">
-                        <span className="mr-2 font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-ink-mute">
-                          Total
-                        </span>
-                        <span className="font-display text-[19px] font-bold tracking-[-0.02em] text-ember">
-                          {eur(dto.valores.orcado)}
-                        </span>
-                      </p>
-                    )}
+                  <div className="flex min-w-0 flex-wrap items-center gap-3">
+                    <span className="rounded-full bg-ember px-3.5 py-[5px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white">
+                      Orçamento
+                    </span>
+                    <p className="font-display text-[17px] font-semibold tracking-[-0.01em] text-ink [overflow-wrap:anywhere]">
+                      {a.nome}
+                    </p>
                   </div>
                   {a.data && (
                     <p className="-mt-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-mute">
