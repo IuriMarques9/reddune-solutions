@@ -113,10 +113,10 @@ describe("toPortalProjeto", () => {
     expect(dto.tipoLabels).toEqual(["Web", "slug-custom"]);
   });
 
-  it("arquivos só com id/nome/tipo/tamanho/origem/orcamento e hardware sem serial", () => {
+  it("arquivos só com id/nome/tipo/tamanho/data/origem/orcamento e hardware sem serial", () => {
     const dto = toPortalProjeto(makeProjeto(), pagamentos);
     expect(dto.arquivos).toEqual([
-      { id: "a1", nome: "orcamento.pdf", tipo: "application/pdf", tamanho: 1234, origem: "nos", orcamento: false },
+      { id: "a1", nome: "orcamento.pdf", tipo: "application/pdf", tamanho: 1234, data: "2026-07-02", origem: "nos", orcamento: false },
     ]);
     expect(dto.hardware).toEqual({ marca: "Asus", modelo: "X515" });
   });
@@ -133,6 +133,19 @@ describe("toPortalProjeto", () => {
     ];
     const dto = toPortalProjeto(p, pagamentos);
     expect(dto.arquivos.map((a) => a.orcamento)).toEqual([true, false, false]);
+  });
+
+  it("com vários orçamentos marcados, só o mais recente sai — antigos ficam fora do DTO (histórico do painel)", () => {
+    const p = makeProjeto();
+    const base = p.arquivos![0]!;
+    p.arquivos = [
+      { ...base, id: "v1", nome: "orcamento-v1.pdf", categoria: "orcamento", dataUpload: "2026-07-01" },
+      { ...base, id: "doc", nome: "manual.pdf" },
+      { ...base, id: "v2", nome: "orcamento-v2.pdf", categoria: "orcamento", dataUpload: "2026-07-10" },
+    ];
+    const dto = toPortalProjeto(p, []);
+    expect(dto.arquivos.map((a) => a.id)).toEqual(["doc", "v2"]);
+    expect(dto.arquivos.find((a) => a.id === "v2")!.orcamento).toBe(true);
   });
 
   it("marca como 'cliente' só o que o cliente enviou (pathname/blobUrl nunca saem)", () => {

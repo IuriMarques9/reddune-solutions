@@ -369,7 +369,8 @@ export function PortalSection({
           O que carregas aqui aparece ao cliente no portal. Os que ele envia entram nesta mesma
           lista com o chip <b>cliente</b> (e ele pode apagar só os dele). Carrega no botão{" "}
           <b>Orçamento</b> de um ficheiro para ele aparecer destacado no topo do portal, com o
-          valor total ao lado.
+          valor total ao lado. Podes marcar várias versões: o cliente só vê a <b>mais recente</b> —
+          as antigas ficam aqui como histórico (<b>orç. antigo</b>), invisíveis no portal.
         </p>
       </div>
 

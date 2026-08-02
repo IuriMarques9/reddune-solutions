@@ -37,6 +37,10 @@ const dataPt = (iso: string | null) =>
     : null;
 
 const cardCls = "rounded-card border border-[rgba(90,14,14,0.10)] bg-sand-warm shadow-warm";
+// Variante discreta (sem sombra, fundo lavado, menos padding no uso): para as
+// secções utilitárias — "Os seus ficheiros" e "Observações gerais" — que não
+// devem competir visualmente com os documentos do projeto.
+const cardDiscretoCls = "rounded-card border border-[rgba(90,14,14,0.08)] bg-[rgba(255,250,240,0.55)]";
 const labelCls = "font-mono text-[11.5px] font-medium uppercase tracking-[0.18em] text-ember";
 
 export default async function PortalPage({ params }: { params: Params }) {
@@ -176,6 +180,11 @@ export default async function PortalPage({ params }: { params: Params }) {
                       </p>
                     )}
                   </div>
+                  {a.data && (
+                    <p className="-mt-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-mute">
+                      Enviado a {dataPt(a.data)}
+                    </p>
+                  )}
                   <ConteudoArquivo arquivo={a} src={arquivoSrc(a.id)} />
                   <ComentarioForm token={token} arquivoId={a.id} compact />
                 </Reveal>
@@ -221,10 +230,10 @@ export default async function PortalPage({ params }: { params: Params }) {
           </section>
         )}
 
-        {/* Os seus ficheiros — o que o cliente nos envia */}
-        <Reveal as="section" className={`${cardCls} p-7`}>
+        {/* Os seus ficheiros — o que o cliente nos envia (secção utilitária, discreta) */}
+        <Reveal as="section" className={`${cardDiscretoCls} p-5`}>
           <h2 className={`${labelCls} mb-1.5`}>Os seus ficheiros</h2>
-          <p className="mb-4 text-sm text-ink-soft">
+          <p className="mb-3.5 text-[13px] leading-relaxed text-ink-soft">
             Envie fotos do equipamento, documentos ou material para o projeto — chega-nos de
             imediato.
           </p>
@@ -252,9 +261,9 @@ export default async function PortalPage({ params }: { params: Params }) {
         </Reveal>
 
         {/* Observações gerais */}
-        <Reveal as="section" className={`${cardCls} p-7`}>
+        <Reveal as="section" className={`${cardDiscretoCls} p-5`}>
           <h2 className={`${labelCls} mb-1.5`}>Observações gerais</h2>
-          <p className="mb-4 text-sm text-ink-soft">
+          <p className="mb-3.5 text-[13px] leading-relaxed text-ink-soft">
             Dúvidas ou pedidos sobre o projeto? Escreva-nos aqui — a mensagem chega-nos de imediato.
           </p>
           <ComentarioForm token={token} />

@@ -19,11 +19,14 @@ export type PortalArquivoDTO = {
   nome: string;
   tipo: string;
   tamanho: number;
+  // Data de upload (ISO) — mostrada no cartão do orçamento ("Enviado a …").
+  data: string | null;
   // "cliente" = enviado pelo próprio cliente no portal (secção "Os seus
   // ficheiros"); "nos" = entregável nosso.
   origem: "cliente" | "nos";
   // Marcado no painel como orçamento — ganha o cartão destacado no portal.
-  // Nunca true para ficheiros do cliente (a API bloqueia, o DTO reforça).
+  // Só o MAIS RECENTE dos marcados chega ao cliente (os antigos são histórico
+  // do painel e ficam fora do DTO). Nunca true para ficheiros do cliente.
   orcamento: boolean;
 };
 export type PortalLinkDTO = { id: string; label: string; url: string };
@@ -98,17 +101,41 @@ export function toPortalProjeto(projeto: Projeto, pagamentos: Pagamento[]): Port
     hardware: projeto.hardware
       ? { marca: projeto.hardware.marca ?? null, modelo: projeto.hardware.modelo ?? null }
       : null,
-    arquivos: (projeto.arquivos ?? []).map((a) => ({
+    arquivos: toPortalArquivos(projeto.arquivos ?? []),
+    links: (projeto.links ?? []).map((k) => ({ id: k.id, label: k.label, url: k.url })),
+    valores,
+  };
+}
+
+// Pode haver vários ficheiros marcados como orçamento no painel (histórico de
+// versões), mas o cliente só vê O MAIS RECENTE — os antigos nem entram no DTO.
+// Empate de datas resolve para o último da lista (= ordem de upload).
+function toPortalArquivos(
+  arquivos: NonNullable<Projeto["arquivos"]>
+): PortalArquivoDTO[] {
+  const marcados = arquivos.filter(
+    (a) => a.categoria === "orcamento" && a.origem !== "cliente"
+  );
+  const atual = marcados.reduce<(typeof marcados)[number] | null>(
+    (melhor, a) =>
+      !melhor || (a.dataUpload ?? "") >= (melhor.dataUpload ?? "") ? a : melhor,
+    null
+  );
+
+  return arquivos
+    .filter(
+      (a) =>
+        !(a.categoria === "orcamento" && a.origem !== "cliente" && a.id !== atual?.id)
+    )
+    .map((a) => ({
       id: a.id,
       nome: a.nome,
       tipo: a.tipo,
       tamanho: a.tamanho,
+      data: a.dataUpload ?? null,
       origem: a.origem === "cliente" ? ("cliente" as const) : ("nos" as const),
-      orcamento: a.categoria === "orcamento" && a.origem !== "cliente",
-    })),
-    links: (projeto.links ?? []).map((k) => ({ id: k.id, label: k.label, url: k.url })),
-    valores,
-  };
+      orcamento: atual !== null && a.id === atual.id,
+    }));
 }
 
 export function toPortalCliente(c: Cliente): PortalClienteDTO {

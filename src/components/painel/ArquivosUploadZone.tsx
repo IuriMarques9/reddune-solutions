@@ -71,6 +71,14 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [markingId, setMarkingId] = useState<string | null>(null);
 
+  // O cliente só vê o orçamento marcado MAIS RECENTE (mesma regra do portal-dto);
+  // os outros marcados ficam aqui como histórico, com pill "antigo".
+  const orcamentoAtualId =
+    value.reduce<ProjetoArquivo | null>((melhor, a) => {
+      if (a.categoria !== "orcamento" || a.origem === "cliente") return melhor;
+      return !melhor || (a.dataUpload ?? "") >= (melhor.dataUpload ?? "") ? a : melhor;
+    }, null)?.id ?? null;
+
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
       const arr = Array.from(files);
@@ -198,12 +206,13 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
         {value.map((arquivo) => {
           const Icon = iconFor(arquivo.tipo);
           const ehOrcamento = arquivo.categoria === "orcamento";
+          const ehAtual = ehOrcamento && arquivo.id === orcamentoAtualId;
           return (
             <div
               key={arquivo.id}
               style={{
                 ...chipStyle,
-                ...(ehOrcamento ? { borderColor: "rgba(214,66,42,.45)" } : null),
+                ...(ehAtual ? { borderColor: "rgba(214,66,42,.45)" } : null),
               }}
             >
               <Icon
@@ -232,9 +241,11 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
                       : `Marcar ${arquivo.nome} como orçamento`
                   }
                   title={
-                    ehOrcamento
-                      ? "Desmarcar orçamento — deixa de aparecer destacado no portal"
-                      : "Marcar como orçamento — aparece destacado ao cliente no portal"
+                    ehAtual
+                      ? "Orçamento atual — é este que o cliente vê destacado. Carrega para desmarcar."
+                      : ehOrcamento
+                        ? "Versão antiga — o cliente não a vê, fica como histórico. Carrega para desmarcar."
+                        : "Marcar como orçamento — aparece destacado ao cliente no portal"
                   }
                   style={{
                     display: "inline-flex",
@@ -248,8 +259,12 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
                     border: "none",
                     cursor: "pointer",
                     flexShrink: 0,
-                    background: ehOrcamento ? "var(--ember)" : "rgba(90,14,14,.08)",
-                    color: ehOrcamento ? "#fff" : "var(--ink-mute)",
+                    background: ehAtual
+                      ? "var(--ember)"
+                      : ehOrcamento
+                        ? "rgba(214,66,42,.12)"
+                        : "rgba(90,14,14,.08)",
+                    color: ehAtual ? "#fff" : ehOrcamento ? "var(--ember)" : "var(--ink-mute)",
                   }}
                 >
                   {markingId === arquivo.id ? (
@@ -257,7 +272,7 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
                   ) : (
                     <BadgeEuro style={{ width: 11, height: 11 }} aria-hidden="true" />
                   )}
-                  Orçamento
+                  {ehOrcamento && !ehAtual ? "Orç. antigo" : "Orçamento"}
                 </button>
               )}
               {arquivo.origem === "cliente" && (
