@@ -221,6 +221,10 @@ export interface ProjetoArquivo {
   // próprio cliente no portal — no portal aparece em "Os seus ficheiros", não
   // como entregável, e no painel leva o chip "cliente".
   origem?: "cliente" | null;
+  // Marcação manual no painel. "orcamento" ganha cartão destacado no portal
+  // (com o valor total ao lado) — feedback de cliente que não encontrava o
+  // orçamento no meio dos entregáveis (2026-08). Só para ficheiros nossos.
+  categoria?: "orcamento" | null;
 }
 
 /** Remove campos server-only antes de enviar arquivos ao cliente. */

@@ -223,6 +223,38 @@ export async function pullLink(projetoId: string, linkId: string): Promise<boole
   return result.matchedCount > 0;
 }
 
+/**
+ * Marca/desmarca a categoria de um arquivo, atomicamente ($map sobre o array
+ * — ver pushArquivo para o porquê de não fazer read-modify-write).
+ */
+export async function setArquivoCategoria(
+  projetoId: string,
+  arquivoId: string,
+  categoria: "orcamento" | null
+): Promise<boolean> {
+  const db = await getDb();
+  const result = await db.collection<Projeto>(COLLECTION).updateOne({ id: projetoId }, [
+    {
+      $set: {
+        arquivos: {
+          $map: {
+            input: { $ifNull: ["$arquivos", []] },
+            as: "a",
+            in: {
+              $cond: [
+                { $eq: ["$$a.id", arquivoId] },
+                { $mergeObjects: ["$$a", { categoria }] },
+                "$$a",
+              ],
+            },
+          },
+        },
+      },
+    },
+  ]);
+  return result.matchedCount > 0;
+}
+
 /** Remove um arquivo pelo id, atomicamente (ver pushArquivo). */
 export async function pullArquivo(
   projetoId: string,

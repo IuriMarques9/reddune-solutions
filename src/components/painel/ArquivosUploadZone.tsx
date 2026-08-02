@@ -2,8 +2,8 @@
 
 import { useState, useRef, useCallback } from "react";
 import imageCompression from "browser-image-compression";
-import { Upload, X, Loader2, FileText, FileSpreadsheet, ImageIcon, File as FileIcon, type LucideIcon } from "lucide-react";
-import { safeFetch } from "@/lib/safe-fetch";
+import { Upload, X, Loader2, FileText, FileSpreadsheet, ImageIcon, File as FileIcon, BadgeEuro, type LucideIcon } from "lucide-react";
+import { safeFetch, safeJsonPatch } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import type { ProjetoArquivo } from "@/types/projeto";
@@ -69,6 +69,7 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
   const [dragOver, setDragOver] = useState(false);
   const [pending, setPending] = useState<Pending[]>([]);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [markingId, setMarkingId] = useState<string | null>(null);
 
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
@@ -138,6 +139,26 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
     if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
   }
 
+  async function toggleOrcamento(arquivo: ProjetoArquivo) {
+    const proxima = arquivo.categoria === "orcamento" ? null : ("orcamento" as const);
+    setMarkingId(arquivo.id);
+    // arquivo.url já traz /api/projetos/arquivo/<id>?projetoId=… (como o DELETE)
+    const res = await safeJsonPatch(arquivo.url, { categoria: proxima });
+    setMarkingId(null);
+    if (!res.ok) {
+      toast({ title: "Erro ao marcar", description: res.error, variant: "destructive" });
+      return;
+    }
+    onChange(value.map((a) => (a.id === arquivo.id ? { ...a, categoria: proxima } : a)));
+    toast({
+      title: proxima === "orcamento" ? "Marcado como orçamento ✓" : "Deixou de ser orçamento",
+      description:
+        proxima === "orcamento"
+          ? "Aparece destacado ao cliente no topo do portal."
+          : undefined,
+    });
+  }
+
   async function removeArquivo(arquivo: ProjetoArquivo) {
     const ok = await confirm({
       title: "Remover ficheiro?",
@@ -176,8 +197,15 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
         {value.map((arquivo) => {
           const Icon = iconFor(arquivo.tipo);
+          const ehOrcamento = arquivo.categoria === "orcamento";
           return (
-            <div key={arquivo.id} style={chipStyle}>
+            <div
+              key={arquivo.id}
+              style={{
+                ...chipStyle,
+                ...(ehOrcamento ? { borderColor: "rgba(214,66,42,.45)" } : null),
+              }}
+            >
               <Icon
                 style={{ width: 14, height: 14, color: "var(--ink-mute)", flexShrink: 0 }}
                 aria-hidden="true"
@@ -191,6 +219,47 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
               >
                 {arquivo.nome}
               </a>
+              {/* Marcar/desmarcar orçamento — só ficheiros nossos (a API bloqueia os do cliente) */}
+              {arquivo.origem !== "cliente" && (
+                <button
+                  type="button"
+                  onClick={() => toggleOrcamento(arquivo)}
+                  disabled={disabled || markingId === arquivo.id}
+                  aria-pressed={ehOrcamento}
+                  aria-label={
+                    ehOrcamento
+                      ? `Desmarcar ${arquivo.nome} como orçamento`
+                      : `Marcar ${arquivo.nome} como orçamento`
+                  }
+                  title={
+                    ehOrcamento
+                      ? "Desmarcar orçamento — deixa de aparecer destacado no portal"
+                      : "Marcar como orçamento — aparece destacado ao cliente no portal"
+                  }
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    fontSize: 10.5,
+                    textTransform: "uppercase",
+                    letterSpacing: ".08em",
+                    padding: "2px 7px",
+                    borderRadius: 999,
+                    border: "none",
+                    cursor: "pointer",
+                    flexShrink: 0,
+                    background: ehOrcamento ? "var(--ember)" : "rgba(90,14,14,.08)",
+                    color: ehOrcamento ? "#fff" : "var(--ink-mute)",
+                  }}
+                >
+                  {markingId === arquivo.id ? (
+                    <Loader2 className="animate-spin" style={{ width: 11, height: 11 }} aria-hidden="true" />
+                  ) : (
+                    <BadgeEuro style={{ width: 11, height: 11 }} aria-hidden="true" />
+                  )}
+                  Orçamento
+                </button>
+              )}
               {arquivo.origem === "cliente" && (
                 <span
                   title="Enviado pelo cliente no portal"

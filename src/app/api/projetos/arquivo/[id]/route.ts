@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { getProjetoById, pullArquivo } from "@/lib/mongodb/projetos";
+import {
+  getProjetoById,
+  pullArquivo,
+  setArquivoCategoria,
+} from "@/lib/mongodb/projetos";
 import { logMutation } from "@/lib/mongodb/mutation-audit";
 import { deleteManagedBlob } from "@/lib/blob";
 
@@ -52,6 +56,65 @@ export async function GET(request: Request, { params }: { params: Params }) {
   headers.set("Cache-Control", "private, no-store");
 
   return new NextResponse(upstream.body, { status: 200, headers });
+}
+
+/** Marca/desmarca um ficheiro como orçamento (destaque no portal). */
+export async function PATCH(request: Request, { params }: { params: Params }) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const projetoId = new URL(request.url).searchParams.get("projetoId");
+  if (!projetoId) {
+    return NextResponse.json({ error: "projetoId em falta" }, { status: 400 });
+  }
+
+  let body: { categoria?: unknown };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Body inválido" }, { status: 400 });
+  }
+  const categoria = body.categoria;
+  if (categoria !== "orcamento" && categoria !== null) {
+    return NextResponse.json(
+      { error: 'categoria tem de ser "orcamento" ou null' },
+      { status: 400 }
+    );
+  }
+
+  const projeto = await getProjetoById(projetoId);
+  const arquivo = projeto?.arquivos?.find((a) => a.id === id);
+  if (!arquivo) {
+    return NextResponse.json({ error: "Ficheiro não encontrado" }, { status: 404 });
+  }
+  // Orçamento é entregável NOSSO — ficheiros enviados pelo cliente nem aparecem
+  // como entregáveis no portal, marcá-los seria um destaque que nunca se vê.
+  if (arquivo.origem === "cliente") {
+    return NextResponse.json(
+      { error: "Ficheiros enviados pelo cliente não podem ser marcados como orçamento" },
+      { status: 400 }
+    );
+  }
+
+  const ok = await setArquivoCategoria(projetoId, id, categoria);
+  if (!ok) {
+    return NextResponse.json({ error: "Falha ao actualizar projeto" }, { status: 500 });
+  }
+
+  await logMutation({
+    collection: "projetos",
+    entityId: projetoId,
+    op: "update",
+    userEmail: session.user.email ?? null,
+    after: { arquivoCategoria: { id, nome: arquivo.nome, categoria } },
+  });
+
+  revalidatePath(`/painel/projetos/${projetoId}`);
+
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(request: Request, { params }: { params: Params }) {

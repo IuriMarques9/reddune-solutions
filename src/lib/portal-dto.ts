@@ -22,6 +22,9 @@ export type PortalArquivoDTO = {
   // "cliente" = enviado pelo próprio cliente no portal (secção "Os seus
   // ficheiros"); "nos" = entregável nosso.
   origem: "cliente" | "nos";
+  // Marcado no painel como orçamento — ganha o cartão destacado no portal.
+  // Nunca true para ficheiros do cliente (a API bloqueia, o DTO reforça).
+  orcamento: boolean;
 };
 export type PortalLinkDTO = { id: string; label: string; url: string };
 export type PortalValoresDTO = {
@@ -101,6 +104,7 @@ export function toPortalProjeto(projeto: Projeto, pagamentos: Pagamento[]): Port
       tipo: a.tipo,
       tamanho: a.tamanho,
       origem: a.origem === "cliente" ? ("cliente" as const) : ("nos" as const),
+      orcamento: a.categoria === "orcamento" && a.origem !== "cliente",
     })),
     links: (projeto.links ?? []).map((k) => ({ id: k.id, label: k.label, url: k.url })),
     valores,

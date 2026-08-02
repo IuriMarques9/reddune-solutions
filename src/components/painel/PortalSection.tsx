@@ -366,8 +366,10 @@ export function PortalSection({
         </p>
         <ArquivosUploadZone projetoId={projetoId} value={arquivos} onChange={setArquivos} />
         <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "8px 0 0" }}>
-          O que carregas aqui aparece ao cliente como <b>entregável</b> no portal. Os que ele envia
-          entram nesta mesma lista com o chip <b>cliente</b> (e ele pode apagar só os dele).
+          O que carregas aqui aparece ao cliente no portal. Os que ele envia entram nesta mesma
+          lista com o chip <b>cliente</b> (e ele pode apagar só os dele). Carrega no botão{" "}
+          <b>Orçamento</b> de um ficheiro para ele aparecer destacado no topo do portal, com o
+          valor total ao lado.
         </p>
       </div>
 

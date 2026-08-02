@@ -113,12 +113,26 @@ describe("toPortalProjeto", () => {
     expect(dto.tipoLabels).toEqual(["Web", "slug-custom"]);
   });
 
-  it("arquivos só com id/nome/tipo/tamanho/origem e hardware sem serial", () => {
+  it("arquivos só com id/nome/tipo/tamanho/origem/orcamento e hardware sem serial", () => {
     const dto = toPortalProjeto(makeProjeto(), pagamentos);
     expect(dto.arquivos).toEqual([
-      { id: "a1", nome: "orcamento.pdf", tipo: "application/pdf", tamanho: 1234, origem: "nos" },
+      { id: "a1", nome: "orcamento.pdf", tipo: "application/pdf", tamanho: 1234, origem: "nos", orcamento: false },
     ]);
     expect(dto.hardware).toEqual({ marca: "Asus", modelo: "X515" });
+  });
+
+  it("categoria 'orcamento' vira orcamento:true — mas nunca em ficheiros do cliente", () => {
+    const p = makeProjeto();
+    const base = p.arquivos![0]!;
+    p.arquivos = [
+      { ...base, categoria: "orcamento" },
+      // Defesa em profundidade: a API bloqueia marcar ficheiros do cliente,
+      // mas se um doc antigo/manual tiver a combinação, o portal não destaca.
+      { ...base, id: "a2", origem: "cliente", categoria: "orcamento" },
+      { ...base, id: "a3" },
+    ];
+    const dto = toPortalProjeto(p, pagamentos);
+    expect(dto.arquivos.map((a) => a.orcamento)).toEqual([true, false, false]);
   });
 
   it("marca como 'cliente' só o que o cliente enviou (pathname/blobUrl nunca saem)", () => {

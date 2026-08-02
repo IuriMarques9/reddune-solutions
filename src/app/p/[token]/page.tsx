@@ -7,7 +7,7 @@ import { getClienteById } from "@/lib/mongodb/clientes";
 import { getPagamentosByProjeto } from "@/lib/mongodb/pagamentos";
 import { getComentariosByProjeto } from "@/lib/mongodb/portal";
 import { getSandboxesByProjeto } from "@/lib/mongodb/portal-sandbox";
-import { toPortalProjeto, toPortalCliente } from "@/lib/portal-dto";
+import { toPortalProjeto, toPortalCliente, type PortalArquivoDTO } from "@/lib/portal-dto";
 import { Reveal } from "@/components/motion/Reveal";
 import { PortalTabs } from "@/components/portal/PortalTabs";
 import { PreviewFrame } from "@/components/portal/PreviewFrame";
@@ -53,7 +53,12 @@ export default async function PortalPage({ params }: { params: Params }) {
   const dto = toPortalProjeto(projeto, pagamentos);
   // Entregáveis = o que NÓS pusemos lá. O que o cliente enviou tem secção
   // própria (senão o cliente via as próprias fotos listadas como entrega nossa).
-  const entregaveis = dto.arquivos.filter((a) => a.origem !== "cliente");
+  const todosEntregaveis = dto.arquivos.filter((a) => a.origem !== "cliente");
+  // Orçamentos marcados no painel saem da lista normal: cartão destacado no
+  // topo da secção, com o total ao lado — feedback de cliente que não os
+  // encontrava no meio dos restantes ficheiros (2026-08).
+  const orcamentos = todosEntregaveis.filter((a) => a.orcamento);
+  const entregaveis = todosEntregaveis.filter((a) => !a.orcamento);
   const meusFicheiros = dto.arquivos.filter((a) => a.origem === "cliente");
   const arquivoSrc = (id: string) => `/api/portal/arquivo/${id}?t=${encodeURIComponent(token)}`;
   // Sandbox: capability própria no URL (não o token). entry codificado por segmento.
@@ -132,12 +137,50 @@ export default async function PortalPage({ params }: { params: Params }) {
           />
         </Reveal>
 
-        {/* Entregáveis */}
-        {(entregaveis.length > 0 || dto.links.length > 0 || sandboxes.length > 0) && (
+        {/* Documentos e pré-visualizações (era "Entregáveis" — jargão nosso,
+            cliente comum não sabia o que era) */}
+        {(orcamentos.length > 0 ||
+          entregaveis.length > 0 ||
+          dto.links.length > 0 ||
+          sandboxes.length > 0) && (
           <section className="flex flex-col gap-4">
-            <Reveal as="h2" className={labelCls}>
-              Entregáveis
+            <Reveal>
+              <h2 className={labelCls}>Documentos e pré-visualizações</h2>
+              <p className="mt-1.5 text-sm text-ink-soft">
+                O que preparámos para si — pode ver tudo aqui e deixar um comentário em cada item.
+              </p>
             </Reveal>
+            {orcamentos.map((a, i) => (
+              <div key={a.id} id={i === 0 ? "orcamento" : undefined} className="scroll-mt-7">
+                <Reveal
+                  as="article"
+                  className="flex flex-col gap-3.5 rounded-card border-2 border-[rgba(214,66,42,0.38)] bg-sand-warm p-6 shadow-warm"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                    <div className="flex min-w-0 flex-wrap items-center gap-3">
+                      <span className="rounded-full bg-ember px-3.5 py-[5px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white">
+                        Orçamento
+                      </span>
+                      <p className="font-display text-[17px] font-semibold tracking-[-0.01em] text-ink [overflow-wrap:anywhere]">
+                        {a.nome}
+                      </p>
+                    </div>
+                    {dto.valores && (
+                      <p className="shrink-0 text-right">
+                        <span className="mr-2 font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-ink-mute">
+                          Total
+                        </span>
+                        <span className="font-display text-[19px] font-bold tracking-[-0.02em] text-ember">
+                          {eur(dto.valores.orcado)}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                  <ConteudoArquivo arquivo={a} src={arquivoSrc(a.id)} />
+                  <ComentarioForm token={token} arquivoId={a.id} compact />
+                </Reveal>
+              </div>
+            ))}
             {sandboxes.map((s) => (
               <Reveal as="article" key={s.id} className={`${cardCls} flex flex-col gap-3.5 p-6`}>
                 <div className="flex items-baseline justify-between gap-3">
@@ -171,25 +214,7 @@ export default async function PortalPage({ params }: { params: Params }) {
                     {Math.max(1, Math.round(a.tamanho / 1024))} KB
                   </p>
                 </div>
-                {a.tipo.startsWith("image/") ? (
-                  // <img> deliberado: origem é o proxy autenticado, next/image não optimiza
-                  <img
-                    src={arquivoSrc(a.id)}
-                    alt={a.nome}
-                    className="max-h-[70vh] w-auto rounded-[20px] border border-[rgba(90,14,14,0.12)]"
-                  />
-                ) : a.tipo === "text/html" ? (
-                  <PreviewFrame src={arquivoSrc(a.id)} title={a.nome} html />
-                ) : a.tipo === "application/pdf" ? (
-                  <PreviewFrame src={arquivoSrc(a.id)} title={a.nome} />
-                ) : (
-                  <a
-                    href={arquivoSrc(a.id)}
-                    className="text-sm font-semibold text-ember transition-colors hover:text-dune hover:underline"
-                  >
-                    Descarregar ↓
-                  </a>
-                )}
+                <ConteudoArquivo arquivo={a} src={arquivoSrc(a.id)} />
                 <ComentarioForm token={token} arquivoId={a.id} compact />
               </Reveal>
             ))}
@@ -228,7 +253,10 @@ export default async function PortalPage({ params }: { params: Params }) {
 
         {/* Observações gerais */}
         <Reveal as="section" className={`${cardCls} p-7`}>
-          <h2 className={`${labelCls} mb-4`}>Observações gerais</h2>
+          <h2 className={`${labelCls} mb-1.5`}>Observações gerais</h2>
+          <p className="mb-4 text-sm text-ink-soft">
+            Dúvidas ou pedidos sobre o projeto? Escreva-nos aqui — a mensagem chega-nos de imediato.
+          </p>
           <ComentarioForm token={token} />
           {comentarios.length > 0 && (
             <ul className="mt-1 flex flex-col gap-3.5 border-t border-dashed border-[rgba(90,14,14,0.16)] pt-[18px] text-sm">
@@ -270,6 +298,14 @@ export default async function PortalPage({ params }: { params: Params }) {
                 ))}
               </ul>
             )}
+            {orcamentos.length > 0 && (
+              <a
+                href="#orcamento"
+                className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-apricot transition-colors hover:text-cream hover:underline"
+              >
+                Ver o documento do orçamento ↑
+              </a>
+            )}
           </Reveal>
         )}
       </div>
@@ -299,6 +335,31 @@ function TituloComEnfase({ titulo }: { titulo: string }) {
         {enfase}
       </em>
     </>
+  );
+}
+
+/** Conteúdo de um ficheiro (preview ou download) — partilhado entre o cartão
+ * destacado do orçamento e os restantes documentos. */
+function ConteudoArquivo({ arquivo, src }: { arquivo: PortalArquivoDTO; src: string }) {
+  if (arquivo.tipo.startsWith("image/")) {
+    // <img> deliberado: origem é o proxy autenticado, next/image não optimiza
+    return (
+      <img
+        src={src}
+        alt={arquivo.nome}
+        className="max-h-[70vh] w-auto rounded-[20px] border border-[rgba(90,14,14,0.12)]"
+      />
+    );
+  }
+  if (arquivo.tipo === "text/html") return <PreviewFrame src={src} title={arquivo.nome} html />;
+  if (arquivo.tipo === "application/pdf") return <PreviewFrame src={src} title={arquivo.nome} />;
+  return (
+    <a
+      href={src}
+      className="text-sm font-semibold text-ember transition-colors hover:text-dune hover:underline"
+    >
+      Descarregar ↓
+    </a>
   );
 }
 
