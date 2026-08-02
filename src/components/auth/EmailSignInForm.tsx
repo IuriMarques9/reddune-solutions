@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { signInAction } from "@/lib/auth-actions";
 
 export function EmailSignInForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -80,15 +81,29 @@ export function EmailSignInForm() {
           />
           <Input
             id="password"
-            type="password"
+            type={mostrarPassword ? "text" : "password"}
             autoComplete="current-password"
             required
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={pending}
-            className="pl-10 h-11"
+            className="pl-10 pr-10 h-11"
           />
+          <button
+            type="button"
+            onClick={() => setMostrarPassword((v) => !v)}
+            aria-label={
+              mostrarPassword ? "Ocultar password" : "Mostrar password"
+            }
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {mostrarPassword ? (
+              <EyeOff className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <Eye className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
         </div>
       </div>
 

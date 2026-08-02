@@ -4,9 +4,10 @@
  * Como correr:
  *   node scripts/auth-hash.mjs               → pede a password e imprime o hash
  *   node scripts/auth-hash.mjs --verificar   → testa uma password contra um hash
+ *   (junta --mostrar a qualquer modo para veres a password enquanto escreves)
  *
  * Tudo é pedido interativamente (nada fica no histórico da shell) e a password
- * nunca é mostrada no ecrã. O hash gerado cola-se na Vercel em Settings →
+ * aparece como asteriscos — usa --mostrar se preferires escrever à vista. O hash gerado cola-se na Vercel em Settings →
  * Environment Variables → AUTH_PASSWORD_HASH — SEMPRE pelo dashboard, nunca
  * via terminal: os "$" do hash seriam interpretados pela shell e cortavam o
  * valor. Depois de alterar a variável é preciso Redeploy: as envs só entram
@@ -26,14 +27,20 @@ const rl = createInterface({
   terminal: temTty,
 });
 
-// Truque clássico para esconder input no readline: enquanto `ocultar` estiver
-// ativo, cada eco de tecla escreve "*" em vez do carácter.
+// Máscara do input: enquanto `ocultar` estiver ativo, redesenha a linha
+// inteira com um "*" por carácter do buffer atual (rl.line). Redesenhar —
+// em vez de escrever um "*" por tecla — mantém os asteriscos certos quando
+// se apaga ou edita a meio.
+const MOSTRAR = process.argv.includes("--mostrar");
 let ocultar = false;
+let perguntaAtual = "";
 if (temTty) {
   const escreveOriginal = rl._writeToOutput.bind(rl);
   rl._writeToOutput = (texto) => {
-    if (!ocultar || /^[\r\n]+$/.test(texto)) return escreveOriginal(texto);
-    escreveOriginal("*");
+    if (!ocultar) return escreveOriginal(texto);
+    // O Enter é engolido aqui; o "\n" final é escrito em perguntar().
+    if (/[\r\n]/.test(texto)) return;
+    escreveOriginal("\r\x1b[K" + perguntaAtual + "*".repeat(rl.line.length));
   };
 }
 
@@ -60,10 +67,12 @@ function lerLinha() {
 
 async function perguntar(pergunta, { oculto = false } = {}) {
   process.stdout.write(pergunta);
-  ocultar = oculto && temTty;
+  perguntaAtual = pergunta;
+  ocultar = oculto && !MOSTRAR && temTty;
   const resposta = await lerLinha();
+  const estavaOculto = ocultar;
   ocultar = false;
-  if (oculto && temTty) process.stdout.write("\n");
+  if (estavaOculto) process.stdout.write("\n");
   if (resposta === null) {
     console.error("\nInput terminado — cancelado.");
     process.exit(1);
@@ -85,7 +94,7 @@ function diagnosticarFormato(hash) {
   return false;
 }
 
-const modo = process.argv[2];
+const modo = process.argv.slice(2).find((arg) => arg !== "--mostrar");
 
 if (modo === "--verificar" || modo === "-v") {
   const password = await perguntar("Password a testar: ", { oculto: true });
@@ -110,7 +119,7 @@ if (modo === "--verificar" || modo === "-v") {
 
 if (modo && modo !== "--gerar") {
   console.log(
-    "Uso:\n  node scripts/auth-hash.mjs               gera um hash novo\n  node scripts/auth-hash.mjs --verificar   testa uma password contra um hash"
+    "Uso:\n  node scripts/auth-hash.mjs               gera um hash novo\n  node scripts/auth-hash.mjs --verificar   testa uma password contra um hash\n  (junta --mostrar para veres a password enquanto escreves)"
   );
   rl.close();
   process.exit(modo === "--help" || modo === "-h" ? 0 : 1);
