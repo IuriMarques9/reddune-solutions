@@ -160,14 +160,10 @@ export default async function PortalPage({ params }: { params: Params }) {
                   as="article"
                   className="flex flex-col gap-3.5 rounded-card border-2 border-[rgba(214,66,42,0.38)] bg-sand-warm p-6 shadow-warm"
                 >
-                  <div className="flex min-w-0 flex-wrap items-center gap-3">
-                    <span className="rounded-full bg-ember px-3.5 py-[5px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white">
-                      Orçamento
-                    </span>
-                    <p className="font-display text-[17px] font-semibold tracking-[-0.01em] text-ink [overflow-wrap:anywhere]">
-                      {a.nome}
-                    </p>
-                  </div>
+                  {/* Sem nome de ficheiro: o cliente só precisa de saber que é o orçamento */}
+                  <span className="self-start rounded-full bg-ember px-3.5 py-[5px] font-mono text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white">
+                    Orçamento
+                  </span>
                   {a.data && (
                     <p className="-mt-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-mute">
                       Enviado a {dataPt(a.data)}
