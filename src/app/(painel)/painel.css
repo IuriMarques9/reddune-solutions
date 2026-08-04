@@ -19,8 +19,11 @@
 .pnl .ic { width: 17px; height: 17px; stroke-width: 2px; flex-shrink: 0; }
 
 /* ===================== FRAME ===================== */
-.pnl .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; background: var(--cream); }
-.pnl .app.collapsed { grid-template-columns: 72px 1fr; }
+/* minmax(0,·) e não 1fr: `1fr` é minmax(auto,1fr) e a coluna cresce até ao
+   min-content do conteúdo — uma tabela larga esticava a coluna e, com ela,
+   TODOS os cartões da página para lá do ecrã. */
+.pnl .app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; background: var(--cream); }
+.pnl .app.collapsed { grid-template-columns: 72px minmax(0, 1fr); }
 
 /* ===================== SIDEBAR ===================== */
 .pnl .side { position: relative; background: linear-gradient(180deg, #1f0d09 0%, #2a1410 100%); color: #f5e9d3; display: flex; flex-direction: column; padding: 20px 14px 16px; gap: 16px; border-right: 1px solid rgba(255,255,255,.04); }
@@ -59,6 +62,13 @@
   radial-gradient(ellipse 60% 32% at 12% -8%, rgba(243, 199, 155, 0.30), transparent 60%),
   radial-gradient(ellipse 70% 38% at 110% 12%, rgba(232, 153, 104, 0.16), transparent 65%),
   var(--cream); }
+/* PWA instalada: o root usa viewport-fit=cover, logo o conteúdo passa por baixo
+   da barra de estado / ilha dinâmica. Fora da PWA os env() valem 0 (no-op). */
+.pnl .content {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
 .pnl .side { position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .pnl .main { padding: 26px 32px 40px; max-width: 1200px; margin-inline: auto; }
 
@@ -489,7 +499,10 @@
   .pnl .prod-grid, .pnl .port-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 1023px) {
-  .pnl .app { grid-template-columns: 1fr; }
+  /* `.app.collapsed` tem mais especificidade que `.app` e as media queries não
+     acrescentam nenhuma — sem o segundo selector, quem recolhe a sidebar no
+     desktop fica com a coluna de 72px no telemóvel (conteúdo espremido). */
+  .pnl .app, .pnl .app.collapsed { grid-template-columns: minmax(0, 1fr); }
   .pnl .side { display: none !important; }
   .pnl .content { max-height: none; }
   .pnl .main { padding-bottom: 96px; }
@@ -537,7 +550,9 @@
      anterior (colunas 80vw lado a lado com swipe) escondia colunas fora do
      ecrã e lia-se como "não responsivo". */
   .pnl .kanban { grid-template-columns: 1fr; }
-  .pnl .tbl th, .pnl .tbl td { padding: 10px 10px; }
+  /* `anywhere` (e não `break-word`) porque só este conta para o min-content:
+     uma descrição sem espaços deixa de empurrar a tabela para fora do ecrã. */
+  .pnl .tbl th, .pnl .tbl td { padding: 10px 10px; overflow-wrap: anywhere; }
   .pnl .col-hide-sm { display: none !important; }
   .pnl .prod-grid, .pnl .port-grid { grid-template-columns: 1fr; }
   .pnl .greet { font-size: 21px; }
