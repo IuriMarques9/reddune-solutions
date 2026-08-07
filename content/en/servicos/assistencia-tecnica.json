@@ -16,7 +16,7 @@
   "items": {
     "eyebrow": "Included services",
     "title": "Hardware and physical <em>maintenance</em>.",
-    "lead": "Reference table — the final price depends on the device, number of components and complexity. We always provide a quote before starting work.",
+    "lead": "Reference table — the final price depends on the device, number of components and complexity.",
     "list": [
       {
         "title": "Fault diagnosis",
@@ -49,7 +49,7 @@
         "price": "Office <b>60–75€</b> · Gaming <b>85–110€</b> · High-End <b>120–160€</b>"
       }
     ],
-    "note": "<em>Extras:</em> Rush fee (<48h) <b>25€</b> · On-site call-out <b>0.80€/km</b> · Transparent quotes always shared before any work begins.",
+    "note": "<em>Extras:</em> Rush fee (<48h) <b>25€</b> · On-site call-out <b>0.80€/km</b>.",
     "noteCta": "Request a quote",
     "noteCtaMessage": "Hi! I'd like a quote."
   },
