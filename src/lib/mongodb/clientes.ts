@@ -58,6 +58,7 @@ export async function createClienteFromLead(
   const cliente: Cliente = {
     id: randomUUID(),
     nome: lead.nome,
+    empresa: null,
     email,
     telefone: null,
     nif: null,

@@ -170,6 +170,7 @@ describe("toPortalCliente", () => {
     const c: Cliente = {
       id: "c1",
       nome: "Maria",
+      empresa: POISON,
       email: "m@x.pt",
       telefone: "912",
       nif: null,

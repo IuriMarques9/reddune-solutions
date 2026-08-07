@@ -135,7 +135,14 @@ export default async function ClientesPage() {
               const href = `/painel/clientes/${c.id}`;
               return (
                 <tr key={c.id}>
-                  <td className="name"><CellLink href={href}>{c.nome}</CellLink></td>
+                  <td className="name">
+                    <CellLink href={href}>
+                      {c.nome}
+                      {c.empresa && (
+                        <span className="muted" style={{ fontWeight: 400 }}> · {c.empresa}</span>
+                      )}
+                    </CellLink>
+                  </td>
                   <td className="muted col-hide-sm">
                     <CellLink href={href}>{c.telefone ?? c.email ?? "—"}</CellLink>
                   </td>

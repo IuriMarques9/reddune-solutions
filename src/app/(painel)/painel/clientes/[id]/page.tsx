@@ -73,7 +73,12 @@ export default async function ClienteDetailPage({ params }: { params: Params }) 
       <Topbar
         crumbs={["Cliente"]}
         title={cliente.nome}
-        description={`${projetos.length} projecto${projetos.length === 1 ? "" : "s"} no histórico.`}
+        description={[
+          cliente.empresa,
+          `${projetos.length} projecto${projetos.length === 1 ? "" : "s"} no histórico.`,
+        ]
+          .filter(Boolean)
+          .join(" · ")}
       />
 
       <div className="detail-top">

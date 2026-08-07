@@ -54,7 +54,7 @@ export function ClientePicker({ clientes, value, onChange, disabled, id }: Props
     const termos = norm(q).split(/\s+/).filter(Boolean);
     if (termos.length === 0) return [null, ...clientes];
     return clientes.filter((c) => {
-      const alvo = norm([c.nome, c.email, c.telefone, c.nif].filter(Boolean).join(" "));
+      const alvo = norm([c.nome, c.empresa, c.email, c.telefone, c.nif].filter(Boolean).join(" "));
       return termos.every((t) => alvo.includes(t));
     });
   }, [clientes, q]);

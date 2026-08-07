@@ -29,6 +29,7 @@ export function ClienteQuickForm({ onCreated, onCancel }: Props) {
     setError(null);
     const res = await safeJsonPost<{ id: string }>("/api/clientes/upsert", {
       nome: nome.trim(),
+      empresa: null,
       email: email.trim() || null,
       telefone: telefone.trim() || null,
       nif: null,
@@ -44,6 +45,7 @@ export function ClienteQuickForm({ onCreated, onCancel }: Props) {
     onCreated({
       id: res.data.id,
       nome: nome.trim(),
+      empresa: null,
       email: email.trim() || null,
       telefone: telefone.trim() || null,
       nif: null,

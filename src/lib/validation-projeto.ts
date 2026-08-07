@@ -81,6 +81,7 @@ export const lembreteInputSchema = lembreteSchema.partial({ id: true, criadoEm: 
 export const clienteSchema = z.object({
   id: z.string().min(1).max(128),
   nome: z.string().min(1).max(300),
+  empresa: z.string().max(300).nullable(),
   email: z.string().max(300).nullable(),
   telefone: z.string().max(50).nullable(),
   nif: z.string().max(20).nullable(),
@@ -89,7 +90,7 @@ export const clienteSchema = z.object({
   criadoEm: z.string(),
 });
 
-export const clienteInputSchema = clienteSchema.partial({ id: true, criadoEm: true });
+export const clienteInputSchema = clienteSchema.partial({ id: true, criadoEm: true, empresa: true });
 
 export type ProjetoInput = z.infer<typeof projetoInputSchema>;
 export type LembreteInput = z.infer<typeof lembreteInputSchema>;

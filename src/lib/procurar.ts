@@ -30,7 +30,7 @@ function projetoHaystack(p: Projeto): string {
 }
 
 function clienteHaystack(c: Cliente): string {
-  return normPesquisa([c.nome, c.email ?? "", c.telefone ?? "", c.nif ?? ""].join(" "));
+  return normPesquisa([c.nome, c.empresa ?? "", c.email ?? "", c.telefone ?? "", c.nif ?? ""].join(" "));
 }
 
 function lembreteHaystack(t: Lembrete): string {

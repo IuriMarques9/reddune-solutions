@@ -19,6 +19,7 @@ export const POST = withAuth(async (session, request) => {
   const cliente: Cliente = {
     id,
     nome: input.nome,
+    empresa: input.empresa ?? null,
     email: input.email ?? null,
     telefone: input.telefone ?? null,
     nif: input.nif ?? null,
