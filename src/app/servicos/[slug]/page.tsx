@@ -533,13 +533,6 @@ export default async function ServicoSlugPage({ params }: PageProps) {
             ))}
           </div>
 
-          {/* Nota IVA — discreta, uma vez por página */}
-          <Reveal>
-            <p className="mt-6 font-mono text-[11px] tracking-[0.08em] text-ink-mute">
-              {tServ("price.vatNote")}
-            </p>
-          </Reveal>
-
           {/* Note row */}
           <Reveal>
             <div
@@ -550,15 +543,21 @@ export default async function ServicoSlugPage({ params }: PageProps) {
                 "px-8 py-7",
               )}
             >
-              <p
-                className={cn(
-                  "text-[15px] md:text-[16px] leading-[1.6]",
-                  "[&_em]:font-serif [&_em]:italic [&_em]:font-medium [&_em]:text-apricot",
-                  "[&_b]:text-apricot [&_b]:font-semibold",
-                )}
-              >
-                {renderRich(content.items.note)}
-              </p>
+              <div>
+                <p
+                  className={cn(
+                    "text-[15px] md:text-[16px] leading-[1.6]",
+                    "[&_em]:font-serif [&_em]:italic [&_em]:font-medium [&_em]:text-apricot",
+                    "[&_b]:text-apricot [&_b]:font-semibold",
+                  )}
+                >
+                  {renderRich(content.items.note)}
+                </p>
+                {/* Nota IVA — informação discreta dentro do card */}
+                <p className="mt-3 font-mono text-[11px] tracking-[0.08em] text-cream-deep">
+                  {tServ("price.vatNote")}
+                </p>
+              </div>
               <WhatsappLink
                 message={content.items.noteCtaMessage}
                 className={cn(

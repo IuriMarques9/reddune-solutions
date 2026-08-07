@@ -255,7 +255,6 @@
             "onRequest": "Sob consulta",
             "from": "desde",
             "to": "a",
-            "vatSuffix": "+ IVA",
             "vatNote": "Preços de referência sem IVA — acresce IVA à taxa legal em vigor. Orçamento final sempre antes de qualquer trabalho."
         },
         "hub": {
