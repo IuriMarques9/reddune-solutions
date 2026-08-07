@@ -255,7 +255,7 @@
             "onRequest": "On request",
             "from": "from",
             "to": "to",
-            "vatNote": "Reference prices excluding VAT — VAT is added at the applicable legal rate. You always get a final quote before any work."
+            "vatNote": "Reference prices excluding VAT — VAT is added at the applicable legal rate."
         },
         "hub": {
             "hero": {
