@@ -172,6 +172,11 @@ export function ProductCard({ product, locale }: Props) {
           <div>
             <div className="font-display text-[22px] font-bold leading-none text-ink">
               {priceLabel}
+              {product.price > 0 && (
+                <span className="ml-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-mute">
+                  {t("vatSuffix")}
+                </span>
+              )}
             </div>
             {(() => {
               const cm = conditionMeta(product.condition.pt || product.condition[locale]);

@@ -57,6 +57,7 @@ const SERVICE_VISUALS: ReadonlyArray<ServiceVisualConfig> = [
 
 function ServicesHubBody({ precosDb }: { precosDb: Record<string, number | null> }) {
   const t = useTranslations("ServicosPage.hub");
+  const tPrice = useTranslations("ServicosPage.price");
 
   return (
     <>
@@ -154,7 +155,8 @@ function ServicesHubBody({ precosDb }: { precosDb: Record<string, number | null>
                       t.rich(`cards.${svc.slug}.price`, {
                         b: (chunks) => <b>{chunks}</b>,
                       })
-                    )}
+                    )}{" "}
+                    <span className="text-ink-mute">{tPrice("vatSuffix")}</span>
                   </span>
                   <span
                     aria-hidden
@@ -172,6 +174,13 @@ function ServicesHubBody({ precosDb }: { precosDb: Record<string, number | null>
             </Reveal>
           ))}
         </div>
+
+        {/* Nota IVA — discreta, uma vez por página */}
+        <Reveal>
+          <p className="mt-6 font-mono text-[11px] tracking-[0.08em] text-ink-mute">
+            {tPrice("vatNote")}
+          </p>
+        </Reveal>
       </section>
 
       {/* Big mark */}

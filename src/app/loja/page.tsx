@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { PageHero } from "@/components/sections/PageHero";
@@ -196,6 +196,7 @@ export default async function ShopPage() {
   const products = await getAllProducts();
   const locale = await getLocale();
   const isPt = locale !== "en";
+  const tShop = await getTranslations("ShopPage");
 
   const catalogSchema = itemListLd({
     url: `${publicEnv.baseUrl}/loja`,
@@ -227,6 +228,11 @@ export default async function ShopPage() {
               qualquer h2 (salto h1→h3 na hierarquia). */}
           <h2 className="sr-only">{isPt ? "Catálogo" : "Catalogue"}</h2>
           <ProductGrid products={products} />
+          {products.length > 0 && (
+            <p className="mx-auto w-full max-w-content px-8 mt-6 font-mono text-[11px] tracking-[0.08em] text-ink-mute">
+              {tShop("vatNote")}
+            </p>
+          )}
         </section>
         <WarrantyStrip />
       </main>

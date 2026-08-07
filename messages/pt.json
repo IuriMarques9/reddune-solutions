@@ -254,7 +254,9 @@
         "price": {
             "onRequest": "Sob consulta",
             "from": "desde",
-            "to": "a"
+            "to": "a",
+            "vatSuffix": "+ IVA",
+            "vatNote": "Preços de referência sem IVA — acresce IVA à taxa legal em vigor. Orçamento final sempre antes de qualquer trabalho."
         },
         "hub": {
             "hero": {
@@ -455,6 +457,8 @@
         },
         "featuredBadge": "Destaque",
         "contactPrice": "Consultar preço",
+        "vatSuffix": "+ IVA",
+        "vatNote": "Preços sem IVA — acresce IVA à taxa legal em vigor.",
         "contactButton": "Contactar sobre este produto",
         "searchPlaceholder": "Pesquisar produtos...",
         "noResults": "Nenhum produto encontrado com essa pesquisa.",

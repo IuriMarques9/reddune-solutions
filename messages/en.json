@@ -254,7 +254,9 @@
         "price": {
             "onRequest": "On request",
             "from": "from",
-            "to": "to"
+            "to": "to",
+            "vatSuffix": "+ VAT",
+            "vatNote": "Reference prices excluding VAT — VAT is added at the applicable legal rate. You always get a final quote before any work."
         },
         "hub": {
             "hero": {
@@ -455,6 +457,8 @@
         },
         "featuredBadge": "Featured",
         "contactPrice": "Contact for price",
+        "vatSuffix": "+ VAT",
+        "vatNote": "Prices exclude VAT — VAT is added at the applicable legal rate.",
         "contactButton": "Contact about this product",
         "searchPlaceholder": "Search products...",
         "noResults": "No products found matching your search.",

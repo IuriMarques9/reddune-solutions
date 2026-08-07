@@ -533,6 +533,13 @@ export default async function ServicoSlugPage({ params }: PageProps) {
             ))}
           </div>
 
+          {/* Nota IVA — discreta, uma vez por página */}
+          <Reveal>
+            <p className="mt-6 font-mono text-[11px] tracking-[0.08em] text-ink-mute">
+              {tServ("price.vatNote")}
+            </p>
+          </Reveal>
+
           {/* Note row */}
           <Reveal>
             <div
