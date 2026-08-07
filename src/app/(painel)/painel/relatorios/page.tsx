@@ -111,15 +111,20 @@ export default async function RelatoriosPage({
     return s.web + s.assist + s.soft;
   }));
   // Altura por unidade: escala ao mês mais cheio, com tecto para poucos projectos.
-  const hpu = Math.min(40, 150 / mbarMax);
+  // Cada segmento com projectos tem um mínimo de 16px para o número caber SEMPRE
+  // (senão 1-2 projectos ficam uma fatia fina e ilegível). O 140 (e não os 150
+  // antigos) deixa folga no .mbars de 190px para os mínimos não estourarem a
+  // coluna no pior caso (mês cheio + duas categorias de 1).
+  const hpu = Math.min(40, 140 / mbarMax);
+  const MIN_SEG = 16;
   const mbarData = months7.map((m) => {
     const s = mbarCounts.get(m.key) ?? EMPTY_SLOT;
     // Ordem no DOM = de baixo para cima (.stack é column-reverse): Web, Assistência, Software.
     const segs = [
-      { k: "web", n: s.web, color: "var(--ember)" },
-      { k: "assist", n: s.assist, color: "var(--apricot)" },
-      { k: "soft", n: s.soft, color: "var(--dune)" },
-    ].map((seg) => ({ ...seg, h: Math.round(seg.n * hpu) }));
+      { k: "web", n: s.web, label: "Web & Digital", color: "var(--ember)" },
+      { k: "assist", n: s.assist, label: "Assistência", color: "var(--apricot)" },
+      { k: "soft", n: s.soft, label: "Software", color: "var(--dune)" },
+    ].map((seg) => ({ ...seg, h: seg.n > 0 ? Math.max(MIN_SEG, Math.round(seg.n * hpu)) : 0 }));
     return { key: m.key, l: m.label, total: s.web + s.assist + s.soft, segs };
   });
 
@@ -373,8 +378,13 @@ export default async function RelatoriosPage({
               <div className={m.total === 0 ? "stack empty-stack" : "stack"}>
                 {m.segs.map((s) =>
                   s.n > 0 ? (
-                    <div key={s.k} className="seg" style={{ height: s.h, background: s.color }}>
-                      {s.h >= 18 && <b>{s.n}</b>}
+                    <div
+                      key={s.k}
+                      className="seg"
+                      style={{ height: s.h, background: s.color }}
+                      title={`${s.label}: ${s.n}`}
+                    >
+                      <b>{s.n}</b>
                     </div>
                   ) : null
                 )}
