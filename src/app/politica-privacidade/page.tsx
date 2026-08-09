@@ -6,6 +6,7 @@ import { Reveal } from "@/components/motion/Reveal";
 import { ClosingCTA } from "@/components/sections/ClosingCTA";
 import { getLocale, getTranslations } from "next-intl/server";
 import { buildMetadata } from "@/lib/seo";
+import { PHONE, EMAIL } from "@/lib/constants";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -80,7 +81,7 @@ export default async function PrivacyPolicyPage() {
           {[
             { dt: t("section1Company"), dd: t("section1CompanyValue") },
             { dt: t("section1Office"), dd: t("section1OfficeValue") },
-            { dt: t("section1Contact"), dd: t("section1ContactValue") },
+            { dt: t("section1Contact"), dd: t("section1ContactValue", { email: EMAIL, phone: PHONE }) },
           ].map((row) => (
             <div key={row.dt} className="flex flex-col sm:flex-row sm:gap-2">
               <dt className="font-semibold text-ink min-w-[220px]">{row.dt}</dt>

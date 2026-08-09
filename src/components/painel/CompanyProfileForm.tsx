@@ -77,6 +77,11 @@ export function CompanyProfileForm({ settings }: Props) {
 
   return (
     <form onSubmit={onSubmit}>
+      <p className="muted" style={{ fontSize: 12, marginBottom: 14 }}>
+        Estes dados são usados no painel e em documentos internos — <b>não</b>{" "}
+        alteram os contactos do site público (esses vivem no código, em{" "}
+        <code>src/lib/constants.ts</code>).
+      </p>
       <div className="row" style={{ gap: 18, marginBottom: 18, alignItems: "flex-start" }}>
         <div
           style={{

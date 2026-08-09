@@ -348,6 +348,31 @@ export default async function ServicoSlugPage({ params }: PageProps) {
         price: formatPreco(s, priceLabels, loc),
         imageUrl: s.imageUrl ?? null,
       }));
+
+      // Stats com € derivam da DB: liga o label da stat ("Landing", "Diagnóstico",
+      // "Formatação"…) ao serviço cujo título o contenha e usa o mínimo real.
+      // Sem isto, mudar um preço no painel actualizava a tabela mas deixava o
+      // número grande da stat com o valor antigo NA MESMA página. Sufixos com
+      // "/" ("€/km") não são preços de tabela; sem correspondência fica o valor
+      // do ficheiro.
+      const normStat = (s: string) =>
+        s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+      const fmtStat = (n: number) =>
+        n >= 1000 ? `${(n / 1000).toString().replace(".", ",")}k` : String(n);
+      content.stats = content.stats.map((stat) => {
+        if (!stat.valueSuffix?.includes("€") || stat.valueSuffix.includes("/")) return stat;
+        const alvo = normStat(stat.label);
+        const match = dbServicos.find((s) => normStat(servicoTitulo(s, loc)).includes(alvo));
+        if (!match) return stat;
+        const minimos = [
+          ...(typeof match.precoBase === "number" ? [match.precoBase] : []),
+          ...(match.variantes ?? [])
+            .map((v) => v.preco)
+            .filter((p): p is number => typeof p === "number"),
+        ];
+        if (minimos.length === 0) return stat;
+        return { ...stat, value: fmtStat(Math.min(...minimos)) };
+      });
     }
   } catch (e) {
     console.error("DB servicos fetch falhou, fallback ao JSON:", e);

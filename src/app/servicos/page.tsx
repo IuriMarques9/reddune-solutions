@@ -57,6 +57,7 @@ const SERVICE_VISUALS: ReadonlyArray<ServiceVisualConfig> = [
 
 function ServicesHubBody({ precosDb }: { precosDb: Record<string, number | null> }) {
   const t = useTranslations("ServicosPage.hub");
+  const tPrice = useTranslations("ServicosPage.price");
 
   return (
     <>
@@ -151,9 +152,9 @@ function ServicesHubBody({ precosDb }: { precosDb: Record<string, number | null>
                     {precosDb[svc.slug] != null ? (
                       <>desde <b>{precosDb[svc.slug]}€</b></>
                     ) : (
-                      t.rich(`cards.${svc.slug}.price`, {
-                        b: (chunks) => <b>{chunks}</b>,
-                      })
+                      // Sem preço na DB não se inventa número: os fallbacks fixos
+                      // ("desde 15€") desactualizavam quando os preços mudavam no painel.
+                      <b>{tPrice("onRequest")}</b>
                     )}
                   </span>
                   <span
