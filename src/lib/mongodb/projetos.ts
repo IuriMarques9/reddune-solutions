@@ -224,13 +224,14 @@ export async function pullLink(projetoId: string, linkId: string): Promise<boole
 }
 
 /**
- * Marca/desmarca a categoria de um arquivo, atomicamente ($map sobre o array
- * — ver pushArquivo para o porquê de não fazer read-modify-write).
+ * Actualiza campos de um arquivo (categoria/descrição), atomicamente ($map
+ * sobre o array — ver pushArquivo para o porquê de não fazer
+ * read-modify-write). Só os campos presentes no patch são tocados.
  */
-export async function setArquivoCategoria(
+export async function patchArquivo(
   projetoId: string,
   arquivoId: string,
-  categoria: "orcamento" | null
+  patch: Partial<Pick<ProjetoArquivo, "categoria" | "descricao">>
 ): Promise<boolean> {
   const db = await getDb();
   const result = await db.collection<Projeto>(COLLECTION).updateOne({ id: projetoId }, [
@@ -243,7 +244,7 @@ export async function setArquivoCategoria(
             in: {
               $cond: [
                 { $eq: ["$$a.id", arquivoId] },
-                { $mergeObjects: ["$$a", { categoria }] },
+                { $mergeObjects: ["$$a", patch] },
                 "$$a",
               ],
             },

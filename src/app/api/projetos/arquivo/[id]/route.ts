@@ -4,10 +4,11 @@ import { auth } from "@/lib/auth";
 import {
   getProjetoById,
   pullArquivo,
-  setArquivoCategoria,
+  patchArquivo,
 } from "@/lib/mongodb/projetos";
 import { logMutation } from "@/lib/mongodb/mutation-audit";
 import { deleteManagedBlob } from "@/lib/blob";
+import { ARQUIVO_DESCRICAO_MAX, type ProjetoArquivo } from "@/types/projeto";
 
 export const dynamic = "force-dynamic";
 
@@ -58,7 +59,11 @@ export async function GET(request: Request, { params }: { params: Params }) {
   return new NextResponse(upstream.body, { status: 200, headers });
 }
 
-/** Marca/desmarca um ficheiro como orçamento (destaque no portal). */
+/**
+ * Actualiza um ficheiro: marca/desmarca como orçamento (destaque no portal) e/ou
+ * escreve a descrição que o cliente vê por baixo do nome. Campos ausentes do
+ * body ficam como estavam.
+ */
 export async function PATCH(request: Request, { params }: { params: Params }) {
   const session = await auth();
   if (!session?.user) {
@@ -71,16 +76,49 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
     return NextResponse.json({ error: "projetoId em falta" }, { status: 400 });
   }
 
-  let body: { categoria?: unknown };
+  let body: { categoria?: unknown; descricao?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Body inválido" }, { status: 400 });
   }
-  const categoria = body.categoria;
-  if (categoria !== "orcamento" && categoria !== null) {
+
+  const patch: Partial<Pick<ProjetoArquivo, "categoria" | "descricao">> = {};
+
+  if ("categoria" in body) {
+    const categoria = body.categoria;
+    if (categoria !== "orcamento" && categoria !== null) {
+      return NextResponse.json(
+        { error: 'categoria tem de ser "orcamento" ou null' },
+        { status: 400 }
+      );
+    }
+    patch.categoria = categoria;
+  }
+
+  if ("descricao" in body) {
+    const bruta = body.descricao;
+    if (bruta !== null && typeof bruta !== "string") {
+      return NextResponse.json(
+        { error: "descricao tem de ser texto ou null" },
+        { status: 400 }
+      );
+    }
+    // Legenda de UMA linha: espaços/quebras colapsados (o portal renderiza-a
+    // como texto simples, sem whitespace-pre).
+    const limpa = (bruta ?? "").replace(/\s+/g, " ").trim();
+    if (limpa.length > ARQUIVO_DESCRICAO_MAX) {
+      return NextResponse.json(
+        { error: `Descrição demasiado longa (máx. ${ARQUIVO_DESCRICAO_MAX} caracteres)` },
+        { status: 400 }
+      );
+    }
+    patch.descricao = limpa || null;
+  }
+
+  if (Object.keys(patch).length === 0) {
     return NextResponse.json(
-      { error: 'categoria tem de ser "orcamento" ou null' },
+      { error: "Nada para actualizar (categoria e/ou descricao)" },
       { status: 400 }
     );
   }
@@ -92,14 +130,15 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
   }
   // Orçamento é entregável NOSSO — ficheiros enviados pelo cliente nem aparecem
   // como entregáveis no portal, marcá-los seria um destaque que nunca se vê.
-  if (arquivo.origem === "cliente") {
+  // (A descrição, essa, pode ser posta em qualquer ficheiro.)
+  if (patch.categoria === "orcamento" && arquivo.origem === "cliente") {
     return NextResponse.json(
       { error: "Ficheiros enviados pelo cliente não podem ser marcados como orçamento" },
       { status: 400 }
     );
   }
 
-  const ok = await setArquivoCategoria(projetoId, id, categoria);
+  const ok = await patchArquivo(projetoId, id, patch);
   if (!ok) {
     return NextResponse.json({ error: "Falha ao actualizar projeto" }, { status: 500 });
   }
@@ -109,7 +148,7 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
     entityId: projetoId,
     op: "update",
     userEmail: session.user.email ?? null,
-    after: { arquivoCategoria: { id, nome: arquivo.nome, categoria } },
+    after: { arquivoPatch: { id, nome: arquivo.nome, ...patch } },
   });
 
   revalidatePath(`/painel/projetos/${projetoId}`);

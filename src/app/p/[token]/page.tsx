@@ -169,6 +169,9 @@ export default async function PortalPage({ params }: { params: Params }) {
                       Enviado a {dataPt(a.data)}
                     </p>
                   )}
+                  {a.descricao && (
+                    <p className="-mt-1 text-[15px] leading-relaxed text-ink-soft">{a.descricao}</p>
+                  )}
                   <ConteudoArquivo arquivo={a} src={arquivoSrc(a.id)} />
                   <ComentarioForm token={token} arquivoId={a.id} compact />
                 </Reveal>
@@ -204,9 +207,12 @@ export default async function PortalPage({ params }: { params: Params }) {
                     {a.nome}
                   </p>
                   <p className="shrink-0 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-mute">
-                    {Math.max(1, Math.round(a.tamanho / 1024))} KB
+                    {tamanhoPt(a.tamanho)}
                   </p>
                 </div>
+                {a.descricao && (
+                  <p className="-mt-1.5 text-[15px] leading-relaxed text-ink-soft">{a.descricao}</p>
+                )}
                 <ConteudoArquivo arquivo={a} src={arquivoSrc(a.id)} />
                 <ComentarioForm token={token} arquivoId={a.id} compact />
               </Reveal>
@@ -226,12 +232,17 @@ export default async function PortalPage({ params }: { params: Params }) {
             <ul className="mt-[18px] flex flex-col gap-2.5 border-t border-dashed border-[rgba(90,14,14,0.16)] pt-4 text-sm">
               {meusFicheiros.map((a) => (
                 <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[12px] border border-[rgba(90,14,14,0.10)] bg-[rgba(255,250,240,0.70)] px-3 py-2.5">
-                  <a
-                    href={arquivoSrc(a.id)}
-                    className="font-medium text-ink transition-colors hover:text-ember hover:underline [overflow-wrap:anywhere]"
-                  >
-                    {a.nome}
-                  </a>
+                  <div className="min-w-0">
+                    <a
+                      href={arquivoSrc(a.id)}
+                      className="font-medium text-ink transition-colors hover:text-ember hover:underline [overflow-wrap:anywhere]"
+                    >
+                      {a.nome}
+                    </a>
+                    {a.descricao && (
+                      <p className="text-[13px] leading-snug text-ink-soft">{a.descricao}</p>
+                    )}
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="shrink-0 font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-mute">
                       {tamanhoPt(a.tamanho)}
@@ -346,14 +357,35 @@ function ConteudoArquivo({ arquivo, src }: { arquivo: PortalArquivoDTO; src: str
   }
   if (arquivo.tipo === "text/html") return <PreviewFrame src={src} title={arquivo.nome} html />;
   if (arquivo.tipo === "application/pdf") return <PreviewFrame src={src} title={arquivo.nome} />;
+  // Word/Excel/OpenDocument/ZIP — o browser não os pré-visualiza. Em vez de um
+  // "Descarregar ↓" solto (no cartão do orçamento nem o nome aparece), damos o
+  // nome, o formato e o tamanho: o cliente sabe o que está a descarregar.
   return (
     <a
       href={src}
-      className="text-sm font-semibold text-ember transition-colors hover:text-dune hover:underline"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[14px] border border-dashed border-[rgba(90,14,14,0.22)] bg-[rgba(255,250,240,0.60)] px-4 py-3.5 transition-colors hover:border-ember hover:bg-[rgba(214,66,42,0.05)]"
     >
-      Descarregar ↓
+      <span className="font-semibold text-ink [overflow-wrap:anywhere]">{arquivo.nome}</span>
+      <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ink-mute">
+        {formatoPt(arquivo.tipo)} · {tamanhoPt(arquivo.tamanho)}
+      </span>
+      <span className="ml-auto shrink-0 text-sm font-semibold text-ember">Descarregar ↓</span>
     </a>
   );
+}
+
+/** Rótulo humano do formato — o cliente não lê MIME types. */
+function formatoPt(tipo: string): string {
+  if (tipo.includes("wordprocessingml") || tipo === "application/msword") return "Word";
+  if (tipo.includes("opendocument.text")) return "OpenDocument";
+  if (tipo.includes("spreadsheetml") || tipo === "application/vnd.ms-excel") return "Excel";
+  if (tipo.includes("opendocument.spreadsheet")) return "Folha de cálculo";
+  if (tipo.includes("presentation")) return "Apresentação";
+  if (tipo === "text/csv") return "CSV";
+  if (tipo === "text/plain") return "Texto";
+  if (tipo === "application/rtf") return "RTF";
+  if (tipo === "application/zip") return "ZIP";
+  return "Ficheiro";
 }
 
 function Info({ label, value }: { label: string; value: string }) {

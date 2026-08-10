@@ -113,12 +113,28 @@ describe("toPortalProjeto", () => {
     expect(dto.tipoLabels).toEqual(["Web", "slug-custom"]);
   });
 
-  it("arquivos só com id/nome/tipo/tamanho/data/origem/orcamento e hardware sem serial", () => {
+  it("arquivos só com id/nome/tipo/tamanho/data/origem/orcamento/descricao e hardware sem serial", () => {
     const dto = toPortalProjeto(makeProjeto(), pagamentos);
     expect(dto.arquivos).toEqual([
-      { id: "a1", nome: "orcamento.pdf", tipo: "application/pdf", tamanho: 1234, data: "2026-07-02", origem: "nos", orcamento: false },
+      { id: "a1", nome: "orcamento.pdf", tipo: "application/pdf", tamanho: 1234, data: "2026-07-02", origem: "nos", orcamento: false, descricao: null },
     ]);
     expect(dto.hardware).toEqual({ marca: "Asus", modelo: "X515" });
+  });
+
+  it("descrição do painel passa ao portal (trim; vazio vira null)", () => {
+    const p = makeProjeto();
+    const base = p.arquivos![0]!;
+    p.arquivos = [
+      { ...base, id: "com", descricao: "  Orçamento sem a placa gráfica  " },
+      { ...base, id: "vazia", descricao: "   " },
+      { ...base, id: "sem" },
+    ];
+    const dto = toPortalProjeto(p, []);
+    expect(dto.arquivos.map((a) => a.descricao)).toEqual([
+      "Orçamento sem a placa gráfica",
+      null,
+      null,
+    ]);
   });
 
   it("categoria 'orcamento' vira orcamento:true — mas nunca em ficheiros do cliente", () => {

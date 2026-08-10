@@ -3,16 +3,14 @@
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import imageCompression from "browser-image-compression";
+import { MIME_PORTAL, acceptAttr } from "@/lib/upload-mime";
 
 type Props = { token: string };
 
 type Pendente = { id: string; nome: string; estado: "a-preparar" | "a-enviar" | "erro"; erro?: string };
 
-const ACCEPT =
-  "image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf," +
-  "application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document," +
-  "application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet," +
-  "text/csv,text/plain,application/zip,.zip";
+// Mesma allowlist do servidor (/api/portal/arquivo) — sem HTML/SVG.
+const ACCEPT = acceptAttr(MIME_PORTAL);
 
 const COMPRESSAO = {
   maxSizeMB: 0.6,

@@ -28,6 +28,9 @@ export type PortalArquivoDTO = {
   // Só o MAIS RECENTE dos marcados chega ao cliente (os antigos são histórico
   // do painel e ficam fora do DTO). Nunca true para ficheiros do cliente.
   orcamento: boolean;
+  // Legenda escrita por nós no painel ("Orçamento sem a placa gráfica"). É
+  // texto DELIBERADAMENTE público — o painel avisa disso no campo.
+  descricao: string | null;
 };
 export type PortalLinkDTO = { id: string; label: string; url: string };
 export type PortalValoresDTO = {
@@ -148,6 +151,7 @@ function toPortalArquivos(
       data: a.dataUpload ?? null,
       origem: a.origem === "cliente" ? ("cliente" as const) : ("nos" as const),
       orcamento: atual !== null && a.id === atual.id,
+      descricao: a.descricao?.trim() || null,
     }));
 }
 

@@ -7,28 +7,11 @@ import { rateLimitDistributed, getClientIp } from "@/lib/rate-limit";
 import { getProjetoById, pushArquivo } from "@/lib/mongodb/projetos";
 import { logMutation } from "@/lib/mongodb/mutation-audit";
 import { sanitizeArquivo, type ProjetoArquivo } from "@/types/projeto";
+import { MIME_PAINEL, resolveTipoUpload } from "@/lib/upload-mime";
 
 export const dynamic = "force-dynamic";
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10MB (PDFs/orçamentos)
-
-// Imagens + documentos comuns (orçamentos, recibos) + mockups HTML de ficheiro
-// único (Claude Design) — servidos ao cliente só via proxy do portal com CSP sandbox.
-const EXT_BY_MIME: Record<string, string> = {
-  "text/html": "html",
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/heic": "heic",
-  "image/heif": "heif",
-  "application/pdf": "pdf",
-  "application/msword": "doc",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
-  "application/vnd.ms-excel": "xls",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
-  "text/csv": "csv",
-  "text/plain": "txt",
-};
 
 function safeName(name: string): string {
   return name.replace(/[\r\n"]/g, "").trim().slice(0, 200) || "ficheiro";
@@ -70,8 +53,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Campo 'file' em falta" }, { status: 400 });
   }
 
-  const ext = EXT_BY_MIME[file.type];
-  if (!ext) {
+  // Um orçamento tanto pode ser PDF como .docx, .xlsx, .odt, uma foto ou um ZIP
+  // — a allowlist (partilhada com o portal) é que manda, não a extensão que o
+  // browser calhou dizer. Ver resolveTipoUpload.
+  const tipo = resolveTipoUpload(file, MIME_PAINEL);
+  const ext = tipo ? MIME_PAINEL[tipo] : undefined;
+  if (!tipo || !ext) {
     return NextResponse.json(
       { error: `Tipo não suportado (${file.type || "desconhecido"})` },
       { status: 415 }
@@ -103,7 +90,7 @@ export async function POST(request: Request) {
   try {
     const blob = await put(basePath, file, {
       access: "public",
-      contentType: file.type,
+      contentType: tipo,
       addRandomSuffix: true,
     });
     blobUrl = blob.url;
@@ -123,7 +110,7 @@ export async function POST(request: Request) {
     url: `/api/projetos/arquivo/${arquivoId}?projetoId=${projetoId}`,
     nome: safeName(file.name),
     tamanho: file.size,
-    tipo: file.type,
+    tipo,
     dataUpload: new Date().toISOString(),
   };
 

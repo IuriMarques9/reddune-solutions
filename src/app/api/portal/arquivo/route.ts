@@ -8,6 +8,7 @@ import { pushArquivo } from "@/lib/mongodb/projetos";
 import { logMutation } from "@/lib/mongodb/mutation-audit";
 import { sendPushToAll } from "@/lib/push";
 import type { ProjetoArquivo } from "@/types/projeto";
+import { MIME_PORTAL, resolveTipoUpload } from "@/lib/upload-mime";
 
 export const dynamic = "force-dynamic";
 
@@ -15,37 +16,10 @@ const MAX_BYTES = 10 * 1024 * 1024; // 10MB por ficheiro
 const MAX_24H = 20; // por projecto, por dia
 const MAX_TOTAL = 60; // por projecto (tecto de custo do Blob)
 
-// Allowlist do que o CLIENTE pode enviar. Propositadamente SEM `text/html` e sem
-// SVG: HTML/SVG de terceiros servido no nosso domínio é XSS na origem reddune
-// (ver hospedar-html-nao-confiavel-no-teu-dominio). Mockups HTML continuam a
-// entrar só pelo painel, com CSP sandbox.
-const EXT_BY_MIME: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/heic": "heic",
-  "image/heif": "heif",
-  "application/pdf": "pdf",
-  "application/msword": "doc",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
-  "application/vnd.ms-excel": "xls",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
-  "text/csv": "csv",
-  "text/plain": "txt",
-  "application/zip": "zip",
-};
-
-/** MIME normalizado, ou null se o tipo não for aceite. */
-function tipoAceite(file: File): string | null {
-  const t = (file.type || "").toLowerCase().split(";")[0]!.trim();
-  if (t === "application/x-zip-compressed" || t === "application/x-zip") return "application/zip";
-  if (EXT_BY_MIME[t]) return t;
-  // Windows/Android nem sempre põem MIME no .zip — aceita pela extensão.
-  if ((t === "" || t === "application/octet-stream") && /\.zip$/i.test(file.name)) {
-    return "application/zip";
-  }
-  return null;
-}
+// Allowlist do que o CLIENTE pode enviar: MIME_PORTAL, propositadamente SEM
+// `text/html` e sem SVG — HTML/SVG de terceiros servido no nosso domínio é XSS
+// na origem reddune (ver hospedar-html-nao-confiavel-no-teu-dominio). Mockups
+// HTML continuam a entrar só pelo painel, com CSP sandbox.
 
 function safeName(name: string): string {
   return name.replace(/[\r\n"]/g, "").trim().slice(0, 200) || "ficheiro";
@@ -83,7 +57,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Ficheiro em falta" }, { status: 400 });
   }
 
-  const tipo = tipoAceite(file);
+  const tipo = resolveTipoUpload(file, MIME_PORTAL);
   if (!tipo) {
     return NextResponse.json(
       { error: `Tipo de ficheiro não aceite (${file.type || "desconhecido"})` },
@@ -123,7 +97,7 @@ export async function POST(request: Request) {
   const arquivoId = randomUUID();
   // addRandomSuffix: TRUE — sem sufixo o URL público do Blob seria adivinhável
   // e contornaria o proxy/revogação (ver /api/projetos/arquivo).
-  const basePath = `projetos/${projeto.id}/${arquivoId}.${EXT_BY_MIME[tipo]}`;
+  const basePath = `projetos/${projeto.id}/${arquivoId}.${MIME_PORTAL[tipo]}`;
 
   let blobUrl: string;
   let pathname: string;

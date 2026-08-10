@@ -2,11 +2,25 @@
 
 import { useState, useRef, useCallback } from "react";
 import imageCompression from "browser-image-compression";
-import { Upload, X, Loader2, FileText, FileSpreadsheet, ImageIcon, File as FileIcon, BadgeEuro, type LucideIcon } from "lucide-react";
+import {
+  Upload,
+  X,
+  Loader2,
+  FileText,
+  FileSpreadsheet,
+  FileArchive,
+  ImageIcon,
+  File as FileIcon,
+  BadgeEuro,
+  Pencil,
+  Check,
+  type LucideIcon,
+} from "lucide-react";
 import { safeFetch, safeJsonPatch } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
-import type { ProjetoArquivo } from "@/types/projeto";
+import { ARQUIVO_DESCRICAO_MAX, type ProjetoArquivo } from "@/types/projeto";
+import { MIME_PAINEL, acceptAttr } from "@/lib/upload-mime";
 
 type Props = {
   projetoId: string;
@@ -30,11 +44,9 @@ const COMPRESSION_OPTS = {
   initialQuality: 0.82,
 };
 
-const ACCEPT =
-  "image/jpeg,image/png,image/webp,image/heic,image/heif,application/pdf," +
-  "application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document," +
-  "application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet," +
-  "text/csv,text/plain";
+// Mesma allowlist do servidor (/api/projetos/arquivo) — o seletor de ficheiros
+// nunca fica mais apertado do que o que a API aceita.
+const ACCEPT = acceptAttr(MIME_PAINEL);
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -46,7 +58,8 @@ function iconFor(tipo: string): LucideIcon {
   if (tipo.startsWith("image/")) return ImageIcon;
   if (tipo === "application/pdf" || tipo === "text/plain") return FileText;
   if (tipo.includes("spreadsheet") || tipo.includes("excel") || tipo === "text/csv") return FileSpreadsheet;
-  if (tipo.includes("word")) return FileText;
+  if (tipo.includes("word") || tipo.includes("opendocument.text") || tipo === "application/rtf") return FileText;
+  if (tipo === "application/zip") return FileArchive;
   return FileIcon;
 }
 
@@ -70,6 +83,10 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
   const [pending, setPending] = useState<Pending[]>([]);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [markingId, setMarkingId] = useState<string | null>(null);
+  // Descrição do ficheiro — editada inline por baixo do chip.
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+  const [rascunho, setRascunho] = useState("");
+  const [guardandoId, setGuardandoId] = useState<string | null>(null);
 
   // O cliente só vê o orçamento marcado MAIS RECENTE (mesma regra do portal-dto);
   // os outros marcados ficam aqui como histórico, com pill "antigo".
@@ -167,6 +184,33 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
     });
   }
 
+  function abrirDescricao(arquivo: ProjetoArquivo) {
+    setEditandoId(arquivo.id);
+    setRascunho(arquivo.descricao ?? "");
+  }
+
+  /** Grava a descrição (PATCH imediato, como o botão de orçamento). */
+  async function guardarDescricao(arquivo: ProjetoArquivo) {
+    const texto = rascunho.replace(/\s+/g, " ").trim().slice(0, ARQUIVO_DESCRICAO_MAX);
+    if (texto === (arquivo.descricao ?? "")) {
+      setEditandoId(null);
+      return;
+    }
+    setGuardandoId(arquivo.id);
+    const res = await safeJsonPatch(arquivo.url, { descricao: texto || null });
+    setGuardandoId(null);
+    if (!res.ok) {
+      toast({ title: "Erro ao guardar descrição", description: res.error, variant: "destructive" });
+      return;
+    }
+    onChange(value.map((a) => (a.id === arquivo.id ? { ...a, descricao: texto || null } : a)));
+    setEditandoId(null);
+    toast({
+      title: texto ? "Descrição guardada ✓" : "Descrição removida",
+      description: texto ? "O cliente vê-a por baixo do ficheiro no portal." : undefined,
+    });
+  }
+
   async function removeArquivo(arquivo: ProjetoArquivo) {
     const ok = await confirm({
       title: "Remover ficheiro?",
@@ -207,105 +251,193 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
           const Icon = iconFor(arquivo.tipo);
           const ehOrcamento = arquivo.categoria === "orcamento";
           const ehAtual = ehOrcamento && arquivo.id === orcamentoAtualId;
+          const aEditar = editandoId === arquivo.id;
           return (
-            <div
-              key={arquivo.id}
-              style={{
-                ...chipStyle,
-                ...(ehAtual ? { borderColor: "rgba(214,66,42,.45)" } : null),
-              }}
-            >
-              <Icon
-                style={{ width: 14, height: 14, color: "var(--ink-mute)", flexShrink: 0 }}
-                aria-hidden="true"
-              />
-              <a
-                href={arquivo.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={`Abrir ${arquivo.nome} (${formatBytes(arquivo.tamanho)})`}
-                style={{ color: "var(--ink)", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+            <div key={arquivo.id} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+              <div
+                style={{
+                  ...chipStyle,
+                  ...(ehAtual ? { borderColor: "rgba(214,66,42,.45)" } : null),
+                }}
               >
-                {arquivo.nome}
-              </a>
-              {/* Marcar/desmarcar orçamento — só ficheiros nossos (a API bloqueia os do cliente) */}
-              {arquivo.origem !== "cliente" && (
+                <Icon
+                  style={{ width: 14, height: 14, color: "var(--ink-mute)", flexShrink: 0 }}
+                  aria-hidden="true"
+                />
+                <a
+                  href={arquivo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={`Abrir ${arquivo.nome} (${formatBytes(arquivo.tamanho)})`}
+                  style={{ color: "var(--ink)", maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                >
+                  {arquivo.nome}
+                </a>
+                {/* Marcar/desmarcar orçamento — só ficheiros nossos (a API bloqueia os do cliente) */}
+                {arquivo.origem !== "cliente" && (
+                  <button
+                    type="button"
+                    onClick={() => toggleOrcamento(arquivo)}
+                    disabled={disabled || markingId === arquivo.id}
+                    aria-pressed={ehOrcamento}
+                    aria-label={
+                      ehOrcamento
+                        ? `Desmarcar ${arquivo.nome} como orçamento`
+                        : `Marcar ${arquivo.nome} como orçamento`
+                    }
+                    title={
+                      ehAtual
+                        ? "Orçamento atual — é este que o cliente vê destacado. Carrega para desmarcar."
+                        : ehOrcamento
+                          ? "Versão antiga — o cliente não a vê, fica como histórico. Carrega para desmarcar."
+                          : "Marcar como orçamento — aparece destacado ao cliente no portal"
+                    }
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: 10.5,
+                      textTransform: "uppercase",
+                      letterSpacing: ".08em",
+                      padding: "2px 7px",
+                      borderRadius: 999,
+                      border: "none",
+                      cursor: "pointer",
+                      flexShrink: 0,
+                      background: ehAtual
+                        ? "var(--ember)"
+                        : ehOrcamento
+                          ? "rgba(214,66,42,.12)"
+                          : "rgba(90,14,14,.08)",
+                      color: ehAtual ? "#fff" : ehOrcamento ? "var(--ember)" : "var(--ink-mute)",
+                    }}
+                  >
+                    {markingId === arquivo.id ? (
+                      <Loader2 className="animate-spin" style={{ width: 11, height: 11 }} aria-hidden="true" />
+                    ) : (
+                      <BadgeEuro style={{ width: 11, height: 11 }} aria-hidden="true" />
+                    )}
+                    {ehOrcamento && !ehAtual ? "Orç. antigo" : "Orçamento"}
+                  </button>
+                )}
+                {arquivo.origem === "cliente" && (
+                  <span
+                    title="Enviado pelo cliente no portal"
+                    style={{
+                      fontSize: 10.5,
+                      textTransform: "uppercase",
+                      letterSpacing: ".08em",
+                      padding: "2px 7px",
+                      borderRadius: 999,
+                      background: "rgba(214,66,42,.12)",
+                      color: "var(--ember)",
+                      flexShrink: 0,
+                    }}
+                  >
+                    cliente
+                  </span>
+                )}
                 <button
                   type="button"
-                  onClick={() => toggleOrcamento(arquivo)}
-                  disabled={disabled || markingId === arquivo.id}
-                  aria-pressed={ehOrcamento}
-                  aria-label={
-                    ehOrcamento
-                      ? `Desmarcar ${arquivo.nome} como orçamento`
-                      : `Marcar ${arquivo.nome} como orçamento`
-                  }
+                  className="icon-mini"
+                  onClick={() => (aEditar ? setEditandoId(null) : abrirDescricao(arquivo))}
+                  disabled={disabled}
+                  aria-expanded={aEditar}
+                  aria-label={`Descrição de ${arquivo.nome}`}
                   title={
-                    ehAtual
-                      ? "Orçamento atual — é este que o cliente vê destacado. Carrega para desmarcar."
-                      : ehOrcamento
-                        ? "Versão antiga — o cliente não a vê, fica como histórico. Carrega para desmarcar."
-                        : "Marcar como orçamento — aparece destacado ao cliente no portal"
+                    arquivo.descricao
+                      ? `Descrição (o cliente vê): ${arquivo.descricao}`
+                      : "Escrever descrição — o cliente vê-a no portal"
                   }
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 4,
-                    fontSize: 10.5,
-                    textTransform: "uppercase",
-                    letterSpacing: ".08em",
-                    padding: "2px 7px",
-                    borderRadius: 999,
-                    border: "none",
-                    cursor: "pointer",
-                    flexShrink: 0,
-                    background: ehAtual
-                      ? "var(--ember)"
-                      : ehOrcamento
-                        ? "rgba(214,66,42,.12)"
-                        : "rgba(90,14,14,.08)",
-                    color: ehAtual ? "#fff" : ehOrcamento ? "var(--ember)" : "var(--ink-mute)",
-                  }}
+                  style={arquivo.descricao ? { color: "var(--ember)" } : undefined}
                 >
-                  {markingId === arquivo.id ? (
-                    <Loader2 className="animate-spin" style={{ width: 11, height: 11 }} aria-hidden="true" />
-                  ) : (
-                    <BadgeEuro style={{ width: 11, height: 11 }} aria-hidden="true" />
-                  )}
-                  {ehOrcamento && !ehAtual ? "Orç. antigo" : "Orçamento"}
+                  <Pencil aria-hidden="true" />
                 </button>
-              )}
-              {arquivo.origem === "cliente" && (
-                <span
-                  title="Enviado pelo cliente no portal"
-                  style={{
-                    fontSize: 10.5,
-                    textTransform: "uppercase",
-                    letterSpacing: ".08em",
-                    padding: "2px 7px",
-                    borderRadius: 999,
-                    background: "rgba(214,66,42,.12)",
-                    color: "var(--ember)",
-                    flexShrink: 0,
-                  }}
+                <button
+                  type="button"
+                  className="icon-mini"
+                  onClick={() => removeArquivo(arquivo)}
+                  disabled={disabled || removingId === arquivo.id}
+                  aria-label={`Remover ${arquivo.nome}`}
+                  title="Remover"
                 >
-                  cliente
-                </span>
+                  {removingId === arquivo.id ? (
+                    <Loader2 className="animate-spin" aria-hidden="true" />
+                  ) : (
+                    <X aria-hidden="true" />
+                  )}
+                </button>
+              </div>
+
+              {/* Descrição — texto VISÍVEL ao cliente, por baixo do ficheiro no portal */}
+              {aEditar ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <input
+                    className="in-sm"
+                    autoFocus
+                    value={rascunho}
+                    maxLength={ARQUIVO_DESCRICAO_MAX}
+                    placeholder="Ex.: Orçamento revisto, sem a placa gráfica"
+                    onChange={(e) => setRascunho(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        guardarDescricao(arquivo);
+                      }
+                      if (e.key === "Escape") setEditandoId(null);
+                    }}
+                    disabled={guardandoId === arquivo.id}
+                    aria-label={`Descrição de ${arquivo.nome} (visível ao cliente)`}
+                    style={{ width: 260, maxWidth: "100%" }}
+                  />
+                  <button
+                    type="button"
+                    className="icon-mini"
+                    onClick={() => guardarDescricao(arquivo)}
+                    disabled={guardandoId === arquivo.id}
+                    aria-label="Guardar descrição"
+                    title="Guardar (Enter)"
+                  >
+                    {guardandoId === arquivo.id ? (
+                      <Loader2 className="animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Check aria-hidden="true" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className="icon-mini"
+                    onClick={() => setEditandoId(null)}
+                    disabled={guardandoId === arquivo.id}
+                    aria-label="Cancelar"
+                    title="Cancelar (Esc)"
+                  >
+                    <X aria-hidden="true" />
+                  </button>
+                </div>
+              ) : (
+                arquivo.descricao && (
+                  <button
+                    type="button"
+                    onClick={() => abrirDescricao(arquivo)}
+                    disabled={disabled}
+                    title="Editar descrição (o cliente vê este texto)"
+                    style={{
+                      maxWidth: 300,
+                      textAlign: "left",
+                      background: "none",
+                      border: "none",
+                      padding: "0 2px",
+                      cursor: "pointer",
+                      fontSize: 11.5,
+                      lineHeight: 1.35,
+                      color: "var(--ink-soft)",
+                    }}
+                  >
+                    {arquivo.descricao}
+                  </button>
+                )
               )}
-              <button
-                type="button"
-                className="icon-mini"
-                onClick={() => removeArquivo(arquivo)}
-                disabled={disabled || removingId === arquivo.id}
-                aria-label={`Remover ${arquivo.nome}`}
-                title="Remover"
-              >
-                {removingId === arquivo.id ? (
-                  <Loader2 className="animate-spin" aria-hidden="true" />
-                ) : (
-                  <X aria-hidden="true" />
-                )}
-              </button>
             </div>
           );
         })}
@@ -354,7 +486,9 @@ export function ArquivosUploadZone({ projetoId, value, onChange, disabled }: Pro
 
       <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "8px 0 0" }}>
         {value.length === 0 && pending.length === 0 ? "Sem ficheiros anexados. " : ""}
-        Arrasta ficheiros para aqui ou usa Carregar — PDF, documentos ou imagens até 10MB (imagens são comprimidas).
+        Arrasta ficheiros para aqui ou usa Carregar — PDF, Word/Excel/OpenDocument, imagens, TXT/CSV
+        ou ZIP até 10MB (imagens são comprimidas). O lápis escreve uma descrição que o cliente vê no
+        portal.
       </p>
     </div>
   );

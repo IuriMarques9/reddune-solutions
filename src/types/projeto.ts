@@ -226,7 +226,14 @@ export interface ProjetoArquivo {
   // encontrava o orçamento no meio dos entregáveis (2026-08). Só para
   // ficheiros nossos.
   categoria?: "orcamento" | null;
+  // Descrição curta escrita no painel ("Orçamento revisto sem a placa gráfica").
+  // É TEXTO VISÍVEL AO CLIENTE no portal, por baixo do nome — nunca meter aqui
+  // notas internas. Vazio/null = sem descrição.
+  descricao?: string | null;
 }
+
+/** Tecto da descrição de um ficheiro (validado na API e no painel). */
+export const ARQUIVO_DESCRICAO_MAX = 200;
 
 /** Remove campos server-only antes de enviar arquivos ao cliente. */
 export function sanitizeArquivo(a: ProjetoArquivo): ProjetoArquivo {
