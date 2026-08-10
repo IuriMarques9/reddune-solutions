@@ -25,10 +25,7 @@ const PLACEHOLDER: Record<HardwareComponenteTipo, string> = {
   fonte: "ex: Corsair CV650 650W",
   cooler: "ex: cooler stock / AK620",
   caixa: "ex: NZXT H510",
-  ecra: "ex: 15,6\" FHD IPS",
-  bateria: "ex: original 42Wh",
   rede: "ex: Intel AX200 Wi-Fi 6",
-  periferico: "ex: teclado + rato Logitech",
   outro: "ex: leitor de cartões",
 };
 
@@ -100,7 +97,6 @@ export function HardwareSection({ projeto }: Props) {
         tipo: c.tipo,
         descricao: c.descricao.trim(),
         serial: c.serial?.trim() || null,
-        ...(c.nosso ? { nosso: true } : {}),
       }));
     const hardware =
       marca.trim() || modelo.trim() || serial.trim() || acessorios.trim() || comps.length
@@ -270,16 +266,6 @@ export function HardwareSection({ projeto }: Props) {
                   disabled={saving}
                   aria-label={`${HW_COMPONENTE_LABEL[c.tipo]} — número de série`}
                 />
-                <label className="hwnosso" title="Peça fornecida por nós (não veio na máquina)">
-                  <input
-                    type="checkbox"
-                    className="lchk"
-                    checked={!!c.nosso}
-                    onChange={(e) => updateComponente(c.id, { nosso: e.target.checked })}
-                    disabled={saving}
-                  />
-                  Nossa
-                </label>
                 <button
                   type="button"
                   className="icon-mini hwdel"

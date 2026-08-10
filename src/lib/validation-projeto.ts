@@ -54,7 +54,6 @@ export const projetoSchema = z.object({
             tipo: z.enum(HW_COMPONENTE_TIPO),
             descricao: z.string().max(300),
             serial: z.string().max(100).nullish(),
-            nosso: z.boolean().optional(),
           })
         )
         .max(60)

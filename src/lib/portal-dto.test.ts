@@ -39,7 +39,7 @@ function makeProjeto(): Projeto {
       serial: POISON,
       // Ficha interna de componentes — nunca deve chegar ao portal.
       componentes: [
-        { id: "hw1", tipo: "armazenamento", descricao: POISON, serial: POISON, nosso: true },
+        { id: "hw1", tipo: "armazenamento", descricao: POISON, serial: POISON },
       ],
     },
     arquivos: [

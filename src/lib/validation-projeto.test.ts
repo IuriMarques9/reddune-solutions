@@ -65,13 +65,13 @@ describe("projetoInputSchema — merge parcial", () => {
         marca: "Custom",
         componentes: [
           { id: "hw1", tipo: "cpu", descricao: "Ryzen 5 5600", serial: "ABC123" },
-          { id: "hw2", tipo: "ram", descricao: "2x8GB DDR4", serial: null, nosso: true },
+          { id: "hw2", tipo: "ram", descricao: "2x8GB DDR4", serial: null },
         ],
       },
     };
     const parsed = projetoInputSchema.parse(comHardware);
     expect(parsed.hardware?.componentes).toHaveLength(2);
-    expect(parsed.hardware?.componentes?.[1]).toMatchObject({ tipo: "ram", nosso: true });
+    expect(parsed.hardware?.componentes?.[1]).toMatchObject({ tipo: "ram", serial: null });
 
     const invalido = {
       ...parcialCustos,

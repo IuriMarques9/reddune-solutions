@@ -201,10 +201,11 @@ export function computeGastoEmpresa(linhas: ProjetoLinha[] | null | undefined): 
   );
 }
 
-// Componentes de uma máquina na ficha de assistência técnica. Uma torre não se
-// descreve com marca/modelo (foi montada por alguém), e mesmo num portátil pode
-// ser preciso registar o disco ou o pente de RAM que lá está — com número de
-// série próprio, para garantias e para provar o que entrou e o que saiu.
+// Componentes de uma máquina na ficha de assistência técnica: INVENTÁRIO do que
+// o aparelho traz. Uma torre não se descreve com marca/modelo (foi montada por
+// alguém) e mesmo num portátil interessa saber que disco/RAM lá está quando
+// voltar cá. Sem gestão de garantia por peça — a garantia vê-se pela data do
+// projecto (e por garantiaAte, se preenchida).
 export const HW_COMPONENTE_TIPO = [
   "cpu",
   "motherboard",
@@ -214,10 +215,7 @@ export const HW_COMPONENTE_TIPO = [
   "fonte",
   "cooler",
   "caixa",
-  "ecra",
-  "bateria",
   "rede",
-  "periferico",
   "outro",
 ] as const;
 
@@ -232,10 +230,7 @@ export const HW_COMPONENTE_LABEL: Record<HardwareComponenteTipo, string> = {
   fonte: "Fonte",
   cooler: "Cooler / ventoinhas",
   caixa: "Caixa",
-  ecra: "Ecrã",
-  bateria: "Bateria",
   rede: "Rede / Wi-Fi",
-  periferico: "Periférico",
   outro: "Outro",
 };
 
@@ -256,10 +251,8 @@ export interface HardwareComponente {
   tipo: HardwareComponenteTipo;
   /** O que é, por palavras nossas: "Ryzen 5 5600", "Kingston Fury 2x8GB 3200". */
   descricao: string;
-  /** Nº de série / part number da peça (garantias, provar o que entrou). */
+  /** Nº de série / part number da peça (identificar a peça exacta). */
   serial?: string | null;
-  /** true = peça que NÓS fornecemos; false/ausente = já vinha na máquina. */
-  nosso?: boolean;
 }
 
 export interface ProjetoHardware {

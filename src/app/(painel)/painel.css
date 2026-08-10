@@ -165,12 +165,11 @@
 .pnl .hw-open .hw-body { display: block; }
 .pnl .chev { transition: transform .2s; }
 .pnl .hw-open .chev { transform: rotate(90deg); }
-/* Ficha de componentes: tipo · descrição · nº de série · nosso? · remover. */
-.pnl .hwrow { display: grid; grid-template-columns: 132px minmax(0, 1fr) 140px auto 26px; gap: 8px; align-items: center; border: 1px solid rgba(90,14,14,.10); border-radius: 10px; padding: 7px 9px; background: #fff; margin-bottom: 8px; }
+/* Ficha de componentes (inventário): tipo · descrição · nº de série · remover. */
+.pnl .hwrow { display: grid; grid-template-columns: 132px minmax(0, 1fr) 140px 26px; gap: 8px; align-items: center; border: 1px solid rgba(90,14,14,.10); border-radius: 10px; padding: 7px 9px; background: #fff; margin-bottom: 8px; }
 .pnl .hwrow > * { min-width: 0; }
 .pnl .hwrow .in-sm { width: 100%; }
 .pnl .hwrow .hwtipo { font-size: 11px; border-radius: 7px; padding: 6px 8px; border: 1px solid rgba(90,14,14,.18); background: rgba(90,14,14,.04); color: var(--ink-soft); width: 100%; font-family: inherit; }
-.pnl .hwrow .hwnosso { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: #8a5a24; white-space: nowrap; cursor: pointer; }
 /* Fila principal: descrição (larga) · categoria · qtd · preço · menu ⋮.
    Subtotal, gasto-da-empresa e data vivem na sub-linha .ldata. */
 .pnl .lrow { display: grid; grid-template-columns: 1fr 128px 44px 82px 28px; gap: 8px; align-items: center; border: 1px solid rgba(90,14,14,.10); border-radius: 10px; padding: 7px 9px; background: #fff; margin-bottom: 8px; }
@@ -547,22 +546,20 @@
   .pnl .lrow .lpreco { grid-area: preco; }
   .pnl .lrow .lmenu { grid-area: menu; justify-self: end; }
   .pnl .lrow .ldata { grid-area: auto; grid-column: 1 / -1; }
-  /* Componentes em ecrã estreito: descrição+remover em cima, tipo/série/nosso
+  /* Componentes em ecrã estreito: descrição+remover em cima, tipo e nº de série
      em baixo (mesma lógica do .lrow). */
   .pnl .hwrow {
     grid-template-columns: minmax(0, 1fr) 26px;
     grid-template-areas:
       "desc  del"
       "tipo  tipo"
-      "serie serie"
-      "nosso nosso";
+      "serie serie";
     gap: 6px 5px;
     padding: 7px;
   }
   .pnl .hwrow .hwdesc { grid-area: desc; }
   .pnl .hwrow .hwtipo { grid-area: tipo; }
   .pnl .hwrow .hwserie { grid-area: serie; }
-  .pnl .hwrow .hwnosso { grid-area: nosso; }
   .pnl .hwrow .hwdel { grid-area: del; justify-self: end; }
   .pnl .msum, .pnl .msub { grid-template-columns: 1fr 1fr; }
   .pnl .mbars { gap: 8px; }
