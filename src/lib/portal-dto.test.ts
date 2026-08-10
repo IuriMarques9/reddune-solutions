@@ -33,7 +33,15 @@ function makeProjeto(): Projeto {
       { id: "l3", descricao: POISON, categoria: "peca", quantidade: 1, precoUnit: 50 },
     ],
     garantiaAte: "2027-01-01",
-    hardware: { marca: "Asus", modelo: "X515", serial: POISON },
+    hardware: {
+      marca: "Asus",
+      modelo: "X515",
+      serial: POISON,
+      // Ficha interna de componentes — nunca deve chegar ao portal.
+      componentes: [
+        { id: "hw1", tipo: "armazenamento", descricao: POISON, serial: POISON, nosso: true },
+      ],
+    },
     arquivos: [
       {
         id: "a1",

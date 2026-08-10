@@ -57,4 +57,26 @@ describe("projetoInputSchema — merge parcial", () => {
     expect(parsed.clienteId).toBe("c9");
     expect(parsed.clienteNome).toBe("Bruna");
   });
+
+  it("ficha de hardware aceita componentes e rejeita tipos inventados", () => {
+    const comHardware = {
+      ...parcialCustos,
+      hardware: {
+        marca: "Custom",
+        componentes: [
+          { id: "hw1", tipo: "cpu", descricao: "Ryzen 5 5600", serial: "ABC123" },
+          { id: "hw2", tipo: "ram", descricao: "2x8GB DDR4", serial: null, nosso: true },
+        ],
+      },
+    };
+    const parsed = projetoInputSchema.parse(comHardware);
+    expect(parsed.hardware?.componentes).toHaveLength(2);
+    expect(parsed.hardware?.componentes?.[1]).toMatchObject({ tipo: "ram", nosso: true });
+
+    const invalido = {
+      ...parcialCustos,
+      hardware: { componentes: [{ id: "x", tipo: "teletransporte", descricao: "?" }] },
+    };
+    expect(projetoInputSchema.safeParse(invalido).success).toBe(false);
+  });
 });

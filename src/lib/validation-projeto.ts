@@ -4,6 +4,7 @@ import {
   PROJETO_TIPO,
   PROJETO_LOCAL,
   LINHA_CATEGORIA,
+  HW_COMPONENTE_TIPO,
 } from "@/types/projeto";
 import { SERVICO_SLUG } from "@/types/servico";
 
@@ -44,6 +45,20 @@ export const projetoSchema = z.object({
       modelo: z.string().max(100).optional(),
       serial: z.string().max(100).optional(),
       acessoriosEntregues: z.string().max(500).optional(),
+      // Ficha de componentes (uso interno — não vai ao portal). Tecto de 60
+      // linhas: uma máquina não tem mais peças do que isso e trava payloads.
+      componentes: z
+        .array(
+          z.object({
+            id: z.string().max(64),
+            tipo: z.enum(HW_COMPONENTE_TIPO),
+            descricao: z.string().max(300),
+            serial: z.string().max(100).nullish(),
+            nosso: z.boolean().optional(),
+          })
+        )
+        .max(60)
+        .optional(),
     })
     .nullish(),
   prazo: z.string().nullish(),

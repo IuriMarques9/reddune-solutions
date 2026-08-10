@@ -201,11 +201,75 @@ export function computeGastoEmpresa(linhas: ProjetoLinha[] | null | undefined): 
   );
 }
 
+// Componentes de uma máquina na ficha de assistência técnica. Uma torre não se
+// descreve com marca/modelo (foi montada por alguém), e mesmo num portátil pode
+// ser preciso registar o disco ou o pente de RAM que lá está — com número de
+// série próprio, para garantias e para provar o que entrou e o que saiu.
+export const HW_COMPONENTE_TIPO = [
+  "cpu",
+  "motherboard",
+  "ram",
+  "armazenamento",
+  "gpu",
+  "fonte",
+  "cooler",
+  "caixa",
+  "ecra",
+  "bateria",
+  "rede",
+  "periferico",
+  "outro",
+] as const;
+
+export type HardwareComponenteTipo = (typeof HW_COMPONENTE_TIPO)[number];
+
+export const HW_COMPONENTE_LABEL: Record<HardwareComponenteTipo, string> = {
+  cpu: "Processador",
+  motherboard: "Motherboard",
+  ram: "Memória RAM",
+  armazenamento: "Disco / SSD",
+  gpu: "Placa gráfica",
+  fonte: "Fonte",
+  cooler: "Cooler / ventoinhas",
+  caixa: "Caixa",
+  ecra: "Ecrã",
+  bateria: "Bateria",
+  rede: "Rede / Wi-Fi",
+  periferico: "Periférico",
+  outro: "Outro",
+};
+
+/** Peças que uma montagem/torre leva por norma — botão de preenchimento rápido. */
+export const HW_COMPONENTES_PC_TIPICO: HardwareComponenteTipo[] = [
+  "cpu",
+  "cooler",
+  "motherboard",
+  "ram",
+  "armazenamento",
+  "gpu",
+  "fonte",
+  "caixa",
+];
+
+export interface HardwareComponente {
+  id: string;
+  tipo: HardwareComponenteTipo;
+  /** O que é, por palavras nossas: "Ryzen 5 5600", "Kingston Fury 2x8GB 3200". */
+  descricao: string;
+  /** Nº de série / part number da peça (garantias, provar o que entrou). */
+  serial?: string | null;
+  /** true = peça que NÓS fornecemos; false/ausente = já vinha na máquina. */
+  nosso?: boolean;
+}
+
 export interface ProjetoHardware {
   marca?: string;
   modelo?: string;
   serial?: string;
   acessoriosEntregues?: string;
+  // Ficha de componentes (ver HW_COMPONENTE_TIPO). Uso INTERNO: o portal do
+  // cliente continua a mostrar só marca/modelo (ver portal-dto).
+  componentes?: HardwareComponente[];
 }
 
 export interface ProjetoArquivo {
