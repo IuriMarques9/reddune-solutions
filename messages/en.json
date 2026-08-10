@@ -161,11 +161,11 @@
         "ContactCTA": {
             "eyebrow": "Next step",
             "title": "<accent>Solutions</accent> <br></br>for your problems.",
-            "description": "Talk to us and we'll find the right solution. We're always available to help — in person in Fuseta or remotely anywhere in the country.",
+            "description": "Talk to us and we'll find the right solution. We're available to help — in person in Fuseta or remotely anywhere in the country.",
             "cta": "Talk to us"
         },
         "ContactSection": {
-            "eyebrow": "Reply within 24h · Fuseta, Algarve",
+            "eyebrow": "Reply within one working day · Fuseta, Algarve",
             "title": "Talk to <accent>us</accent>.",
             "description": "Describe your problem any way you can — we'll translate. WhatsApp is the fastest path, but we're everywhere.",
             "formEyebrow": "Contact form",
@@ -193,6 +193,8 @@
                 "title": "Contact Information",
                 "email": "Send us an Email",
                 "address": "Location",
+                "hoursLabel": "Opening hours",
+                "hoursValue": "Mon-Fri · 9am-6pm",
                 "phone": "Phone Number",
                 "socials": "Social Media"
             },
@@ -304,7 +306,7 @@
         "hero": {
             "eyebrow": "Shop · catalogue",
             "title": "Equipment <accent>and parts</accent> with our seal.",
-            "description": "Filter, search and find what you need. Each product has its state clearly shown — new, refurbished or used — and can be enquired about via WhatsApp or form."
+            "description": "Filter, search and find what you need. Each product has its state clearly shown — new or refurbished — and can be enquired about via WhatsApp or form."
         },
         "warranty": {
             "eyebrow": "Shop warranty",
@@ -317,7 +319,7 @@
             "statRefurb": {
                 "label": "Warranty",
                 "unit": "months",
-                "sub": "refurbished products"
+                "sub": "refurbished · DL 84/2021"
             },
             "statReturn": {
                 "label": "Return",
@@ -424,12 +426,12 @@
             }
         ],
         "closingTitle": "Got a return to process?",
-        "closingBody": "Contact us via WhatsApp or email to get started. Reply within 24h.",
+        "closingBody": "Contact us via WhatsApp or email to get started. Reply within one working day.",
         "ctaContact": "Talk to us"
     },
     "WarrantyPolicyPage": {
         "metaTitle": "Shop Warranty Policy | RedDune Solutions",
-        "metaDescription": "A 3-year warranty on new equipment and 6 months on refurbished, at RedDune's computer shop in Fuseta, Algarve. Buy with complete peace of mind.",
+        "metaDescription": "A 3-year warranty on new equipment and 18 months on refurbished, at RedDune's computer shop in Fuseta, Algarve. Buy with complete peace of mind.",
         "title": "Warranty Policy",
         "subtitle": "Your satisfaction and peace of mind are our priority.",
         "intro": "All of our products come with a warranty. Shop with confidence, knowing you're covered.",
@@ -437,8 +439,8 @@
         "newDuration": "3 years",
         "newCaption": "warranty",
         "refurbishedLabel": "Refurbished Equipment",
-        "refurbishedDuration": "6 months",
-        "refurbishedCaption": "warranty",
+        "refurbishedDuration": "18 months",
+        "refurbishedCaption": "warranty · reduced term by agreement (DL 84/2021)",
         "closingTitle": "Complete confidence in your choice",
         "closingBody": "With this policy, we aim to ensure your complete peace of mind when choosing your equipment. For more information, reach out to us anytime.",
         "ctaContact": "Get in touch"
@@ -496,11 +498,11 @@
             },
             {
                 "q": "How does a quote work? Is it free?",
-                "a": "Quotes are free and with no obligation. For repairs, we run a diagnosis first to understand the fault and only proceed with your approval. No work is ever charged without prior authorisation."
+                "a": "Quotes are free and with no obligation. For repairs, we run a diagnosis first to understand the fault — it has a fixed cost, deducted from the repair if you go ahead — and we only proceed with your approval."
             },
             {
                 "q": "How long does a repair take?",
-                "a": "It depends on the type of fault and parts availability. We always give an estimate in the quote and, when you need something faster, we can assess an urgent service subject to availability (with an additional fee)."
+                "a": "It depends on the type of fault and parts availability. We indicate an estimate in the quote and, when you need something faster, we can assess an urgent service subject to availability (with an additional fee)."
             },
             {
                 "q": "Can you recover data from a faulty drive?",

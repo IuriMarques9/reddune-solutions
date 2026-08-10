@@ -5,13 +5,13 @@
   "lead": "Recovery of photos, documents and projects lost to drive failures, accidental formatting or ransomware. We also install and configure operating systems and essential software.",
   "seo": {
     "metaTitle": "Data Recovery & Software in the Algarve | RedDune",
-    "metaDescription": "Recovery of photos, documents and failing drives in Fuseta, Algarve. Operating system and software setup. An honest assessment before you spend a cent.",
+    "metaDescription": "Recovery of photos, documents and failing drives in Fuseta, Algarve. Operating system and software setup. An honest assessment, no surprises.",
     "serviceName": "Data Recovery & Software"
   },
   "overview": {
     "eyebrow": "Overview",
     "title": "Before buying a <em>new</em> device — talk to us.",
-    "lead": "90% of failing hard drives still have recoverable data. Don't give up on the wedding photos or the company books. We have professional tools and experience to tackle hard cases — including drives with physical damage and ransomware attacks. We receive drives, memory cards and USB sticks from across the region — from Fuseta to Olhão, Tavira and Faro — and tell you what is recoverable before any cost. If a case needs a specialised lab, we tell you straight away."
+    "lead": "The vast majority of failing drives still have recoverable data. Don't give up on the wedding photos or the company books. We have professional tools and experience to tackle hard cases — including drives with physical damage and ransomware attacks. We receive drives, memory cards and USB sticks from across the region — from Fuseta to Olhão, Tavira and Faro — and tell you what is recoverable before any cost. If a case needs a specialised lab, we tell you straight away."
   },
   "items": {
     "eyebrow": "Included services",
@@ -49,7 +49,7 @@
         "price": "<b>By quote</b> · preventive service"
       }
     ],
-    "note": "<em>Important:</em> For data recovery, no data recovered means no cost. Physical failures (clean room, head swap) are referred to certified partner labs. Rush requests accepted subject to availability, with an extra fee.",
+    "note": "<em>Important:</em> For data recovery, no data recovered means no cost. Physical failures (clean room, head swap) are referred to certified partner labs and quoted separately. Rush requests accepted subject to availability, with an extra fee.",
     "noteCta": "Request a quote",
     "noteCtaMessage": "Hi! I need a quote."
   },
@@ -87,7 +87,7 @@
       },
       {
         "q": "Is my data kept confidential?",
-        "a": "Absolutely. We sign an NDA on request and never look at the content of your files — only the structures needed for recovery."
+        "a": "Yes. We sign an NDA on request and only open files when strictly necessary to validate the recovery — everything is treated as confidential."
       },
       {
         "q": "Do you recover drives with physical damage?",
@@ -101,7 +101,7 @@
   },
   "cta": {
     "title": "Ready to <em>solve it</em>?",
-    "lead": "Describe the problem on WhatsApp and you'll have a quote within 24h.",
+    "lead": "Describe the problem on WhatsApp and we'll get back to you fast — usually the same day.",
     "primary": "WhatsApp",
     "primaryMessage": "Hi! I came from the Software & Recovery page.",
     "secondary": "See other services"

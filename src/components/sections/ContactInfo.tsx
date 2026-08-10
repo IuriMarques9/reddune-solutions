@@ -64,6 +64,16 @@ export function ContactInfo() {
           )}`}
           external
         />
+
+        {/* Horário — a mesma verdade que o JSON-LD LocalBusiness publica ao Google */}
+        <div className="flex flex-col gap-1">
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-mute">
+            {t("hoursLabel")}
+          </span>
+          <span className="font-display text-[17px] md:text-[18px] font-semibold text-ink">
+            {t("hoursValue")}
+          </span>
+        </div>
       </div>
 
       {/* Mapa */}

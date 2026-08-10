@@ -23,11 +23,11 @@ export async function generateMetadata(): Promise<Metadata> {
       ? "Loja de Informática em Fuseta, Algarve | RedDune"
       : "Computer Shop in Fuseta, Algarve | RedDune Solutions",
     description: isPt
-      ? "Computadores novos, recondicionados e em segunda mão, componentes e acessórios com garantia. Preços justos e aconselhamento honesto em Fuseta, Algarve."
-      : "New, refurbished and second-hand computers, PC components and accessories, all with warranty. Fair prices and honest advice at our shop in Fuseta, Algarve.",
+      ? "Computadores novos e recondicionados, componentes e acessórios com garantia. Preços justos e aconselhamento honesto em Fuseta, Algarve."
+      : "New and refurbished computers, PC components and accessories, all with warranty. Fair prices and honest advice at our shop in Fuseta, Algarve.",
     keywords: isPt
-      ? ["loja informática", "comprar computador", "componentes PC", "segunda mão", "recondicionado", "Algarve", "Fuseta"]
-      : ["computer shop", "buy computer", "PC components", "second hand", "refurbished", "Algarve", "Fuseta"],
+      ? ["loja informática", "comprar computador", "componentes PC", "recondicionado", "Algarve", "Fuseta"]
+      : ["computer shop", "buy computer", "PC components", "refurbished", "Algarve", "Fuseta"],
     path: "/loja",
     locale,
   });
@@ -102,7 +102,7 @@ function WarrantyStrip() {
           />
           {[
             { v: "3", unit: t("statNew.unit"), label: t("statNew.label"), sub: t("statNew.sub") },
-            { v: "6", unit: t("statRefurb.unit"), label: t("statRefurb.label"), sub: t("statRefurb.sub") },
+            { v: "18", unit: t("statRefurb.unit"), label: t("statRefurb.label"), sub: t("statRefurb.sub") },
             { v: "14", unit: t("statReturn.unit"), label: t("statReturn.label"), sub: t("statReturn.sub") },
           ].map((cell, i) => (
             <div key={`${cell.label}-${i}`} className="relative z-[1] text-center md:text-left">

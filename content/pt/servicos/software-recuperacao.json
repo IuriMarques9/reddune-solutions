@@ -11,7 +11,7 @@
   "overview": {
     "eyebrow": "Visão geral",
     "title": "Antes de comprar um equipamento <em>novo</em> — fala connosco.",
-    "lead": "90% dos discos rígidos com falhas ainda têm dados recuperáveis. Não desistas das fotos do casamento ou da contabilidade da empresa. Temos ferramentas profissionais e experiência para abordar casos difíceis — incluindo discos com avaria física e ataques de ransomware. Recebemos discos, cartões de memória e pens de toda a região — da Fuseta a Olhão, Tavira e Faro — e dizemos-te o que é recuperável antes de qualquer custo. Se o caso exigir laboratório especializado, dizemos-to sem rodeios."
+    "lead": "A grande maioria dos discos com falhas ainda tem dados recuperáveis. Não desistas das fotos do casamento ou da contabilidade da empresa. Temos ferramentas profissionais e experiência para abordar casos difíceis — incluindo discos com avaria física e ataques de ransomware. Recebemos discos, cartões de memória e pens de toda a região — da Fuseta a Olhão, Tavira e Faro — e dizemos-te o que é recuperável antes de qualquer custo. Se o caso exigir laboratório especializado, dizemos-to sem rodeios."
   },
   "items": {
     "eyebrow": "Serviços incluídos",
@@ -49,7 +49,7 @@
         "price": "<b>Sob orçamento</b> · serviço preventivo"
       }
     ],
-    "note": "<em>Importante:</em> Em recuperação de dados, sem dados recuperados, sem custo. As avarias físicas (sala limpa, troca de cabeças) são reencaminhadas para laboratórios parceiros certificados. Urgências aceites sob disponibilidade, com taxa extra.",
+    "note": "<em>Importante:</em> Em recuperação de dados, sem dados recuperados, sem custo. As avarias físicas (sala limpa, troca de cabeças) são reencaminhadas para laboratórios parceiros certificados e orçadas à parte. Urgências aceites sob disponibilidade, com taxa extra.",
     "noteCta": "Pedir orçamento",
     "noteCtaMessage": "Olá! Preciso de um orçamento."
   },
@@ -87,7 +87,7 @@
       },
       {
         "q": "Os meus dados ficam confidenciais?",
-        "a": "Absolutamente. Assinamos NDA quando solicitado e nunca vemos o conteúdo dos teus ficheiros — apenas as estruturas necessárias para a recuperação."
+        "a": "Sim. Assinamos NDA quando solicitado e só abrimos ficheiros quando é estritamente necessário para validar a recuperação — tratamos tudo como confidencial."
       },
       {
         "q": "Recuperam de discos com avaria física?",
@@ -101,7 +101,7 @@
   },
   "cta": {
     "title": "Pronto para <em>resolver</em>?",
-    "lead": "Descreve-nos o problema no WhatsApp e tens orçamento em 24h.",
+    "lead": "Descreve-nos o problema no WhatsApp e respondemos-te rápido, normalmente no próprio dia.",
     "primary": "WhatsApp",
     "primaryMessage": "Olá! Vim da página Software & Recuperação.",
     "secondary": "Ver outros serviços"

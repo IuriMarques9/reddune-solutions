@@ -2,16 +2,16 @@
   "slug": "assistencia-tecnica",
   "eyebrow": "Repair · upgrade · diagnosis",
   "title": "Technical <em>support</em> that makes sense.",
-  "lead": "We repair computers, laptops, consoles and peripherals. Always with a prior diagnosis and a transparent quote — we only move forward once you approve.",
+  "lead": "We repair computers, laptops, consoles and peripherals. With a prior diagnosis and a transparent quote — we move forward once you approve.",
   "seo": {
     "metaTitle": "Computer Repair in Fuseta, Algarve | RedDune Solutions",
-    "metaDescription": "Computer and laptop repair, cleaning, upgrades and custom PC builds in Fuseta and across the Algarve. Honest diagnosis and a clear quote before any work.",
+    "metaDescription": "Computer and laptop repair, cleaning, upgrades and custom PC builds in Fuseta and across the Algarve. Honest diagnosis and clear, no-surprise pricing.",
     "serviceName": "Computer & Laptop Repair"
   },
   "overview": {
     "eyebrow": "Overview",
     "title": "From <em>diagnosis</em> to delivery — in record time.",
-    "lead": "When a device fails, you lose time, money and patience. Our mission is simple: hand back equipment working like new, in the shortest possible time, with a clear invoice and warranty included. We are based in Fuseta and cover the eastern Algarve — Olhão, Tavira, Faro and around — at the shop, at your home or by courier. We work on desktops, laptops, consoles and peripherals of any brand, and we always tell you, before touching anything, what we will do and what it costs."
+    "lead": "When a device fails, you lose time, money and patience. Our mission is simple: hand back equipment working like new, in the shortest possible time, with a clear invoice and warranty included. We are based in Fuseta and cover the eastern Algarve — Olhão, Tavira, Faro and around — at the shop, at your home or by courier. We work on desktops, laptops, consoles and peripherals of any brand and, before touching anything, we explain what we will do and what it costs."
   },
   "items": {
     "eyebrow": "Included services",
@@ -99,7 +99,7 @@
   },
   "cta": {
     "title": "Ready to <em>solve it</em>?",
-    "lead": "Describe the problem on WhatsApp and you'll have a quote within 24h.",
+    "lead": "Describe the problem on WhatsApp and we'll get back to you fast — usually the same day.",
     "primary": "WhatsApp",
     "primaryMessage": "Hi! I came from the Technical Support page.",
     "secondary": "See other services"

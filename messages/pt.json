@@ -161,11 +161,11 @@
         "ContactCTA": {
             "eyebrow": "Próximo passo",
             "title": "<accent>Soluções</accent> <br></br>para os teus problemas.",
-            "description": "Fala connosco e encontramos a solução certa. Estamos sempre disponíveis para ajudar — em pessoa em Fuseta ou em remoto para qualquer ponto do país.",
+            "description": "Fala connosco e encontramos a solução certa. Estamos disponíveis para ajudar — em pessoa em Fuseta ou em remoto para qualquer ponto do país.",
             "cta": "Falar connosco"
         },
         "ContactSection": {
-            "eyebrow": "Resposta em <24h · Fuseta, Algarve",
+            "eyebrow": "Resposta no próprio dia útil · Fuseta, Algarve",
             "title": "Fala <accent>connosco</accent>.",
             "description": "Descreve o teu problema como conseguires — nós traduzimos. WhatsApp é o caminho mais rápido, mas estamos em todo o lado.",
             "formEyebrow": "Formulário de contacto",
@@ -193,6 +193,8 @@
                 "title": "Informações de Contacto",
                 "email": "Envie-nos um E-mail",
                 "address": "Localização",
+                "hoursLabel": "Horário",
+                "hoursValue": "Seg–Sex · 09h–18h",
                 "phone": "Contacto Telefónico",
                 "socials": "Redes Sociais"
             },
@@ -304,7 +306,7 @@
         "hero": {
             "eyebrow": "Loja · catálogo",
             "title": "Equipamentos <accent>e peças</accent> com selo nosso.",
-            "description": "Filtra, pesquisa e encontra o que precisas. Cada produto tem o estado claro — novo, recondicionado ou usado — e pode ser pedido por WhatsApp ou formulário."
+            "description": "Filtra, pesquisa e encontra o que precisas. Cada produto tem o estado claro — novo ou recondicionado — e pode ser pedido por WhatsApp ou formulário."
         },
         "warranty": {
             "eyebrow": "Garantias da loja",
@@ -317,7 +319,7 @@
             "statRefurb": {
                 "label": "Garantia",
                 "unit": "meses",
-                "sub": "produtos recondicionados"
+                "sub": "recondicionados · DL 84/2021"
             },
             "statReturn": {
                 "label": "Devolução",
@@ -424,12 +426,12 @@
             }
         ],
         "closingTitle": "Tens uma devolução para tratar?",
-        "closingBody": "Contacta-nos por WhatsApp ou email para iniciar o processo. Resposta em 24h.",
+        "closingBody": "Contacta-nos por WhatsApp ou email para iniciar o processo. Resposta no próprio dia útil.",
         "ctaContact": "Falar connosco"
     },
     "WarrantyPolicyPage": {
         "metaTitle": "Política de Garantia da Loja | RedDune Solutions",
-        "metaDescription": "Garantia de 3 anos em equipamentos novos e 6 meses em recondicionados, na loja de informática da RedDune em Fuseta, Algarve. Compre com total segurança.",
+        "metaDescription": "Garantia de 3 anos em equipamentos novos e 18 meses em recondicionados, na loja de informática da RedDune em Fuseta, Algarve. Compre com total segurança.",
         "title": "Política de Garantia",
         "subtitle": "A sua satisfação e tranquilidade são a nossa prioridade.",
         "intro": "Todos os nossos produtos contam com garantia. Compre com confiança, sabendo que está protegido.",
@@ -437,8 +439,8 @@
         "newDuration": "3 anos",
         "newCaption": "de garantia",
         "refurbishedLabel": "Equipamentos Recondicionados",
-        "refurbishedDuration": "6 meses",
-        "refurbishedCaption": "de garantia",
+        "refurbishedDuration": "18 meses",
+        "refurbishedCaption": "de garantia · prazo por acordo (DL 84/2021)",
         "closingTitle": "Total segurança na sua escolha",
         "closingBody": "Com esta política, queremos garantir a sua total tranquilidade na escolha do seu equipamento. Para mais informações, contacte-nos a qualquer momento.",
         "ctaContact": "Falar connosco"
@@ -496,11 +498,11 @@
             },
             {
                 "q": "Como funciona o orçamento? É gratuito?",
-                "a": "O orçamento é gratuito e sem compromisso. Em reparações, fazemos primeiro um diagnóstico para perceber a avaria e só avançamos com a sua autorização. Nunca há trabalho cobrado sem aprovação prévia."
+                "a": "O orçamento é gratuito e sem compromisso. Em reparações, fazemos primeiro um diagnóstico para perceber a avaria — tem um custo fixo, abatido no valor da reparação se avançar — e só avançamos com a sua autorização."
             },
             {
                 "q": "Quanto tempo demora uma reparação?",
-                "a": "Depende do tipo de avaria e da disponibilidade de peças. Damos sempre uma estimativa no orçamento e, quando precisa de algo mais rápido, podemos avaliar um serviço urgente sob disponibilidade (com taxa adicional)."
+                "a": "Depende do tipo de avaria e da disponibilidade de peças. Indicamos uma estimativa no orçamento e, quando precisa de algo mais rápido, podemos avaliar um serviço urgente sob disponibilidade (com taxa adicional)."
             },
             {
                 "q": "Conseguem recuperar dados de um disco avariado?",

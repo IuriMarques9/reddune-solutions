@@ -89,7 +89,7 @@
       },
       {
         "q": "Em quanto tempo está pronto?",
-        "a": "Um site institucional fica pronto em 2-3 semanas. E-commerce em 4-6 semanas. Damos-te sempre uma data concreta no orçamento."
+        "a": "Um site institucional típico leva 2-3 semanas; e-commerce, 4-6. A data concreta vai no orçamento."
       },
       {
         "q": "Posso editar o site sozinho depois?",
@@ -107,7 +107,7 @@
   },
   "cta": {
     "title": "Pronto para <em>resolver</em>?",
-    "lead": "Descreve-nos o problema no WhatsApp e tens orçamento em 24h.",
+    "lead": "Descreve-nos o problema no WhatsApp e respondemos-te rápido, normalmente no próprio dia.",
     "primary": "WhatsApp",
     "primaryMessage": "Olá! Vim da página Web & Digital.",
     "secondary": "Ver outros serviços"

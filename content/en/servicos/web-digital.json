@@ -89,7 +89,7 @@
       },
       {
         "q": "How long until it's ready?",
-        "a": "An institutional site is ready in 2-3 weeks. E-commerce in 4-6 weeks. We always give you a concrete date in the quote."
+        "a": "A typical institutional site takes 2-3 weeks; e-commerce, 4-6. The concrete date goes in the quote."
       },
       {
         "q": "Can I edit the site myself afterwards?",
@@ -107,7 +107,7 @@
   },
   "cta": {
     "title": "Ready to <em>solve it</em>?",
-    "lead": "Describe the problem on WhatsApp and you'll have a quote within 24h.",
+    "lead": "Describe the problem on WhatsApp and we'll get back to you fast — usually the same day.",
     "primary": "WhatsApp",
     "primaryMessage": "Hi! I came from the Web & Digital page.",
     "secondary": "See other services"

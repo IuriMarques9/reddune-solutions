@@ -2,16 +2,16 @@
   "slug": "assistencia-tecnica",
   "eyebrow": "Reparação · upgrade · diagnóstico",
   "title": "Assistência <em>técnica</em> que faz sentido.",
-  "lead": "Reparamos computadores, portáteis, consolas e periféricos. Sempre com diagnóstico prévio e orçamento transparente — só avançamos com a tua autorização.",
+  "lead": "Reparamos computadores, portáteis, consolas e periféricos. Com diagnóstico prévio e orçamento transparente — avançamos com a tua autorização.",
   "seo": {
     "metaTitle": "Assistência Técnica Informática em Fuseta, Algarve | RedDune",
-    "metaDescription": "Reparação de computadores e portáteis, limpezas, upgrades e montagem de PCs em Fuseta e todo o Algarve. Diagnóstico honesto, orçamento antes de avançar.",
+    "metaDescription": "Reparação de computadores e portáteis, limpezas, upgrades e montagem de PCs em Fuseta e todo o Algarve. Diagnóstico honesto e preços claros, sem surpresas.",
     "serviceName": "Assistência Técnica Informática"
   },
   "overview": {
     "eyebrow": "Visão geral",
     "title": "Do <em>diagnóstico</em> à entrega — em tempo recorde.",
-    "lead": "Quando um equipamento falha, perdes tempo, dinheiro e paciência. A nossa missão é simples: devolver-te o equipamento a funcionar como novo, no mais curto espaço de tempo possível, com a fatura clara e a garantia incluída. Estamos na Fuseta e servimos todo o sotavento algarvio — Olhão, Tavira, Faro e arredores — na loja, ao domicílio ou por envio. Trabalhamos com desktops, portáteis, consolas e periféricos de qualquer marca, e dizemos-te sempre, antes de mexer, o que vamos fazer e quanto custa."
+    "lead": "Quando um equipamento falha, perdes tempo, dinheiro e paciência. A nossa missão é simples: devolver-te o equipamento a funcionar como novo, no mais curto espaço de tempo possível, com a fatura clara e a garantia incluída. Estamos na Fuseta e servimos todo o sotavento algarvio — Olhão, Tavira, Faro e arredores — na loja, ao domicílio ou por envio. Trabalhamos com desktops, portáteis, consolas e periféricos de qualquer marca e, antes de mexer, explicamos o que vamos fazer e quanto custa."
   },
   "items": {
     "eyebrow": "Serviços incluídos",
@@ -99,7 +99,7 @@
   },
   "cta": {
     "title": "Pronto para <em>resolver</em>?",
-    "lead": "Descreve-nos o problema no WhatsApp e tens orçamento em 24h.",
+    "lead": "Descreve-nos o problema no WhatsApp e respondemos-te rápido, normalmente no próprio dia.",
     "primary": "WhatsApp",
     "primaryMessage": "Olá! Vim da página Assistência Técnica.",
     "secondary": "Ver outros serviços"

@@ -3,6 +3,24 @@
 Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, utilizador único).
 Área de admin em `/painel`. Deploy = push para `main` (Vercel auto).
 
+## Regras de coerência do site (auditoria 2026-08-09)
+- NUNCA escrever preços/prazos fixos em `content/{pt,en}/servicos/*.json` (FAQs,
+  notas, leads) nem em `messages/*` — a tabela de preços vem da DB (painel).
+  As STATS com € derivam da DB no render (`[slug]/page.tsx`: match do label da
+  stat ao título do serviço); sem match fica o valor do ficheiro.
+- Contactos: fonte única = `src/lib/constants.ts` (config/contact.ts importa de lá;
+  políticas interpolam {email}/{phone}). Settings de empresa no painel NÃO
+  alimentam o site público (nota no próprio form).
+- Sem promessas absolutas ("sempre", "nunca", "orçamento em 24h") — o Iuri
+  rejeitou-as; padrão aceite: "respondemos rápido, normalmente no próprio dia" /
+  "resposta no próprio dia útil". Excepções deliberadas (USP): "sem dados, sem
+  custo" (labs parceiros orçados à parte) e garantia "30 dias mão-de-obra".
+- Loja: só novos (3 anos) e recondicionados (18 meses, DL 84/2021); "segunda mão"
+  removida do copy público (chave i18n `conditions.segunda-mao` fica p/ painel).
+- Horário Seg–Sex 09h–18h é REAL: visível no ContactInfo + JSON-LD.
+- Preços do site são s/ IVA: sufixo "+ IVA" na loja, nota no card escuro dos
+  serviços, JSON-LD `valueAddedTaxIncluded: false`.
+
 ## Estado de segurança (feito)
 - Proteção de força bruta no login: 10/min em `/api/auth/callback/credentials` (`middleware.ts`).
 - Rate limit global de `/api` (200/min). `rateLimitDistributed` (Upstash opcional -> MongoDB
