@@ -128,8 +128,8 @@ describe("toPortalProjeto", () => {
       { ...base, categoria: "orcamento" },
       // Defesa em profundidade: a API bloqueia marcar ficheiros do cliente,
       // mas se um doc antigo/manual tiver a combinação, o portal não destaca.
-      { ...base, id: "a2", origem: "cliente", categoria: "orcamento" },
-      { ...base, id: "a3" },
+      { ...base, id: "a2", nome: "foto.jpg", origem: "cliente", categoria: "orcamento" },
+      { ...base, id: "a3", nome: "manual.pdf" },
     ];
     const dto = toPortalProjeto(p, pagamentos);
     expect(dto.arquivos.map((a) => a.orcamento)).toEqual([true, false, false]);
@@ -146,6 +146,29 @@ describe("toPortalProjeto", () => {
     const dto = toPortalProjeto(p, []);
     expect(dto.arquivos.map((a) => a.id)).toEqual(["doc", "v2"]);
     expect(dto.arquivos.find((a) => a.id === "v2")!.orcamento).toBe(true);
+  });
+
+  it("cópia não marcada do mesmo ficheiro sai (upload duplicado do orçamento)", () => {
+    const p = makeProjeto();
+    const base = p.arquivos![0]!;
+    p.arquivos = [
+      { ...base, id: "dup", nome: "Orçamento.html", dataUpload: "2026-08-10T16:55:37Z" },
+      { ...base, id: "orc", nome: "orçamento.HTML", categoria: "orcamento", dataUpload: "2026-08-10T16:55:47Z" },
+      { ...base, id: "outro", nome: "manual.pdf" },
+    ];
+    const dto = toPortalProjeto(p, []);
+    expect(dto.arquivos.map((a) => a.id)).toEqual(["orc", "outro"]);
+  });
+
+  it("ficheiro do cliente com o nome do orçamento continua a aparecer (secção própria)", () => {
+    const p = makeProjeto();
+    const base = p.arquivos![0]!;
+    p.arquivos = [
+      { ...base, id: "orc", nome: "Orçamento.html", categoria: "orcamento" },
+      { ...base, id: "cli", nome: "Orçamento.html", origem: "cliente" },
+    ];
+    const dto = toPortalProjeto(p, []);
+    expect(dto.arquivos.map((a) => a.id)).toEqual(["orc", "cli"]);
   });
 
   it("marca como 'cliente' só o que o cliente enviou (pathname/blobUrl nunca saem)", () => {

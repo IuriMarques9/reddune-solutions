@@ -121,11 +121,24 @@ function toPortalArquivos(
       !melhor || (a.dataUpload ?? "") >= (melhor.dataUpload ?? "") ? a : melhor,
     null
   );
+  const nomeAtual = normalizaNome(atual?.nome);
 
   return arquivos
     .filter(
       (a) =>
         !(a.categoria === "orcamento" && a.origem !== "cliente" && a.id !== atual?.id)
+    )
+    // Cópias NÃO marcadas do mesmo documento (upload repetido do mesmo ficheiro,
+    // ou versão anterior que ficou por marcar) também saem: senão o cliente via
+    // o orçamento no cartão destacado E outra vez como documento normal.
+    .filter(
+      (a) =>
+        !(
+          nomeAtual !== null &&
+          a.id !== atual?.id &&
+          a.origem !== "cliente" &&
+          normalizaNome(a.nome) === nomeAtual
+        )
     )
     .map((a) => ({
       id: a.id,
@@ -136,6 +149,12 @@ function toPortalArquivos(
       origem: a.origem === "cliente" ? ("cliente" as const) : ("nos" as const),
       orcamento: atual !== null && a.id === atual.id,
     }));
+}
+
+/** Nome comparável (case/acentos/espaços à parte) — null se não houver nome. */
+function normalizaNome(nome: string | undefined | null): string | null {
+  if (!nome) return null;
+  return nome.trim().toLocaleLowerCase("pt-PT").normalize("NFC");
 }
 
 export function toPortalCliente(c: Cliente): PortalClienteDTO {
