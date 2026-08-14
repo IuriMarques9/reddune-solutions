@@ -63,6 +63,13 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   icons: {
+    // favicon.ico (multi-tamanho 16/32/48, BMP) é servido automaticamente
+    // pelo App Router; os PNG são fallback explícito p/ browsers e Google.
+    icon: [
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/favicon-48.png", sizes: "48x48", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
     apple: "/icons/apple-touch-icon.png",
   },
   openGraph: {
