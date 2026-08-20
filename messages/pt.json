@@ -33,9 +33,9 @@
     },
     "HomePage": {
         "Hero": {
-            "eyebrow": "Reddune Solutions · Fuseta, Algarve",
+            "eyebrow": "RedDune Solutions · Fuseta, Algarve",
             "title": "<row>A resposta </row><row><accent>certa</accent>. </row><row>Para qualquer problema.</row>",
-            "description": "Soluções informáticas personalizadas para particulares e empresas — assistência técnica, web e recuperação de dados. Com a confiança, eficiência e transparência que esperas.",
+            "description": "Soluções informáticas personalizadas para particulares e empresas — assistência técnica, web e recuperação de dados. Na Fuseta, para todo o Algarve, presencial e remoto — com a confiança, eficiência e transparência que esperas.",
             "cta": {
                 "primary": "Ver serviços",
                 "secondary": "Visitar loja"

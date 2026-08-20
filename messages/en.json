@@ -33,9 +33,9 @@
     },
     "HomePage": {
         "Hero": {
-            "eyebrow": "Reddune Solutions · Fuseta, Algarve",
+            "eyebrow": "RedDune Solutions · Fuseta, Algarve",
             "title": "<row>The right </row><row><accent>answer</accent>. </row><row>For any problem.</row>",
-            "description": "Custom IT solutions for individuals and businesses — technical support, web and data recovery. With the trust, efficiency and transparency you expect.",
+            "description": "Custom IT solutions for individuals and businesses — technical support, web and data recovery. Based in Fuseta, serving the whole Algarve, on-site and remote — with the trust, efficiency and transparency you expect.",
             "cta": {
                 "primary": "See services",
                 "secondary": "Visit shop"

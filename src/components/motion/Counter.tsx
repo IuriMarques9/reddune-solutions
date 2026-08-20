@@ -34,7 +34,10 @@ function easeOutCubic(t: number): number {
 export function Counter({ to, suffix, className }: Props) {
   const ref = useRef<HTMLSpanElement | null>(null);
   const locale = useLocale();
-  const [value, setValue] = useState(0);
+  // Começa em `to`, não em 0: o HTML do servidor tem de conter o valor real
+  // (crawlers de AI/pesquisa não executam JS — um SSR a "0" publica o número
+  // errado). O reset a 0 acontece só no cliente, antes de a animação arrancar.
+  const [value, setValue] = useState(to);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
@@ -51,6 +54,8 @@ export function Counter({ to, suffix, className }: Props) {
 
     const node = ref.current;
     if (!node) return;
+
+    setValue(0);
 
     let rafId = 0;
     let started = false;

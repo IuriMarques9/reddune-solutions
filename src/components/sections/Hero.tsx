@@ -13,8 +13,10 @@ import { cn } from "@/lib/utils";
  * `design-handoff/project/site/index.html` (lines 24-51) + the matching CSS
  * blocks in `design-handoff/project/site/styles.css`.
  *
- * Structure (Iuri `site/index.html` — no kicker above title):
+ * Structure (Iuri `site/index.html` + eyebrow acima do título, 2026-08-20 —
+ * GEO: nome + localização têm de estar no primeiro terço da página):
  *   • <DuneBackground/> + <Sun/> + <Sparks/> compose the scene
+ *   • Eyebrow "RedDune Solutions · Fuseta, Algarve" (fadeUp)
  *   • 3-row title (rise animation per row, "certa" wrapped in Newsreader em)
  *   • Body subtitle (fadeUp)
  *   • CTA row: primary (ink → cream) + ghost (cream/translucent)
@@ -44,6 +46,20 @@ export function Hero() {
       </div>
 
       <div className="relative z-[5] mx-auto w-full max-w-content text-center">
+        {/* Eyebrow — entidade + localização visíveis no topo (GEO) */}
+        <p
+          className={cn(
+            "mb-6 text-[13px] font-semibold uppercase tracking-[0.18em]",
+            "text-ink-soft opacity-0",
+          )}
+          style={{
+            animation:
+              "fadeUp 0.9s 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+          }}
+        >
+          {t("eyebrow")}
+        </p>
+
         {/* Title — 3 rows, each animates rise from below */}
         <h1
           className={cn(
