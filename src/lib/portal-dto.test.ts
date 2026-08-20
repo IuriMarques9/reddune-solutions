@@ -57,7 +57,7 @@ function makeProjeto(): Projeto {
     links: [{ id: "k1", label: "Protótipo", url: "https://exemplo.vercel.app" }],
     // Equipa interna (quem trabalha connosco + valores acordados) — nunca
     // pode chegar ao portal do cliente.
-    colaboradores: [{ id: "co1", nome: POISON, papel: POISON, valorAcordado: 150 }],
+    colaboradores: [{ colaboradorId: POISON, papel: POISON, valorAcordado: 150 }],
     portal: { tokenHash: POISON, criadoEm: "2026-07-03", revogadoEm: null },
   };
 }

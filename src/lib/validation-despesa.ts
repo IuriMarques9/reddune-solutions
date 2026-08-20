@@ -8,7 +8,7 @@ export const despesaSchema = z.object({
   valor: z.number().finite().min(0),
   data: z.string().min(1),
   projetoId: z.string().max(128).nullish().transform((v) => v ?? null),
-  colaborador: z.string().max(120).nullish().transform((v) => v ?? null),
+  colaboradorId: z.string().max(128).nullish().transform((v) => v ?? null),
   notas: z.string().max(2000).nullish().transform((v) => v ?? null),
   criadoEm: z.string(),
 });

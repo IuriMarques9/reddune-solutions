@@ -99,7 +99,7 @@ describe("gastoEmpresaDoProjeto", () => {
         valor: 150,
         projetoId: "p1",
         categoria: "colaboradores",
-        colaborador: "Jaime",
+        colaboradorId: "co-jaime",
       }),
     ];
     const events = collectGastos([], ds);

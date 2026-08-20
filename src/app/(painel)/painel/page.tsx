@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { getAllProjetos } from "@/lib/mongodb/projetos";
 import { getAllClientes } from "@/lib/mongodb/clientes";
+import { getAllColaboradores } from "@/lib/mongodb/colaboradores";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
 import { getAllLembretes } from "@/lib/mongodb/lembretes";
 import { getAllDespesas } from "@/lib/mongodb/despesas";
@@ -165,15 +166,17 @@ export default async function PainelOverviewPage({
 }) {
   await requirePainelSession();
 
-  const [projetos, clientes, pagamentos, lembretes, despesas, audit, params] = await Promise.all([
-    getAllProjetos(),
-    getAllClientes(),
-    getAllPagamentos(),
-    getAllLembretes(),
-    getAllDespesas(),
-    getRecentAuditEntries(6),
-    searchParams,
-  ]);
+  const [projetos, clientes, pagamentos, lembretes, despesas, colaboradores, audit, params] =
+    await Promise.all([
+      getAllProjetos(),
+      getAllClientes(),
+      getAllPagamentos(),
+      getAllLembretes(),
+      getAllDespesas(),
+      getAllColaboradores(),
+      getRecentAuditEntries(6),
+      searchParams,
+    ]);
 
   const foco: Foco = params.foco === "semana" ? "semana" : "hoje";
 
@@ -189,7 +192,7 @@ export default async function PainelOverviewPage({
         <Topbar
           titleHtml={saudacao}
           description="Ainda não há projectos."
-          actions={<NovoMenu projetos={projetos} clientes={clientes} />}
+          actions={<NovoMenu projetos={projetos} clientes={clientes} colaboradores={colaboradores} />}
         />
         <div className="empty">
           <div className="t">Sem dados ainda</div>
@@ -322,7 +325,7 @@ export default async function PainelOverviewPage({
       <Topbar
         titleHtml={saudacao}
         description={subParts.join(" · ")}
-        actions={<NovoMenu projetos={projetos} clientes={clientes} />}
+        actions={<NovoMenu projetos={projetos} clientes={clientes} colaboradores={colaboradores} />}
       />
 
       {/* ---------- Hero "O teu dia" ---------- */}

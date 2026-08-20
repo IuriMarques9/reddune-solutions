@@ -3,6 +3,7 @@ import { getAllProjetos } from "@/lib/mongodb/projetos";
 import { getAllClientes } from "@/lib/mongodb/clientes";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
 import { getAllDespesas } from "@/lib/mongodb/despesas";
+import { getAllColaboradores } from "@/lib/mongodb/colaboradores";
 import { Topbar } from "@/components/painel/Topbar";
 import { GastosLog, type GastoFiltro } from "@/components/painel/GastosLog";
 import { DualLineChart } from "@/components/painel/DualLineChart";
@@ -39,11 +40,12 @@ export default async function RelatoriosPage({
 }) {
   await requirePainelSession();
 
-  const [projetos, clientes, pagamentos, despesas, params] = await Promise.all([
+  const [projetos, clientes, pagamentos, despesas, colaboradores, params] = await Promise.all([
     getAllProjetos(),
     getAllClientes(),
     getAllPagamentos(),
     getAllDespesas(),
+    getAllColaboradores(),
     searchParams,
   ]);
 
@@ -209,20 +211,24 @@ export default async function RelatoriosPage({
   const tipoMax = Math.max(1, ...tipoRows.map((r) => r.lucro));
 
   // Pagamentos a colaboradores — quanto já foi pago a cada pessoa (ex.: Jaime).
-  // Fonte: despesas categoria "colaboradores", agrupadas pelo nome gravado na
-  // despesa. Já contam nos gastos/lucro acima; este card é o corte por pessoa.
-  // Agrupa por nome normalizado (maiúsculas/espaços não dividem a pessoa em
-  // duas linhas); mostra o nome tal como foi escrito da primeira vez.
-  const colabTotais = new Map<string, { nome: string; total: number; mes: number; n: number }>();
+  // Fonte: despesas categoria "colaboradores", agrupadas pelo id da ficha (não
+  // pelo nome: gralhas e maiúsculas não podem partir a pessoa em duas linhas).
+  // Já contam nos gastos/lucro acima; este card é só o corte por pessoa.
+  const nomeColab = new Map(colaboradores.map((c) => [c.id, c.nome]));
+  const colabTotais = new Map<
+    string,
+    { id: string; nome: string; total: number; mes: number; n: number }
+  >();
   for (const d of despesas) {
     if (d.categoria !== "colaboradores") continue;
-    const nome = d.colaborador?.trim() || "(sem nome)";
-    const chave = nome.toLocaleLowerCase("pt-PT");
-    const slot = colabTotais.get(chave) ?? { nome, total: 0, mes: 0, n: 0 };
+    const cid = d.colaboradorId ?? "";
+    const slot =
+      colabTotais.get(cid) ??
+      { id: cid, nome: nomeColab.get(cid) ?? "(sem ficha)", total: 0, mes: 0, n: 0 };
     slot.total += d.valor;
     slot.n += 1;
     if (monthKey(d.data) === currentKey) slot.mes += d.valor;
-    colabTotais.set(chave, slot);
+    colabTotais.set(cid, slot);
   }
   const colabRows = [...colabTotais.values()].sort((a, b) => b.total - a.total);
   const colabMax = Math.max(1, ...colabRows.map((r) => r.total));
@@ -393,10 +399,14 @@ export default async function RelatoriosPage({
             <span className="kpi-label">todo o histórico</span>
           </div>
           {colabRows.map((r) => (
-            <div key={r.nome} className="bar-row">
+            <div key={r.id || "__sem_ficha"} className="bar-row">
               <div className="bl">
                 <span>
-                  {r.nome}{" "}
+                  {r.id ? (
+                    <Link href={`/painel/colaboradores/${r.id}`}>{r.nome}</Link>
+                  ) : (
+                    r.nome
+                  )}{" "}
                   <span className="muted" style={{ fontSize: 11.5 }}>
                     {r.n} pagamento{r.n === 1 ? "" : "s"}
                     {r.mes > 0 ? ` · ${fmtEuro(r.mes)} este mês` : ""}

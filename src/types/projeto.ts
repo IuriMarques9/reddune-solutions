@@ -305,16 +305,16 @@ export interface ProjetoLink {
   url: string; // https:// (validado na API)
 }
 
-// Quem trabalha CONNOSCO num projecto (ex.: o Jaime na AquaElements — angariou
-// o cliente e co-gere). NÃO é cliente: o cliente paga-nos, o colaborador
-// recebe de nós. Os pagamentos feitos ao colaborador registam-se como despesas
-// (categoria "colaboradores", com `colaborador` = este nome e `projetoId` =
-// este projecto) — assim contam sozinhos nos gastos, no lucro e nos gráficos.
+// Uma pessoa da equipa NESTE projecto (ex.: o Jaime na AquaElements — angariou
+// o cliente e co-gere). Não é cliente: o cliente paga-nos, o colaborador recebe
+// de nós. A pessoa em si vive na ficha (colecção `colaboradores`); aqui fica só
+// a referência e o que é específico deste projecto. Os pagamentos registam-se
+// como despesas (categoria "colaboradores", mesmo `colaboradorId` e `projetoId`
+// = este projecto) — contam sozinhos nos gastos, no lucro e nos gráficos.
 export interface ProjetoColaborador {
-  id: string;
-  /** Nome da pessoa — tem de bater com `Despesa.colaborador` para os totais. */
-  nome: string;
-  /** O que faz/fez: "angariou o cliente, co-gestão". Livre, opcional. */
+  /** Aponta para Colaborador.id — a ficha é a dona do nome e dos contactos. */
+  colaboradorId: string;
+  /** O que faz NESTE projecto: "angariou o cliente, co-gestão". Livre, opcional. */
   papel?: string | null;
   // Valor combinado a pagar-lhe por este projecto (€). Opcional: sem valor,
   // a ficha mostra só o que já foi pago; com valor, mostra pago vs. combinado.

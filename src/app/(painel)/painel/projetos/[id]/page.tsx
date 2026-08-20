@@ -14,6 +14,7 @@ import { requirePainelSession } from "@/lib/painel-auth";
 import { getProjetoById } from "@/lib/mongodb/projetos";
 import { getLembretesByProjeto } from "@/lib/mongodb/lembretes";
 import { getAllClientes } from "@/lib/mongodb/clientes";
+import { getAllColaboradores } from "@/lib/mongodb/colaboradores";
 import { getPagamentosByProjeto } from "@/lib/mongodb/pagamentos";
 import { getDespesasByProjeto } from "@/lib/mongodb/despesas";
 import { PagamentosSection } from "@/components/painel/PagamentosSection";
@@ -52,7 +53,7 @@ function formatDate(iso: string | null): string {
 export default async function ProjetoDetalhePage({ params }: { params: Params }) {
   await requirePainelSession();
   const { id } = await params;
-  const [projeto, lembretes, clientes, pagamentos, comentarios, sandboxes, despesas] =
+  const [projeto, lembretes, clientes, pagamentos, comentarios, sandboxes, despesas, colaboradores] =
     await Promise.all([
       getProjetoById(id),
       getLembretesByProjeto(id),
@@ -61,6 +62,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
       getComentariosByProjeto(id),
       getSandboxesByProjeto(id),
       getDespesasByProjeto(id),
+      getAllColaboradores(),
     ]);
 
   if (!projeto) notFound();
@@ -145,7 +147,11 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
 
           {/* Colaboradores — quem trabalha connosco neste projecto (não é
               cliente) e os pagamentos que lhes fizemos. */}
-          <ColaboradoresSection projeto={projeto} despesas={despesas} />
+          <ColaboradoresSection
+            projeto={projeto}
+            despesas={despesas}
+            colaboradores={colaboradores}
+          />
 
           {/* Hardware (só assistência técnica) */}
           {projeto.categoria === "assistencia-tecnica" && (

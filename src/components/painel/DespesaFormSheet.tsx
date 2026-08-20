@@ -32,6 +32,9 @@ import { parseMoney } from "@/lib/parse-number";
 import { todayLisbonYmd } from "@/lib/dates";
 import { safeJsonPost } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
+import type { Colaborador } from "@/types/colaborador";
+import { ColaboradorPicker } from "./ColaboradorPicker";
+import { NovoColaboradorButton } from "./NovoColaboradorButton";
 
 export type ProjetoOption = { id: string; titulo: string };
 
@@ -40,11 +43,13 @@ export type ProjetoOption = { id: string; titulo: string };
 export type DespesaPrefill = {
   categoria?: DespesaCategoria;
   projetoId?: string;
-  colaborador?: string;
+  colaboradorId?: string;
 };
 
 type SheetProps = {
   projetos: ProjetoOption[];
+  /** Fichas para escolher em pagamentos a colaboradores. */
+  colaboradores?: Colaborador[];
   /** Controlo externo do sheet (ex.: NovoMenu). Sem esta prop gere o próprio estado. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -59,6 +64,7 @@ type SheetProps = {
  */
 export function DespesaFormSheet({
   projetos,
+  colaboradores = [],
   open: openProp,
   onOpenChange,
   hideTrigger = false,
@@ -91,6 +97,7 @@ export function DespesaFormSheet({
         </SheetHeader>
         <DespesaForm
           projetos={projetos}
+          colaboradores={colaboradores}
           prefill={prefill}
           onSaved={() => setOpen(false)}
           onCancel={() => setOpen(false)}
@@ -102,12 +109,13 @@ export function DespesaFormSheet({
 
 type FormProps = {
   projetos: ProjetoOption[];
+  colaboradores: Colaborador[];
   prefill?: DespesaPrefill;
   onSaved?: () => void;
   onCancel?: () => void;
 };
 
-function DespesaForm({ projetos, prefill, onSaved, onCancel }: FormProps) {
+function DespesaForm({ projetos, colaboradores, prefill, onSaved, onCancel }: FormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
@@ -119,8 +127,11 @@ function DespesaForm({ projetos, prefill, onSaved, onCancel }: FormProps) {
   const [valor, setValor] = useState("");
   const [data, setData] = useState(todayLisbonYmd());
   const [projetoId, setProjetoId] = useState(prefill?.projetoId ?? "");
-  const [colaborador, setColaborador] = useState(prefill?.colaborador ?? "");
+  const [colaboradorId, setColaboradorId] = useState(prefill?.colaboradorId ?? "");
   const [notas, setNotas] = useState("");
+  // Sheet de ficha nova aberto por cima deste — quem falta na lista cria-se
+  // aqui em vez de abandonar o pagamento a meio.
+  const [novoAberto, setNovoAberto] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -134,10 +145,9 @@ function DespesaForm({ projetos, prefill, onSaved, onCancel }: FormProps) {
       setError("Valor inválido — usa um número positivo (aceita vírgula).");
       return;
     }
-    // O nome é a chave que agrupa os totais por pessoa — sem ele o pagamento
-    // ficava órfão nos relatórios (o `required` do input deixa passar espaços).
-    if (categoria === "colaboradores" && !colaborador.trim()) {
-      setError("Escreve a quem pagaste.");
+    // Sem pessoa escolhida o pagamento ficava órfão nos relatórios.
+    if (categoria === "colaboradores" && !colaboradorId) {
+      setError("Escolhe a quem pagaste.");
       return;
     }
     setSubmitting(true);
@@ -147,7 +157,7 @@ function DespesaForm({ projetos, prefill, onSaved, onCancel }: FormProps) {
       valor: Math.round(v * 100) / 100,
       data,
       projetoId: projetoId || null,
-      colaborador: categoria === "colaboradores" ? colaborador.trim() || null : null,
+      colaboradorId: categoria === "colaboradores" ? colaboradorId || null : null,
       notas: notas.trim() || null,
     });
     setSubmitting(false);
@@ -252,19 +262,33 @@ function DespesaForm({ projetos, prefill, onSaved, onCancel }: FormProps) {
 
       {categoria === "colaboradores" && (
         <div className="space-y-1">
-          <Label htmlFor="dc">Pago a (nome) *</Label>
-          <Input
+          <Label htmlFor="dc">Pago a *</Label>
+          <ColaboradorPicker
             id="dc"
-            value={colaborador}
-            onChange={(e) => setColaborador(e.target.value)}
-            required
-            maxLength={120}
-            placeholder="Ex.: Jaime"
+            colaboradores={colaboradores}
+            value={colaboradorId}
+            onChange={setColaboradorId}
             disabled={isBusy}
           />
-          <p className="text-[11px] text-muted-foreground">
-            Usa sempre o mesmo nome — é ele que agrupa os totais por pessoa.
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[11px] text-muted-foreground">
+              Escolhido da ficha — os totais por pessoa agrupam sozinhos.
+            </p>
+            <button
+              type="button"
+              onClick={() => setNovoAberto(true)}
+              disabled={isBusy}
+              className="text-[11px] underline underline-offset-2 text-muted-foreground hover:text-foreground"
+            >
+              Falta alguém?
+            </button>
+          </div>
+          <NovoColaboradorButton
+            open={novoAberto}
+            onOpenChange={setNovoAberto}
+            hideTrigger
+            onSaved={(id) => setColaboradorId(id)}
+          />
         </div>
       )}
 

@@ -71,15 +71,13 @@ export const projetoSchema = z.object({
   bodyMd: z.string().max(50000).nullish(),
   linhas: z.array(linhaSchema).nullish(),
   garantiaAte: z.string().nullish(),
-  // Equipa do projecto (quem trabalha connosco, não é cliente). Tecto de 20:
+  // Equipa do projecto (quem trabalha connosco, não é cliente). Só referências
+  // à ficha — nome e contactos vivem na colecção `colaboradores`. Tecto de 20:
   // mais colaboradores do que isso num projecto nosso é erro de input.
   colaboradores: z
     .array(
       z.object({
-        id: z.string().min(1).max(128),
-        // trim no servidor: o nome é a chave que junta a pessoa aos pagamentos
-        // (Despesa.colaborador), não pode depender de o cliente normalizar.
-        nome: z.string().trim().min(1).max(120),
+        colaboradorId: z.string().min(1).max(128),
         papel: z.string().max(300).nullish(),
         valorAcordado: z.number().finite().min(0).nullish(),
       })
@@ -121,6 +119,25 @@ export const clienteSchema = z.object({
 
 export const clienteInputSchema = clienteSchema.partial({ id: true, criadoEm: true, empresa: true });
 
+export const colaboradorSchema = z.object({
+  id: z.string().min(1).max(128),
+  nome: z.string().trim().min(1).max(120),
+  papel: z.string().max(300).nullable(),
+  email: z.string().max(300).nullable(),
+  telefone: z.string().max(50).nullable(),
+  nif: z.string().max(20).nullable(),
+  notas: z.string().max(5000).nullable(),
+  ativo: z.boolean(),
+  criadoEm: z.string(),
+});
+
+export const colaboradorInputSchema = colaboradorSchema.partial({
+  id: true,
+  criadoEm: true,
+  ativo: true,
+});
+
 export type ProjetoInput = z.infer<typeof projetoInputSchema>;
 export type LembreteInput = z.infer<typeof lembreteInputSchema>;
 export type ClienteInput = z.infer<typeof clienteInputSchema>;
+export type ColaboradorInput = z.infer<typeof colaboradorInputSchema>;

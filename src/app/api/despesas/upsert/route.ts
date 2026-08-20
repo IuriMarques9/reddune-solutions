@@ -34,8 +34,9 @@ export async function POST(request: Request) {
     valor: input.valor!,
     data: input.data!,
     projetoId: input.projetoId ?? null,
-    // Nome normalizado (trim) — é a chave de agrupamento por pessoa nos relatórios.
-    colaborador: input.colaborador?.trim() || null,
+    // Só faz sentido em pagamentos a colaboradores — noutras categorias fica
+    // null para não deixar referências penduradas se a categoria mudar.
+    colaboradorId: input.categoria === "colaboradores" ? input.colaboradorId ?? null : null,
     notas: input.notas ?? null,
     // Só aplicado no insert (upsertDespesa usa $setOnInsert).
     criadoEm: new Date().toISOString(),
@@ -52,5 +53,9 @@ export async function POST(request: Request) {
   revalidatePath("/painel/relatorios");
   revalidatePath("/painel");
   if (despesa.projetoId) revalidatePath(`/painel/projetos/${despesa.projetoId}`);
+  if (despesa.colaboradorId) {
+    revalidatePath("/painel/colaboradores");
+    revalidatePath(`/painel/colaboradores/${despesa.colaboradorId}`);
+  }
   return NextResponse.json({ ok: true, id });
 }

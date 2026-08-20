@@ -8,10 +8,13 @@ import { NovoLembreteGlobalButton } from "./NovoLembreteGlobalButton";
 import { DespesaFormSheet } from "./DespesaFormSheet";
 import type { Projeto } from "@/types/projeto";
 import type { Cliente } from "@/types/cliente";
+import type { Colaborador } from "@/types/colaborador";
 
 type Props = {
   projetos: Projeto[];
   clientes: Cliente[];
+  /** Fichas para o form de despesa poder registar pagamentos a colaboradores. */
+  colaboradores?: Colaborador[];
 };
 
 /**
@@ -21,7 +24,7 @@ type Props = {
  * produção. Fecha ao clicar fora e com Escape. Classes .novo-menu/.novo-pop
  * já existem em painel.css (handoff 2026-07).
  */
-export function NovoMenu({ projetos, clientes }: Props) {
+export function NovoMenu({ projetos, clientes, colaboradores = [] }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [projetoOpen, setProjetoOpen] = useState(false);
   const [clienteOpen, setClienteOpen] = useState(false);
@@ -99,7 +102,13 @@ export function NovoMenu({ projetos, clientes }: Props) {
       <NovoProjetoButton clientes={clientes} open={projetoOpen} onOpenChange={setProjetoOpen} hideTrigger />
       <NovoClienteButton open={clienteOpen} onOpenChange={setClienteOpen} hideTrigger />
       <NovoLembreteGlobalButton projetos={projetos} open={lembreteOpen} onOpenChange={setLembreteOpen} hideTrigger />
-      <DespesaFormSheet projetos={projetoOptions} open={despesaOpen} onOpenChange={setDespesaOpen} hideTrigger />
+      <DespesaFormSheet
+        projetos={projetoOptions}
+        colaboradores={colaboradores}
+        open={despesaOpen}
+        onOpenChange={setDespesaOpen}
+        hideTrigger
+      />
     </div>
   );
 }

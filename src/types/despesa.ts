@@ -74,9 +74,10 @@ export interface Despesa {
   valor: number;
   data: string; // ISO date (yyyy-mm-dd) — quando o gasto foi feito
   projetoId: string | null; // opcional: gasto ligado a um projecto
-  // A quem foi pago, quando a categoria é "colaboradores" (ex.: "Jaime").
-  // Agrupa os totais por pessoa nos relatórios; noutras categorias fica null.
-  colaborador?: string | null;
+  // A quem foi pago, quando a categoria é "colaboradores": aponta para
+  // Colaborador.id (ficha). Agrupa os totais por pessoa nos relatórios sem
+  // depender de como o nome foi escrito; noutras categorias fica null.
+  colaboradorId?: string | null;
   notas: string | null;
   criadoEm: string; // ISO — quando foi registado no painel
 }

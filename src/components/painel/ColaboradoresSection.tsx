@@ -2,24 +2,19 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ChevronRight, Euro, Loader2, Plus, Trash2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Projeto, ProjetoColaborador } from "@/types/projeto";
 import type { Despesa } from "@/types/despesa";
+import type { Colaborador } from "@/types/colaborador";
 import { DespesaFormSheet } from "./DespesaFormSheet";
+import { ColaboradorPicker } from "./ColaboradorPicker";
+import { NovoColaboradorButton } from "./NovoColaboradorButton";
 import { parseMoney } from "@/lib/parse-number";
 import { safeJsonPost, safeDelete } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
-
-function novoColaboradorId(): string {
-  return `co_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-/** Chave de junção pessoa ↔ pagamentos: tolera maiúsculas e espaços a mais. */
-function chaveNome(nome: string | null | undefined): string {
-  return (nome ?? "").trim().toLocaleLowerCase("pt-PT");
-}
 
 function fmtEuro(v: number): string {
   return `${v.toLocaleString("pt-PT", { maximumFractionDigits: 2 })} €`;
@@ -34,12 +29,20 @@ function fmtDate(iso: string): string {
 }
 
 // Estado local editável: valorAcordado como texto (aceita vírgula) até guardar.
-type Row = { id: string; nome: string; papel: string; valorAcordado: string };
+// `key` é só para o React — a identidade real é o colaboradorId (que pode estar
+// vazio numa linha acabada de adicionar).
+type Row = { key: string; colaboradorId: string; papel: string; valorAcordado: string };
+
+let seq = 0;
+function novaKey(): string {
+  seq += 1;
+  return `row_${seq}`;
+}
 
 function toRows(cs: ProjetoColaborador[]): Row[] {
   return cs.map((c) => ({
-    id: c.id,
-    nome: c.nome,
+    key: c.colaboradorId,
+    colaboradorId: c.colaboradorId,
     papel: c.papel ?? "",
     valorAcordado: c.valorAcordado != null ? String(c.valorAcordado) : "",
   }));
@@ -50,16 +53,19 @@ type Props = {
   /** Despesas ligadas a este projecto (a página já as carrega) — os pagamentos
    * aos colaboradores são as de categoria "colaboradores". */
   despesas: Despesa[];
+  /** Fichas de colaborador (colecção `colaboradores`). */
+  colaboradores: Colaborador[];
 };
 
 /**
  * ColaboradoresSection — quem trabalha CONNOSCO neste projecto (ex.: o Jaime na
- * AquaElements), em vez de o pôr como cliente. Guarda a lista no próprio
- * projecto (upsert parcial) e regista os pagamentos como despesas de categoria
- * "colaboradores" ligadas ao projecto — assim contam sozinhos no Lucro do hero,
- * nos gráficos de gastos e nos relatórios, sem segundo mecanismo.
+ * AquaElements), em vez de o pôr como cliente. A pessoa vem da ficha
+ * (/painel/colaboradores); aqui guarda-se só a referência, o papel neste
+ * projecto e o valor combinado. Os pagamentos são despesas de categoria
+ * "colaboradores" ligadas ao projecto — contam sozinhos no Lucro do hero, nos
+ * gráficos de gastos e nos relatórios, sem segundo mecanismo.
  */
-export function ColaboradoresSection({ projeto, despesas }: Props) {
+export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
@@ -69,44 +75,58 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
   const pagamentos = despesas.filter((d) => d.categoria === "colaboradores");
   const hasData = iniciais.length > 0 || pagamentos.length > 0;
 
+  const fichas = new Map(colaboradores.map((c) => [c.id, c]));
+  const nomeDe = (id: string | null | undefined) =>
+    (id && fichas.get(id)?.nome) || "(ficha apagada)";
+
   const [open, setOpen] = useState(hasData);
   const [rows, setRows] = useState<Row[]>(toRows(iniciais));
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Nome pré-preenchido no sheet de pagamento; null = sheet fechado.
+  // Ficha pré-seleccionada no sheet de pagamento; null = sheet fechado.
   const [payFor, setPayFor] = useState<string | null>(null);
+  const [novoAberto, setNovoAberto] = useState(false);
 
-  const dirty = JSON.stringify(rows) !== JSON.stringify(toRows(iniciais));
+  const dirty = JSON.stringify(rows.map(({ key: _key, ...r }) => r)) !==
+    JSON.stringify(toRows(iniciais).map(({ key: _key, ...r }) => r));
 
-  // Total pago por pessoa (chave normalizada — ver chaveNome).
-  const pagoPorNome = new Map<string, number>();
+  // Total pago por pessoa — chave = id da ficha, imune a gralhas no nome.
+  const pagoPorId = new Map<string, number>();
   for (const d of pagamentos) {
-    const k = chaveNome(d.colaborador) || "(sem nome)";
-    pagoPorNome.set(k, (pagoPorNome.get(k) ?? 0) + d.valor);
+    const k = d.colaboradorId ?? "";
+    pagoPorId.set(k, (pagoPorId.get(k) ?? 0) + d.valor);
   }
   const totalPago = pagamentos.reduce((s, d) => s + d.valor, 0);
 
-  function updateRow(id: string, patch: Partial<Row>) {
-    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  function updateRow(key: string, patch: Partial<Row>) {
+    setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)));
   }
 
   async function save() {
     setSaving(true);
     setError(null);
-    // Linhas sem nome não se guardam (adicionadas e não preenchidas).
+    // Linhas sem pessoa escolhida não se guardam (adicionadas e não preenchidas).
     const limpos: ProjetoColaborador[] = [];
+    const vistos = new Set<string>();
     for (const r of rows) {
-      if (!r.nome.trim()) continue;
+      if (!r.colaboradorId) continue;
+      if (vistos.has(r.colaboradorId)) {
+        setError(`${nomeDe(r.colaboradorId)} está na lista duas vezes.`);
+        setSaving(false);
+        return;
+      }
+      vistos.add(r.colaboradorId);
       const v = r.valorAcordado.trim() ? parseMoney(r.valorAcordado) : null;
       if (r.valorAcordado.trim() && (v == null || v < 0)) {
-        setError(`Valor acordado inválido para ${r.nome.trim()} — usa um número (aceita vírgula).`);
+        setError(
+          `Valor acordado inválido para ${nomeDe(r.colaboradorId)} — usa um número (aceita vírgula).`
+        );
         setSaving(false);
         return;
       }
       limpos.push({
-        id: r.id,
-        nome: r.nome.trim(),
+        colaboradorId: r.colaboradorId,
         papel: r.papel.trim() || null,
         valorAcordado: v != null ? Math.round(v * 100) / 100 : null,
       });
@@ -130,7 +150,7 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
   async function apagarPagamento(d: Despesa) {
     const ok = await confirm({
       title: "Apagar pagamento?",
-      description: `${fmtEuro(d.valor)} a ${d.colaborador ?? "(sem nome)"} · ${fmtDate(d.data)}. Sai dos gastos e dos relatórios.`,
+      description: `${fmtEuro(d.valor)} a ${nomeDe(d.colaboradorId)} · ${fmtDate(d.data)}. Sai dos gastos e dos relatórios.`,
       confirmLabel: "Apagar",
       tone: "destructive",
     });
@@ -179,7 +199,7 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
             }}
           >
             {[
-              iniciais.map((c) => c.nome).join(", "),
+              iniciais.map((c) => nomeDe(c.colaboradorId)).join(", "),
               totalPago > 0 ? `${fmtEuro(totalPago)} pagos` : "",
             ]
               .filter(Boolean)
@@ -192,15 +212,15 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
         {rows.length === 0 ? (
           <p style={{ fontSize: 12, color: "var(--ink-mute)", fontStyle: "italic", margin: "0 0 8px" }}>
             Sem colaboradores neste projecto. Quem trabalha contigo (angariou o cliente, co-gere,
-            fez parte do trabalho) regista-se aqui — não como cliente.
+            fez parte do trabalho) escolhe-se aqui — não é cliente.
           </p>
         ) : (
           rows.map((r) => (
             <div
-              key={r.id}
+              key={r.key}
               style={{
                 display: "grid",
-                gridTemplateColumns: "minmax(120px, 1fr) minmax(0, 1.4fr) 110px 26px",
+                gridTemplateColumns: "minmax(140px, 1fr) minmax(0, 1.4fr) 110px 26px",
                 gap: 8,
                 alignItems: "center",
                 border: "1px solid rgba(90,14,14,.10)",
@@ -210,41 +230,39 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
                 marginBottom: 8,
               }}
             >
-              <input
-                className="in-sm"
-                value={r.nome}
-                onChange={(e) => updateRow(r.id, { nome: e.target.value })}
-                maxLength={120}
-                placeholder="Nome — ex.: Jaime"
+              <ColaboradorPicker
+                colaboradores={colaboradores}
+                value={r.colaboradorId}
+                onChange={(id) => updateRow(r.key, { colaboradorId: id })}
                 disabled={saving}
-                aria-label="Nome do colaborador"
+                excluir={rows.filter((x) => x.key !== r.key).map((x) => x.colaboradorId)}
               />
               <input
                 className="in-sm"
                 value={r.papel}
-                onChange={(e) => updateRow(r.id, { papel: e.target.value })}
+                onChange={(e) => updateRow(r.key, { papel: e.target.value })}
                 maxLength={300}
-                placeholder="Papel — ex.: angariou o cliente, co-gestão"
+                placeholder="Papel neste projecto"
                 disabled={saving}
-                aria-label={`${r.nome || "colaborador"} — papel`}
+                aria-label="Papel neste projecto"
               />
               <input
                 className="in-sm"
                 type="text"
                 inputMode="decimal"
                 value={r.valorAcordado}
-                onChange={(e) => updateRow(r.id, { valorAcordado: e.target.value })}
+                onChange={(e) => updateRow(r.key, { valorAcordado: e.target.value })}
                 placeholder="Acordado €"
                 disabled={saving}
-                aria-label={`${r.nome || "colaborador"} — valor acordado`}
+                aria-label="Valor acordado"
               />
               <button
                 type="button"
                 className="icon-mini"
-                onClick={() => setRows((rs) => rs.filter((x) => x.id !== r.id))}
+                onClick={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}
                 disabled={saving}
-                title="Remover colaborador"
-                aria-label={`Remover ${r.nome || "colaborador"}`}
+                title="Tirar do projecto"
+                aria-label="Tirar do projecto"
               >
                 <Trash2 aria-hidden="true" />
               </button>
@@ -257,17 +275,25 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
             type="button"
             className="btn-ghost"
             onClick={() =>
-              setRows((rs) => [...rs, { id: novoColaboradorId(), nome: "", papel: "", valorAcordado: "" }])
+              setRows((rs) => [...rs, { key: novaKey(), colaboradorId: "", papel: "", valorAcordado: "" }])
             }
             disabled={saving}
           >
             <Plus style={{ width: 13, height: 13 }} aria-hidden="true" />
-            Adicionar colaborador
+            Adicionar ao projecto
           </button>
+          <NovoColaboradorButton
+            label="Nova ficha"
+            open={novoAberto}
+            onOpenChange={setNovoAberto}
+          />
         </div>
         <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "8px 0 0" }}>
-          Interno: o cliente nunca vê isto no portal. O valor acordado é opcional — serve para a
-          conta &quot;pago vs. combinado&quot; abaixo. Linhas sem nome não são guardadas.
+          Interno: o cliente nunca vê isto no portal. Os dados da pessoa vivem na{" "}
+          <Link href="/painel/colaboradores" style={{ textDecoration: "underline" }}>
+            ficha de colaborador
+          </Link>
+          ; aqui fica só o papel e o valor combinado para este projecto (opcional).
         </p>
 
         {/* Pagamentos — despesas categoria "colaboradores" ligadas ao projecto.
@@ -280,16 +306,20 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
           </p>
 
           {iniciais.map((c) => {
-            const pago = pagoPorNome.get(chaveNome(c.nome)) ?? 0;
+            const pago = pagoPorId.get(c.colaboradorId) ?? 0;
             const acordado = c.valorAcordado;
             const falta = acordado != null ? Math.max(0, acordado - pago) : null;
             return (
-              <div key={c.id} className="act">
+              <div key={c.colaboradorId} className="act">
                 <span className="a-ic">
                   <Users className="ic" aria-hidden="true" />
                 </span>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="who truncate">{c.nome}</div>
+                  <div className="who truncate">
+                    <Link href={`/painel/colaboradores/${c.colaboradorId}`}>
+                      {nomeDe(c.colaboradorId)}
+                    </Link>
+                  </div>
                   <div className="muted truncate" style={{ fontSize: 11.5 }}>
                     {acordado != null
                       ? `${fmtEuro(pago)} pagos de ${fmtEuro(acordado)} acordados${
@@ -301,7 +331,7 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
                 <button
                   type="button"
                   className="btn-ghost"
-                  onClick={() => setPayFor(c.nome)}
+                  onClick={() => setPayFor(c.colaboradorId)}
                   disabled={saving}
                 >
                   <Euro style={{ width: 13, height: 13 }} aria-hidden="true" />
@@ -323,9 +353,11 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
                 <Euro className="ic" aria-hidden="true" />
               </span>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div className="who truncate">{d.descricao || `Pagamento a ${d.colaborador ?? "(sem nome)"}`}</div>
+                <div className="who truncate">
+                  {d.descricao || `Pagamento a ${nomeDe(d.colaboradorId)}`}
+                </div>
                 <div className="muted truncate" style={{ fontSize: 11.5 }}>
-                  {d.colaborador ?? "(sem nome)"} · {fmtDate(d.data)}
+                  {nomeDe(d.colaboradorId)} · {fmtDate(d.data)}
                 </div>
               </div>
               <b
@@ -344,7 +376,7 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
                 onClick={() => apagarPagamento(d)}
                 disabled={deleting === d.id}
                 title="Apagar pagamento"
-                aria-label={`Apagar pagamento de ${fmtEuro(d.valor)} a ${d.colaborador ?? "(sem nome)"}`}
+                aria-label={`Apagar pagamento de ${fmtEuro(d.valor)} a ${nomeDe(d.colaboradorId)}`}
               >
                 {deleting === d.id ? (
                   <Loader2 className="animate-spin" aria-hidden="true" />
@@ -372,18 +404,19 @@ export function ColaboradoresSection({ projeto, despesas }: Props) {
       </div>
 
       {/* Sheet de pagamento — reutiliza o form de despesa com categoria, projecto
-          e nome já preenchidos. key remonta o form a cada abertura para o
+          e pessoa já preenchidos. key remonta o form a cada abertura para o
           prefill pegar. */}
       {payFor != null && (
         <DespesaFormSheet
           key={payFor}
           projetos={[{ id: projeto.id, titulo: projeto.titulo }]}
+          colaboradores={colaboradores}
           open
           onOpenChange={(o) => {
             if (!o) setPayFor(null);
           }}
           hideTrigger
-          prefill={{ categoria: "colaboradores", projetoId: projeto.id, colaborador: payFor }}
+          prefill={{ categoria: "colaboradores", projetoId: projeto.id, colaboradorId: payFor }}
         />
       )}
     </section>
