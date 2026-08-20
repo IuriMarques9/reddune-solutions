@@ -34,6 +34,8 @@ export async function POST(request: Request) {
     valor: input.valor!,
     data: input.data!,
     projetoId: input.projetoId ?? null,
+    // Nome normalizado (trim) — é a chave de agrupamento por pessoa nos relatórios.
+    colaborador: input.colaborador?.trim() || null,
     notas: input.notas ?? null,
     // Só aplicado no insert (upsertDespesa usa $setOnInsert).
     criadoEm: new Date().toISOString(),

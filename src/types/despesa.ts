@@ -20,6 +20,7 @@ export const DESPESA_CATEGORIA = [
   "marketing",
   "deslocacoes",
   "stock",
+  "colaboradores",
   "outros",
 ] as const;
 
@@ -34,6 +35,7 @@ export const DESPESA_CATEGORIA_LABEL: Record<DespesaCategoria, string> = {
   marketing: "Marketing & publicidade",
   deslocacoes: "Deslocações",
   stock: "Stock da loja",
+  colaboradores: "Colaboradores",
   outros: "Outros",
 };
 
@@ -47,6 +49,7 @@ export const DESPESA_CATEGORIA_HINT: Record<DespesaCategoria, string> = {
   marketing: "anúncios, cartões, brindes",
   deslocacoes: "combustível, portagens, viagens a clientes",
   stock: "comprado para revender, sem cliente à espera",
+  colaboradores: "pagamentos a quem trabalha contigo num projecto (ex.: Jaime)",
   outros: "o que não encaixa acima",
 };
 
@@ -60,6 +63,7 @@ export const DESPESA_CATEGORIA_ORDER: DespesaCategoria[] = [
   "marketing",
   "deslocacoes",
   "stock",
+  "colaboradores",
   "outros",
 ];
 
@@ -70,6 +74,9 @@ export interface Despesa {
   valor: number;
   data: string; // ISO date (yyyy-mm-dd) — quando o gasto foi feito
   projetoId: string | null; // opcional: gasto ligado a um projecto
+  // A quem foi pago, quando a categoria é "colaboradores" (ex.: "Jaime").
+  // Agrupa os totais por pessoa nos relatórios; noutras categorias fica null.
+  colaborador?: string | null;
   notas: string | null;
   criadoEm: string; // ISO — quando foi registado no painel
 }

@@ -105,13 +105,18 @@ export function gastoEmpresaDoProjeto(
  * a categoria só diz o que a coisa é): infere-se de estar ligado a um projecto
  * — se há projecto, há alguém a pagar aquilo de volta; se não há, é custo de
  * ter a empresa aberta (ferramentas, domínios, deslocações…).
+ *
+ * Excepção: pagamentos a colaboradores. Estão ligados a um projecto (é lá que
+ * se registam), mas o cliente não os devolve — saem da nossa margem. Contam
+ * como custo da empresa, senão o corte "repassado vs empresa" mentia sempre que
+ * partilhamos um projecto com alguém.
  */
 export function splitRepassadoEmpresa(events: GastoEvent[], keys?: Set<string>) {
   let repassado = 0;
   let empresa = 0;
   for (const e of events) {
     if (keys && !keys.has(monthKey(e.data))) continue;
-    if (e.projetoId) repassado += e.valor;
+    if (e.projetoId && e.categoria !== "colaboradores") repassado += e.valor;
     else empresa += e.valor;
   }
   return { repassado, empresa };

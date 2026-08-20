@@ -305,6 +305,22 @@ export interface ProjetoLink {
   url: string; // https:// (validado na API)
 }
 
+// Quem trabalha CONNOSCO num projecto (ex.: o Jaime na AquaElements — angariou
+// o cliente e co-gere). NÃO é cliente: o cliente paga-nos, o colaborador
+// recebe de nós. Os pagamentos feitos ao colaborador registam-se como despesas
+// (categoria "colaboradores", com `colaborador` = este nome e `projetoId` =
+// este projecto) — assim contam sozinhos nos gastos, no lucro e nos gráficos.
+export interface ProjetoColaborador {
+  id: string;
+  /** Nome da pessoa — tem de bater com `Despesa.colaborador` para os totais. */
+  nome: string;
+  /** O que faz/fez: "angariou o cliente, co-gestão". Livre, opcional. */
+  papel?: string | null;
+  // Valor combinado a pagar-lhe por este projecto (€). Opcional: sem valor,
+  // a ficha mostra só o que já foi pago; com valor, mostra pago vs. combinado.
+  valorAcordado?: number | null;
+}
+
 export interface ProjetoPortal {
   tokenHash: string; // SHA-256 hex do token — é ele que resolve o /p/[token]
   // Token CIFRADO (AES-256-GCM, chave em PORTAL_TOKEN_KEY) para o painel poder
@@ -343,6 +359,7 @@ export interface Projeto {
   hardware: ProjetoHardware | null;
   arquivos: ProjetoArquivo[] | null;
   links: ProjetoLink[] | null;
+  colaboradores: ProjetoColaborador[] | null;
   portal: ProjetoPortal | null;
 }
 

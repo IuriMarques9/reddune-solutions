@@ -208,6 +208,25 @@ export default async function RelatoriosPage({
     .sort((a, b) => b.lucro - a.lucro);
   const tipoMax = Math.max(1, ...tipoRows.map((r) => r.lucro));
 
+  // Pagamentos a colaboradores — quanto já foi pago a cada pessoa (ex.: Jaime).
+  // Fonte: despesas categoria "colaboradores", agrupadas pelo nome gravado na
+  // despesa. Já contam nos gastos/lucro acima; este card é o corte por pessoa.
+  // Agrupa por nome normalizado (maiúsculas/espaços não dividem a pessoa em
+  // duas linhas); mostra o nome tal como foi escrito da primeira vez.
+  const colabTotais = new Map<string, { nome: string; total: number; mes: number; n: number }>();
+  for (const d of despesas) {
+    if (d.categoria !== "colaboradores") continue;
+    const nome = d.colaborador?.trim() || "(sem nome)";
+    const chave = nome.toLocaleLowerCase("pt-PT");
+    const slot = colabTotais.get(chave) ?? { nome, total: 0, mes: 0, n: 0 };
+    slot.total += d.valor;
+    slot.n += 1;
+    if (monthKey(d.data) === currentKey) slot.mes += d.valor;
+    colabTotais.set(chave, slot);
+  }
+  const colabRows = [...colabTotais.values()].sort((a, b) => b.total - a.total);
+  const colabMax = Math.max(1, ...colabRows.map((r) => r.total));
+
   // Projectos para o log resolver o título de cada gasto (mais recentes primeiro).
   const projetoOptions = [...projetos]
     .sort((a, b) => (b.dataCriado ?? "").localeCompare(a.dataCriado ?? ""))
@@ -304,7 +323,7 @@ export default async function RelatoriosPage({
                 <div className="kpi-label">Repassado ao cliente</div>
                 <div className="m-num sm">{fmtEuro(repassadoMes)}</div>
               </div>
-              <div title="Gastos sem projecto — o que custa ter a RedDune aberta">
+              <div title="Gastos sem projecto (e pagamentos a colaboradores) — o que custa ter a RedDune aberta">
                 <div className="kpi-label">Custo da empresa</div>
                 <div className={empresaMes > 0 ? "m-num sm neg" : "m-num sm"}>{fmtEuro(empresaMes)}</div>
               </div>
@@ -365,6 +384,36 @@ export default async function RelatoriosPage({
           ))
         )}
       </div>
+
+      {/* Pagamentos a colaboradores — só aparece quando existem */}
+      {colabRows.length > 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="card-head">
+            <span className="card-title">Pagamentos a colaboradores</span>
+            <span className="kpi-label">todo o histórico</span>
+          </div>
+          {colabRows.map((r) => (
+            <div key={r.nome} className="bar-row">
+              <div className="bl">
+                <span>
+                  {r.nome}{" "}
+                  <span className="muted" style={{ fontSize: 11.5 }}>
+                    {r.n} pagamento{r.n === 1 ? "" : "s"}
+                    {r.mes > 0 ? ` · ${fmtEuro(r.mes)} este mês` : ""}
+                  </span>
+                </span>
+                <b>{fmtEuro(r.total)}</b>
+              </div>
+              <div className="bar-track">
+                <div
+                  className="bar-fill exp"
+                  style={{ width: `${Math.max(4, Math.round((r.total / colabMax) * 100))}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Projectos por categoria · por mês */}
       <div className="card" style={{ marginTop: 16 }}>

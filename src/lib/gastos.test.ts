@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { collectGastos, gastoEmpresaDoProjeto } from "@/lib/gastos";
+import { collectGastos, gastoEmpresaDoProjeto, splitRepassadoEmpresa } from "@/lib/gastos";
 import type { Projeto, ProjetoLinha } from "@/types/projeto";
 import type { Despesa } from "@/types/despesa";
 
@@ -87,6 +87,23 @@ describe("gastoEmpresaDoProjeto", () => {
 
   it("projecto sem linhas nem despesas gasta zero", () => {
     expect(gastoEmpresaDoProjeto(projeto({ id: "p1", linhas: null }), [])).toBe(0);
+  });
+
+  it("pagamento a colaborador é custo da empresa, não repassado ao cliente", () => {
+    // Está ligado ao projecto (é lá que se regista), mas o cliente não devolve
+    // a comissão do Jaime — sai da margem.
+    const ds = [
+      despesa({ id: "d1", valor: 200, projetoId: "p1", categoria: "pecas" }),
+      despesa({
+        id: "d2",
+        valor: 150,
+        projetoId: "p1",
+        categoria: "colaboradores",
+        colaborador: "Jaime",
+      }),
+    ];
+    const events = collectGastos([], ds);
+    expect(splitRepassadoEmpresa(events)).toEqual({ repassado: 200, empresa: 150 });
   });
 
   it("conta a linha sem data possível, que os relatórios deixam cair", () => {

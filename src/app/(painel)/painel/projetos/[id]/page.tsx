@@ -26,6 +26,7 @@ import { getComentariosByProjeto } from "@/lib/mongodb/portal";
 import { getSandboxesByProjeto } from "@/lib/mongodb/portal-sandbox";
 import { decryptPortalToken } from "@/lib/portal-token";
 import { HardwareSection } from "@/components/painel/HardwareSection";
+import { ColaboradoresSection } from "@/components/painel/ColaboradoresSection";
 import { sanitizeArquivo } from "@/types/projeto";
 import { gastoEmpresaDoProjeto } from "@/lib/gastos";
 import { StatusBadge } from "@/components/painel/StatusBadge";
@@ -141,6 +142,10 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
             projetoStatus={projeto.status}
             projetoTitulo={projeto.titulo}
           />
+
+          {/* Colaboradores — quem trabalha connosco neste projecto (não é
+              cliente) e os pagamentos que lhes fizemos. */}
+          <ColaboradoresSection projeto={projeto} despesas={despesas} />
 
           {/* Hardware (só assistência técnica) */}
           {projeto.categoria === "assistencia-tecnica" && (

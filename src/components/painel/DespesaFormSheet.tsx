@@ -35,6 +35,14 @@ import { useToast } from "@/hooks/use-toast";
 
 export type ProjetoOption = { id: string; titulo: string };
 
+/** Valores iniciais do form — ex.: a ficha do projecto abre já com o projecto
+ * e a categoria "colaboradores" preenchidos para registar um pagamento. */
+export type DespesaPrefill = {
+  categoria?: DespesaCategoria;
+  projetoId?: string;
+  colaborador?: string;
+};
+
 type SheetProps = {
   projetos: ProjetoOption[];
   /** Controlo externo do sheet (ex.: NovoMenu). Sem esta prop gere o próprio estado. */
@@ -42,6 +50,7 @@ type SheetProps = {
   onOpenChange?: (open: boolean) => void;
   /** Esconde o trigger — o sheet passa a abrir apenas via `open` controlado. */
   hideTrigger?: boolean;
+  prefill?: DespesaPrefill;
 };
 
 /**
@@ -53,6 +62,7 @@ export function DespesaFormSheet({
   open: openProp,
   onOpenChange,
   hideTrigger = false,
+  prefill,
 }: SheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = openProp ?? internalOpen;
@@ -81,6 +91,7 @@ export function DespesaFormSheet({
         </SheetHeader>
         <DespesaForm
           projetos={projetos}
+          prefill={prefill}
           onSaved={() => setOpen(false)}
           onCancel={() => setOpen(false)}
         />
@@ -91,11 +102,12 @@ export function DespesaFormSheet({
 
 type FormProps = {
   projetos: ProjetoOption[];
+  prefill?: DespesaPrefill;
   onSaved?: () => void;
   onCancel?: () => void;
 };
 
-function DespesaForm({ projetos, onSaved, onCancel }: FormProps) {
+function DespesaForm({ projetos, prefill, onSaved, onCancel }: FormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
@@ -103,10 +115,11 @@ function DespesaForm({ projetos, onSaved, onCancel }: FormProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [descricao, setDescricao] = useState("");
-  const [categoria, setCategoria] = useState<DespesaCategoria | "">("");
+  const [categoria, setCategoria] = useState<DespesaCategoria | "">(prefill?.categoria ?? "");
   const [valor, setValor] = useState("");
   const [data, setData] = useState(todayLisbonYmd());
-  const [projetoId, setProjetoId] = useState("");
+  const [projetoId, setProjetoId] = useState(prefill?.projetoId ?? "");
+  const [colaborador, setColaborador] = useState(prefill?.colaborador ?? "");
   const [notas, setNotas] = useState("");
 
   async function onSubmit(e: React.FormEvent) {
@@ -121,6 +134,12 @@ function DespesaForm({ projetos, onSaved, onCancel }: FormProps) {
       setError("Valor inválido — usa um número positivo (aceita vírgula).");
       return;
     }
+    // O nome é a chave que agrupa os totais por pessoa — sem ele o pagamento
+    // ficava órfão nos relatórios (o `required` do input deixa passar espaços).
+    if (categoria === "colaboradores" && !colaborador.trim()) {
+      setError("Escreve a quem pagaste.");
+      return;
+    }
     setSubmitting(true);
     const res = await safeJsonPost<{ id: string }>("/api/despesas/upsert", {
       descricao: descricao.trim(),
@@ -128,6 +147,7 @@ function DespesaForm({ projetos, onSaved, onCancel }: FormProps) {
       valor: Math.round(v * 100) / 100,
       data,
       projetoId: projetoId || null,
+      colaborador: categoria === "colaboradores" ? colaborador.trim() || null : null,
       notas: notas.trim() || null,
     });
     setSubmitting(false);
@@ -229,6 +249,24 @@ function DespesaForm({ projetos, onSaved, onCancel }: FormProps) {
           </Select>
         </div>
       </div>
+
+      {categoria === "colaboradores" && (
+        <div className="space-y-1">
+          <Label htmlFor="dc">Pago a (nome) *</Label>
+          <Input
+            id="dc"
+            value={colaborador}
+            onChange={(e) => setColaborador(e.target.value)}
+            required
+            maxLength={120}
+            placeholder="Ex.: Jaime"
+            disabled={isBusy}
+          />
+          <p className="text-[11px] text-muted-foreground">
+            Usa sempre o mesmo nome — é ele que agrupa os totais por pessoa.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-1">
         <Label htmlFor="dn">Notas</Label>
