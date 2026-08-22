@@ -131,6 +131,7 @@
                 }
             },
             "cta": "Falar connosco",
+            "exampleCta": "Ver exemplo",
             "quote": "Não encontraste o que procuras? A nossa paixão é criar <accent>soluções à medida</accent>. <contactLink>Conta-nos a tua ideia</contactLink> e vamos transformá-la em realidade."
         },
         "PortfolioSection": {

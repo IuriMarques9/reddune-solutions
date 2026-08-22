@@ -131,6 +131,7 @@
                 }
             },
             "cta": "Talk to us",
+            "exampleCta": "See an example",
             "quote": "Didn't find what you were looking for? Our passion is creating <accent>tailored solutions</accent>. <contactLink>Tell us your idea</contactLink> and we will turn it into reality."
         },
         "PortfolioSection": {

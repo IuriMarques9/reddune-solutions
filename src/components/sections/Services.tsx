@@ -26,23 +26,28 @@ type ServiceConfig = {
   key: ServiceKey;
   href: string;
   imageSrc: string;
+  /** Filtro da página /portfolio (slug da categoria = slug do serviço). */
+  portfolioHref: string;
 };
 
 const SERVICES: ReadonlyArray<ServiceConfig> = [
   {
-    key: "tecAssist",
-    href: "/servicos/assistencia-tecnica",
-    imageSrc: "/assistencia-tecnica.jpg",
-  },
-  {
     key: "webDigital",
     href: "/servicos/web-digital",
     imageSrc: "/web-digital.jpg",
+    portfolioHref: "/portfolio?categoria=web-digital",
+  },
+  {
+    key: "tecAssist",
+    href: "/servicos/assistencia-tecnica",
+    imageSrc: "/assistencia-tecnica.jpg",
+    portfolioHref: "/portfolio?categoria=assistencia-tecnica",
   },
   {
     key: "dataRecovery",
     href: "/servicos/software-recuperacao",
     imageSrc: "/software-recuperacao.jpg",
+    portfolioHref: "/portfolio?categoria=software-recuperacao",
   },
 ] as const;
 
@@ -104,12 +109,11 @@ export function Services() {
       >
         {SERVICES.map((svc) => (
           <Reveal key={svc.key}>
-            <Link
-              href={svc.href}
+            <div
               className={cn(
-                "group flex h-full min-h-[480px] flex-col overflow-hidden",
+                "group relative flex h-full min-h-[480px] flex-col overflow-hidden",
                 "rounded-card bg-sand-warm",
-                "px-8 pt-9 pb-8 no-underline text-ink",
+                "px-8 pt-9 pb-8 text-ink",
                 "shadow-warm transition-all duration-500 ease-oasis",
                 "hover:-translate-y-2 hover:shadow-warm-lg",
               )}
@@ -136,9 +140,16 @@ export function Services() {
                   "[&_em]:font-serif [&_em]:italic [&_em]:font-medium [&_em]:text-ember",
                 )}
               >
-                {t.rich(`services.${svc.key}.title`, {
-                  accent: (chunks) => <em>{chunks}</em>,
-                })}
+                {/* Stretched link: o card inteiro leva ao serviço; o "Ver
+                    exemplo" no rodapé fica por cima com z-10. */}
+                <Link
+                  href={svc.href}
+                  className="text-inherit no-underline after:absolute after:inset-0 after:content-['']"
+                >
+                  {t.rich(`services.${svc.key}.title`, {
+                    accent: (chunks) => <em>{chunks}</em>,
+                  })}
+                </Link>
               </h3>
               <p
                 className={cn(
@@ -150,10 +161,22 @@ export function Services() {
 
               <div
                 className={cn(
-                  "mt-6 flex items-center justify-end pt-5",
+                  "mt-6 flex items-center justify-end gap-3 pt-5",
                   "border-t border-dashed border-dune-deep/15",
                 )}
               >
+                <Link
+                  href={svc.portfolioHref}
+                  className={cn(
+                    "relative z-10 inline-flex h-[38px] items-center justify-center",
+                    "rounded-full bg-ink text-cream",
+                    "px-[18px] text-[13px] font-semibold no-underline",
+                    "transition-colors duration-300 ease-oasis",
+                    "hover:bg-ember",
+                  )}
+                >
+                  {t("exampleCta")}
+                </Link>
                 <span
                   aria-hidden
                   className={cn(
@@ -166,7 +189,7 @@ export function Services() {
                   <ArrowRight className="size-[17px]" strokeWidth={2.25} />
                 </span>
               </div>
-            </Link>
+            </div>
           </Reveal>
         ))}
       </div>
