@@ -161,17 +161,18 @@ export function Services() {
 
               <div
                 className={cn(
-                  "mt-6 flex items-center justify-between gap-4 pt-5",
+                  "mt-6 flex items-center justify-end gap-3 pt-5",
                   "border-t border-dashed border-dune-deep/15",
                 )}
               >
                 <Link
                   href={svc.portfolioHref}
                   className={cn(
-                    "relative z-10 inline-flex items-center gap-1.5",
-                    "text-[14px] font-semibold text-ember",
-                    "underline underline-offset-4 decoration-ember/40",
-                    "transition-colors duration-300 hover:decoration-ember",
+                    "relative z-10 inline-flex h-[38px] items-center justify-center",
+                    "rounded-full bg-ink text-cream",
+                    "px-[18px] text-[13px] font-semibold no-underline",
+                    "transition-colors duration-300 ease-oasis",
+                    "hover:bg-ember",
                   )}
                 >
                   {t("exampleCta")}
