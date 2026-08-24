@@ -8,6 +8,12 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   notas, leads) nem em `messages/*` — a tabela de preços vem da DB (painel).
   As STATS com € derivam da DB no render (`[slug]/page.tsx`: match do label da
   stat ao título do serviço); sem match fica o valor do ficheiro.
+  Preços em texto corrido (note/FAQs/stats.sub) usam tokens
+  `{{preco:label|fallback}}` (`src/lib/preco-tokens.ts`, 2026-08-24): resolvem
+  contra TODAS as linhas do slug na DB, **incluindo `ativo:false`** — é assim
+  que extras (urgência, deslocação) alimentam o texto sem linha pública na
+  tabela; sem match fica o fallback do ficheiro. Prazos ("2-3 semanas") não têm
+  fonte na DB — ficam fixos por decisão do Iuri.
 - Contactos: fonte única = `src/lib/constants.ts` (config/contact.ts importa de lá;
   políticas interpolam {email}/{phone}). Settings de empresa no painel NÃO
   alimentam o site público (nota no próprio form).

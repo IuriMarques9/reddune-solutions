@@ -18,7 +18,8 @@ import {
   type ServiceContent,
 } from "@/lib/servicos-content";
 import { getServicosBySlug } from "@/lib/mongodb/servicos";
-import { formatPreco, servicoTitulo, servicoDescricao, type PriceLabels, type Locale as ServicoLocale } from "@/types/servico";
+import { formatPreco, servicoTitulo, servicoDescricao, type PriceLabels, type Locale as ServicoLocale, type Servico } from "@/types/servico";
+import { interpolaPrecoTokens } from "@/lib/preco-tokens";
 import { getTranslations } from "next-intl/server";
 import {
   serviceLd,
@@ -324,9 +325,15 @@ export default async function ServicoSlugPage({ params }: PageProps) {
   // Preço mínimo real (admin-edited) para o Offer do JSON-LD.
   let priceFrom: number | undefined;
 
+  // Todas as linhas do slug, incl. inactivas: só as activas entram na tabela,
+  // mas TODAS alimentam os tokens {{preco:...}} — é assim que um extra
+  // (urgência, deslocação) vive na DB sem aparecer como linha pública.
+  let servicosDoSlug: Servico[] = [];
+
   // Override items.list with DB-backed serviços (admin-edited prices).
   try {
-    const dbServicos = await getServicosBySlug(typedSlug, true);
+    servicosDoSlug = await getServicosBySlug(typedSlug, false);
+    const dbServicos = servicosDoSlug.filter((s) => s.ativo);
     const precos = dbServicos.flatMap((s) => [
       ...(typeof s.precoBase === "number" ? [s.precoBase] : []),
       ...(s.variantes ?? [])
@@ -377,6 +384,16 @@ export default async function ServicoSlugPage({ params }: PageProps) {
   } catch (e) {
     console.error("DB servicos fetch falhou, fallback ao JSON:", e);
   }
+
+  // Tokens {{preco:label|fallback}} de note/FAQs/stats.sub resolvem contra a
+  // DB — mudar o preço no painel muda também o texto corrido e o FAQPage
+  // JSON-LD (construído a seguir, já sobre o texto interpolado). Com a DB em
+  // baixo, servicosDoSlug=[] e todos os tokens caem no fallback do ficheiro.
+  const locTokens: ServicoLocale = locale === "en" ? "en" : "pt";
+  const interp = (t: string) => interpolaPrecoTokens(t, servicosDoSlug, locTokens);
+  content.items.note = interp(content.items.note);
+  content.stats = content.stats.map((s) => (s.sub ? { ...s, sub: interp(s.sub) } : s));
+  content.faqs.list = content.faqs.list.map(({ q, a }) => ({ q: interp(q), a: interp(a) }));
 
   const serviceSchema = serviceLd({
     slug: typedSlug,

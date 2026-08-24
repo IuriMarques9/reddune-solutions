@@ -49,7 +49,7 @@
         "price": "Office <b>60–75€</b> · Gaming <b>85–110€</b> · High-End <b>120–160€</b>"
       }
     ],
-    "note": "<em>Extras:</em> Rush fee (<48h) <b>25€</b> · On-site call-out <b>0.80€/km</b>.",
+    "note": "<em>Extras:</em> Rush fee (<48h) <b>{{preco:urgência|25€}}</b> · On-site call-out <b>{{preco:deslocação|0.80€}}/km</b>.",
     "noteCta": "Request a quote",
     "noteCtaMessage": "Hi! I'd like a quote."
   },
@@ -64,7 +64,7 @@
       "value": "<48",
       "valueSuffix": "h",
       "label": "Rush",
-      "sub": "25€ surcharge"
+      "sub": "{{preco:diagnóstico|25€}} surcharge"
     },
     {
       "value": "0.80",
@@ -85,7 +85,7 @@
     "list": [
       {
         "q": "Do you charge for quotes?",
-        "a": "Quotes are free. The technical diagnosis (25€) is deducted from the final price if you go ahead with the repair — it only becomes a final cost if you cancel."
+        "a": "Quotes are free. The technical diagnosis ({{preco:diagnóstico|25€}}) is deducted from the final price if you go ahead with the repair — it only becomes a final cost if you cancel."
       },
       {
         "q": "Do you offer warranty?",
@@ -93,7 +93,7 @@
       },
       {
         "q": "Do you do on-site visits?",
-        "a": "Yes. The on-site call-out is charged at 0.80€/km from Fuseta."
+        "a": "Yes. The on-site call-out is charged at {{preco:deslocação|0.80€}}/km from Fuseta."
       }
     ]
   },
