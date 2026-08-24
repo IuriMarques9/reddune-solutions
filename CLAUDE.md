@@ -57,6 +57,12 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   errado) — passou a ler `{{preco:urgência}}`.
 
 ## Landing — cards de serviços (sessão 2026-08-24)
+- Cards extraídos para `src/components/sections/ServiceCard.tsx` (2026-08-24),
+  PARTILHADO entre a landing e o hub /servicos — editar lá, nunca duplicar. O
+  hub passa `footerLeft` com o "desde X€" da DB (rodapé justify-between); a
+  landing não passa nada (justify-end, sem preços). Hover de levantar vive em
+  globals.css: `.svc-card:hover:not(:has(.svc-cta:hover))` — com o rato no
+  botão "Ver exemplo" o card NÃO levanta nem roda a seta (decisão do Iuri).
 - Ordem fixa em `SERVICES` (`src/components/sections/Services.tsx`): **Web & Digital
   primeiro**, depois Assistência Técnica e Software & Recuperação. A ordem é do
   array, não da DB.

@@ -1,7 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { Header } from "@/components/layout/Header";
@@ -9,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PageHero } from "@/components/sections/PageHero";
 import { CTAWave } from "@/components/sections/CTAWave";
 import { Reveal } from "@/components/motion/Reveal";
+import { ServiceCard } from "@/components/sections/ServiceCard";
 import { cn } from "@/lib/utils";
 import { buildMetadata } from "@/lib/seo";
 import type { ServicoSlug } from "@/lib/servicos-content";
@@ -58,6 +56,8 @@ const SERVICE_VISUALS: ReadonlyArray<ServiceVisualConfig> = [
 function ServicesHubBody({ precosDb }: { precosDb: Record<string, number | null> }) {
   const t = useTranslations("ServicosPage.hub");
   const tPrice = useTranslations("ServicosPage.price");
+  // "Ver exemplo" partilha a chave da landing — um label, dois sitios.
+  const tHome = useTranslations("HomePage.ServicesSection");
 
   return (
     <>
@@ -99,50 +99,17 @@ function ServicesHubBody({ precosDb }: { precosDb: Record<string, number | null>
         <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {SERVICE_VISUALS.map((svc) => (
             <Reveal key={svc.slug}>
-              <Link
+              <ServiceCard
                 href={`/servicos/${svc.slug}`}
-                className={cn(
-                  "group flex h-full min-h-[480px] flex-col overflow-hidden",
-                  "rounded-card bg-sand-warm",
-                  "px-8 pt-9 pb-8 no-underline text-ink",
-                  "shadow-warm transition-all duration-500 ease-oasis",
-                  "hover:-translate-y-2 hover:shadow-warm-lg",
-                )}
-              >
-                <div
-                  className={cn(
-                    "relative mb-7 overflow-hidden rounded-[20px] aspect-[4/3]",
-                  )}
-                >
-                  <Image
-                    src={svc.imageSrc}
-                    alt={t(`cards.${svc.slug}.imageAlt`)}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                </div>
-
-                <h3
-                  className={cn(
-                    "font-display font-bold text-[26px] leading-[1.05] tracking-[-0.02em] mb-3.5",
-                    "[&_em]:font-serif [&_em]:italic [&_em]:font-medium [&_em]:text-ember",
-                  )}
-                >
-                  {t.rich(`cards.${svc.slug}.title`, {
-                    accent: (chunks) => <em>{chunks}</em>,
-                  })}
-                </h3>
-                <p className="flex-1 text-[15px] leading-[1.55] text-ink-soft">
-                  {t(`cards.${svc.slug}.description`)}
-                </p>
-
-                <div
-                  className={cn(
-                    "mt-6 flex items-center justify-between pt-5",
-                    "border-t border-dashed border-dune-deep/15",
-                  )}
-                >
+                portfolioHref={`/portfolio?categoria=${svc.slug}`}
+                imageSrc={svc.imageSrc}
+                imageAlt={t(`cards.${svc.slug}.imageAlt`)}
+                title={t.rich(`cards.${svc.slug}.title`, {
+                  accent: (chunks) => <em>{chunks}</em>,
+                })}
+                description={t(`cards.${svc.slug}.description`)}
+                exampleLabel={tHome("exampleCta")}
+                footerLeft={
                   <span
                     className={cn(
                       "font-mono text-[11px] uppercase tracking-[0.18em] text-ink-soft",
@@ -150,26 +117,15 @@ function ServicesHubBody({ precosDb }: { precosDb: Record<string, number | null>
                     )}
                   >
                     {precosDb[svc.slug] != null ? (
-                      <>desde <b>{precosDb[svc.slug]}€</b></>
+                      <>{tPrice("from")} <b>{precosDb[svc.slug]}€</b></>
                     ) : (
                       // Sem preço na DB não se inventa número: os fallbacks fixos
                       // ("desde 15€") desactualizavam quando os preços mudavam no painel.
                       <b>{tPrice("onRequest")}</b>
                     )}
                   </span>
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "inline-flex h-[38px] w-[38px] items-center justify-center",
-                      "rounded-full bg-ink text-cream",
-                      "transition-all duration-300 ease-oasis",
-                      "group-hover:bg-ember group-hover:rotate-[-45deg]",
-                    )}
-                  >
-                    <ArrowRight className="size-[17px]" strokeWidth={2.25} />
-                  </span>
-                </div>
-              </Link>
+                }
+              />
             </Reveal>
           ))}
         </div>

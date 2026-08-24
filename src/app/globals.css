@@ -209,6 +209,23 @@
 }
 
 /* ============================================================
+   ServiceCard (landing + hub /servicos)
+   O hover de levantar so dispara quando o rato NAO esta no CTA
+   "Ver exemplo": o CTA leva ao portfolio, e o card a levantar ao
+   mesmo tempo lia-se como se o clique fosse para o servico.
+   `:has()` (Chrome/Edge 105+, Safari 15.4+, Firefox 121+) faz isto
+   sem JS; num browser sem :has o card levanta sempre (comportamento
+   antigo, nada parte).
+   ============================================================ */
+.svc-card:hover:not(:has(.svc-cta:hover)) {
+  @apply -translate-y-2 shadow-warm-lg;
+}
+.svc-card:hover:not(:has(.svc-cta:hover)) .svc-arrow {
+  @apply bg-ember;
+  transform: rotate(-45deg);
+}
+
+/* ============================================================
    Oasis keyframes — ported EXACT from design-handoff/project/site/styles.css.
    These power the motion primitives in src/components/motion/:
      • pulse      → hero kicker dot
