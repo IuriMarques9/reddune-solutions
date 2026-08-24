@@ -21,6 +21,25 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
 - Preços do site são s/ IVA: sufixo "+ IVA" na loja, nota no card escuro dos
   serviços, JSON-LD `valueAddedTaxIncluded: false`.
 
+## Landing — cards de serviços (sessão 2026-08-24)
+- Ordem fixa em `SERVICES` (`src/components/sections/Services.tsx`): **Web & Digital
+  primeiro**, depois Assistência Técnica e Software & Recuperação. A ordem é do
+  array, não da DB.
+- Cada card tem 2 destinos: o **título** é *stretched link* (`after:absolute
+  after:inset-0`) para `/servicos/<slug>` — o card todo clicável — e o botão
+  **"Ver exemplo"** (`portfolioHref`) leva a `/portfolio?categoria=<slug>`, que a
+  página já lê via `searchParams.categoria` → `PortfolioGrid initialFilter`.
+  O botão precisa de `relative z-10` para ficar por cima do stretched link; nunca
+  voltar a envolver o card inteiro num `<a>` (daria `<a>` aninhados).
+- Estilo do "Ver exemplo" combina com o círculo da seta ao lado: h-38px,
+  `bg-ink`/`text-cream`, `hover:bg-ember`. Ambos alinhados à direita no rodapé.
+- Chave i18n: `HomePage.ServicesSection.exampleCta` (pt/en).
+- Os cards da landing **não mostram preços** (nunca mostraram). Se um dia se
+  quiser, os valores têm de vir da DB no render — nunca escritos no código
+  (ver regra das STATS acima).
+- Editar `messages/*.json` à mão (Edit/insert de linha). Um `json.load/dump` em
+  Python reformata o ficheiro todo (espaços antes dos `:`) e suja o diff.
+
 ## Estado de segurança (feito)
 - Proteção de força bruta no login: 10/min em `/api/auth/callback/credentials` (`middleware.ts`).
 - Rate limit global de `/api` (200/min). `rateLimitDistributed` (Upstash opcional -> MongoDB
