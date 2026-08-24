@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 /**
  * Gate de sessão das páginas do painel — SEGUNDA linha de defesa.
  *
- * O gate principal é `src/middleware.ts`, que corta a request no edge antes de
+ * O gate principal é `src/proxy.ts` (ex-middleware), que corta a request no edge antes de
  * qualquer render. Isto existe porque o guard do layout NÃO chega: o layout e as
  * páginas renderizam em paralelo, por isso o `redirect()` do layout manda o
  * browser para /entrar mas os dados que a página já carregou vão na mesma no
