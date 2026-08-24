@@ -10,10 +10,10 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   stat ao título do serviço); sem match fica o valor do ficheiro.
   Preços em texto corrido (note/FAQs/stats.sub) usam tokens
   `{{preco:label|fallback}}` (`src/lib/preco-tokens.ts`, 2026-08-24): resolvem
-  contra TODAS as linhas do slug na DB, **incluindo `ativo:false`** — é assim
-  que extras (urgência, deslocação) alimentam o texto sem linha pública na
-  tabela; sem match fica o fallback do ficheiro. Prazos ("2-3 semanas") não têm
-  fonte na DB — ficam fixos por decisão do Iuri.
+  contra TODAS as linhas do slug na DB (incluindo `ativo:false`) **e a seguir
+  contra o grupo "Extras"** — primeiro match ganha, sem match fica o fallback do
+  ficheiro. Prazos ("2-3 semanas") não têm fonte na DB — ficam fixos por decisão
+  do Iuri.
 - Contactos: fonte única = `src/lib/constants.ts` (config/contact.ts importa de lá;
   políticas interpolam {email}/{phone}). Settings de empresa no painel NÃO
   alimentam o site público (nota no próprio form).
@@ -26,6 +26,35 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
 - Horário Seg–Sex 09h–18h é REAL: visível no ContactInfo + JSON-LD.
 - Preços do site são s/ IVA: sufixo "+ IVA" na loja, nota no card escuro dos
   serviços, JSON-LD `valueAddedTaxIncluded: false`.
+
+## Extras — taxas gerais (sessão 2026-08-24)
+- Taxas que valem para as três categorias (urgência, deslocação) vivem em
+  `slug: "extras"` na colecção `servicos` — `SERVICO_EXTRAS` / `SERVICO_GRUPO`
+  em `src/types/servico.ts`. **Não** é categoria pública: fica fora de
+  `SERVICO_SLUG`, logo não gera `/servicos/extras`, não aparece nos filtros do
+  portfólio nem nos tipos de projeto (ambos validam contra `SERVICO_SLUG`).
+- Editam-se no painel (/painel/precos) numa secção "Extras" no fim da lista,
+  sempre visível mesmo vazia, com botões-preset. O card do extra mostra o token
+  `{{preco:label|fallback}}` pronto a copiar (`tokenSugerido`, label = palavra
+  mais longa do título) e não tem imagem nem toggle Activo — nunca é público,
+  por isso `ativo` fica sempre `true`.
+- `getServicosExtras()` traz todas as linhas; `[slug]/page.tsx` monta as fontes
+  dos tokens por prioridade: linhas do slug primeiro, extras a seguir. Uma
+  categoria pode assim ter a sua própria taxa com o mesmo nome de um extra.
+- `precoTipo: "eur" | "percent"` (2026-08-24): a urgência dos websites é
+  DIFERENTE da assistência — percentagem sobre o orçamento, não valor fixo.
+  Linha "Taxa de urgência web" 25% (decisão do Iuri); o token renderiza "25%"
+  em vez de "25€". No painel o selector €/% só aparece nos extras; percent
+  esconde máx/desde. Labels colidem por `includes` ("urgência" apanha as duas)
+  → `labelTokenSugerido` estica para "urgência web" e a nota do web-digital usa
+  `{{preco:urgência web|25%}}`; o `{{preco:urgência|25€}}` da assistência
+  continua a apanhar a <48h por ordem (ordem 0).
+- Linhas criadas a 2026-08-24 por `scripts/seed-extras.mjs` (idempotente,
+  `--apply` para escrever): Taxa de urgência (<48h) 25€, Taxa de urgência web
+  25% e Deslocação ao domicílio 0,80€/km. As duas primeiras eram os fallbacks
+  dos content JSON, por isso o site não mudou; mudou só quem manda no número.
+- A stat "Urgência" de assistência-tecnica lia `{{preco:diagnóstico}}` (token
+  errado) — passou a ler `{{preco:urgência}}`.
 
 ## Landing — cards de serviços (sessão 2026-08-24)
 - Ordem fixa em `SERVICES` (`src/components/sections/Services.tsx`): **Web & Digital
@@ -47,7 +76,9 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   Python reformata o ficheiro todo (espaços antes dos `:`) e suja o diff.
 
 ## Estado de segurança (feito)
-- Proteção de força bruta no login: 10/min em `/api/auth/callback/credentials` (`middleware.ts`).
+- Proteção de força bruta no login: 10/min em `/api/auth/callback/credentials` (`src/proxy.ts`,
+  ex-`middleware.ts` — renomeado 2026-08-24 p/ convenção nova do Next 16; era só isso que
+  punha o "Proxy: status unknown" no dashboard da Vercel, DNS nunca teve problema).
 - Rate limit global de `/api` (200/min). `rateLimitDistributed` (Upstash opcional -> MongoDB
   coleção `rate_limits` -> memória). O middleware Edge usa Upstash-ou-memória (o driver Mongo não corre no Edge).
 - Formulário de contacto: honeypot + rate limit + Turnstile (adormecido, sem chaves).

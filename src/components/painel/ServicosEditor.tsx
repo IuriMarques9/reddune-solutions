@@ -2,21 +2,26 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Loader2, X, Pencil, Globe, ChevronUp } from "lucide-react";
+import { Plus, Trash2, Loader2, X, Pencil, Globe, ChevronUp, Copy, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Topbar } from "@/components/painel/Topbar";
 import {
+  SERVICO_EXTRAS,
+  SERVICO_GRUPO_LABEL,
   SERVICO_SLUG,
   SERVICO_SLUG_LABEL,
   formatPreco,
+  isExtra,
+  type PrecoTipo,
   type Servico,
-  type ServicoSlug,
+  type ServicoGrupo,
   type VariantePreco,
 } from "@/types/servico";
 import { parseMoney } from "@/lib/parse-number";
+import { tokenSugerido } from "@/lib/preco-tokens";
 import { safeJsonPost, safeDelete } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -32,7 +37,7 @@ type Draft = {
   /** Chave estável por-draft (cliente). Independente do índice e do id da BD. */
   key: string;
   id: string | null;
-  slug: ServicoSlug;
+  slug: ServicoGrupo;
   titulo: string;
   tituloEn: string;
   descricao: string;
@@ -40,6 +45,7 @@ type Draft = {
   precoBase: string;
   precoMax: string;
   precoDesde: boolean;
+  precoTipo: PrecoTipo;
   precoTexto: string; // preservado mas não editável (legacy)
   nota: string;
   notaEn: string;
@@ -52,6 +58,74 @@ type Draft = {
 };
 
 const DEFAULT_LABELS = ["Desktop", "Portátil", "Consola"];
+
+/**
+ * Extras prontos a criar — as taxas gerais que o texto do site já menciona
+ * (nota dos serviços + FAQs de assistência). Os valores são os que estão hoje
+ * escritos como fallback nos content JSON, por isso criar a linha não muda nada
+ * no site: passa só a ser o painel a mandar no número.
+ */
+type ExtraPreset = {
+  id: string;
+  titulo: string;
+  tituloEn: string;
+  preco: string;
+  precoTipo: PrecoTipo;
+  nota: string;
+  notaEn: string;
+};
+
+const EXTRAS_PRESETS: ExtraPreset[] = [
+  {
+    id: "urgencia",
+    titulo: "Taxa de urgência (<48h)",
+    tituloEn: "Rush fee (<48h)",
+    preco: "25",
+    precoTipo: "eur",
+    nota: "sob disponibilidade",
+    notaEn: "subject to availability",
+  },
+  {
+    id: "urgencia-web",
+    titulo: "Taxa de urgência web",
+    tituloEn: "Website rush fee",
+    preco: "25",
+    precoTipo: "percent",
+    nota: "sobre o valor do orçamento",
+    notaEn: "on the quoted price",
+  },
+  {
+    id: "deslocacao",
+    titulo: "Deslocação ao domicílio",
+    tituloEn: "On-site call-out",
+    preco: "0.8",
+    precoTipo: "eur",
+    nota: "por km, a partir da Fuseta",
+    notaEn: "per km, from Fuseta",
+  },
+];
+
+const norm = (s: string) =>
+  s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+/**
+ * Token pronto a colar nos content JSON, com o preço actual como fallback.
+ * `outrosTitulos` = títulos das outras linhas, para o label esticar quando a
+ * palavra colide ("urgência" → "urgência web").
+ */
+function tokenDoDraft(d: Draft, outrosTitulos: string[]): string {
+  const nums = [
+    ...(d.precoBase.trim() ? [parseMoney(d.precoBase)] : []),
+    ...(d.temVariantes ? d.variantes.map((v) => parseMoney(v.preco)) : []),
+  ].filter((n): n is number => n != null && Number.isFinite(n));
+  return tokenSugerido(
+    d.titulo,
+    nums.length > 0 ? Math.min(...nums) : null,
+    "pt",
+    d.precoTipo,
+    outrosTitulos,
+  );
+}
 
 let keySeq = 0;
 function genKey(): string {
@@ -75,6 +149,7 @@ function toDraft(s: Servico): Draft {
     precoBase: s.precoBase != null ? String(s.precoBase) : "",
     precoMax: s.precoMax != null ? String(s.precoMax) : "",
     precoDesde: s.precoDesde ?? false,
+    precoTipo: s.precoTipo ?? "eur",
     precoTexto: s.precoTexto ?? "",
     nota: s.nota ?? "",
     notaEn: s.notaI18n?.en ?? "",
@@ -94,7 +169,7 @@ function toDraft(s: Servico): Draft {
   };
 }
 
-function emptyDraft(slug: ServicoSlug, ordem: number): Draft {
+function emptyDraft(slug: ServicoGrupo, ordem: number, preset?: Partial<Draft>): Draft {
   return {
     key: genKey(),
     id: null,
@@ -106,6 +181,7 @@ function emptyDraft(slug: ServicoSlug, ordem: number): Draft {
     precoBase: "",
     precoMax: "",
     precoDesde: false,
+    precoTipo: "eur",
     precoTexto: "",
     nota: "",
     notaEn: "",
@@ -115,11 +191,18 @@ function emptyDraft(slug: ServicoSlug, ordem: number): Draft {
     temVariantes: false,
     variantes: [],
     dirty: true,
+    ...preset,
   };
 }
 
 /** Preço display da linha `.svc` ("desde 15€", "25€ a 60€", "Sob consulta"), via formatPreco. */
 function draftPreco(d: Draft): string {
+  if (d.precoTipo === "percent") {
+    const n = d.precoBase.trim() ? parseMoney(d.precoBase) : null;
+    return n != null && Number.isFinite(n)
+      ? `+${String(n).replace(".", ",")}%`
+      : "Sob consulta";
+  }
   const precoBase = d.precoBase.trim() ? parseMoney(d.precoBase) : null;
   const precoMax = d.precoMax.trim() ? parseMoney(d.precoMax) : null;
   const variantes: VariantePreco[] | null =
@@ -249,11 +332,42 @@ export function ServicosEditor({ servicos }: Props) {
     );
   }
 
-  function addNovo(slug: ServicoSlug) {
+  function addNovo(slug: ServicoGrupo, preset?: Partial<Draft>) {
     const ordem = items.filter((d) => d.slug === slug).length;
-    const draft = emptyDraft(slug, ordem);
+    const draft = emptyDraft(slug, ordem, preset);
     setItems((prev) => [...prev, draft]);
     setOpenKeys((prev) => new Set(prev).add(draft.key));
+  }
+
+  function addExtra(preset?: ExtraPreset) {
+    addNovo(
+      SERVICO_EXTRAS,
+      preset
+        ? {
+            titulo: preset.titulo,
+            tituloEn: preset.tituloEn,
+            precoBase: preset.preco,
+            precoTipo: preset.precoTipo,
+            nota: preset.nota,
+            notaEn: preset.notaEn,
+          }
+        : undefined,
+    );
+  }
+
+  /** Títulos das outras linhas — desambiguam o label do token. */
+  function outrosTitulos(d: Draft): string[] {
+    return items.filter((it) => it.key !== d.key).map((it) => it.titulo);
+  }
+
+  /** Preset já criado? Compara títulos completos (nos dois sentidos). */
+  function presetJaExiste(preset: ExtraPreset): boolean {
+    const alvo = norm(preset.titulo);
+    return items.some((d) => {
+      if (!isExtra(d.slug)) return false;
+      const t = norm(d.titulo);
+      return t.includes(alvo) || (t.length > 0 && alvo.includes(t));
+    });
   }
 
   async function save(key: string) {
@@ -309,10 +423,11 @@ export function ServicosEditor({ servicos }: Props) {
             ? null
             : precoBase != null && Number.isFinite(precoBase) ? precoBase : null,
         precoMax:
-          variantesPayload
+          variantesPayload || d.precoTipo === "percent"
             ? null
             : precoMax != null && Number.isFinite(precoMax) ? precoMax : null,
-        precoDesde: !variantesPayload && d.precoDesde,
+        precoDesde: !variantesPayload && d.precoTipo !== "percent" && d.precoDesde,
+        precoTipo: d.precoTipo,
         variantes: variantesPayload,
         // Larga o `precoTexto` legacy: não é editável aqui, não traduz e ganhava
         // precedência ao "Sob consulta". Guardar a linha migra-a. Ver aviso no card.
@@ -321,7 +436,10 @@ export function ServicosEditor({ servicos }: Props) {
         nota: d.nota.trim() || null,
         imageUrl: d.imageUrl.trim() || null,
         ordem: d.ordem,
-        ativo: d.ativo,
+        // Um extra nunca é renderizado (a página filtra por slug), por isso o
+        // flag não decide nada — fica sempre activo para não haver linhas
+        // "desligadas" a alimentar texto sem se perceber porquê.
+        ativo: isExtra(d.slug) ? true : d.ativo,
       };
       const res = await safeJsonPost<{ id: string }>("/api/servicos/upsert", payload);
       if (!res.ok) {
@@ -344,7 +462,9 @@ export function ServicosEditor({ servicos }: Props) {
     if (d.id) {
       const ok = await confirm({
         title: `Apagar "${d.titulo}"?`,
-        description: "Remove este serviço da página pública /servicos.",
+        description: isExtra(d.slug)
+          ? "Os tokens {{preco:…}} que apontam para este extra passam a mostrar o valor escrito no ficheiro de conteúdo."
+          : "Remove este serviço da página pública /servicos.",
         confirmLabel: "Apagar",
         tone: "destructive",
       });
@@ -367,6 +487,11 @@ export function ServicosEditor({ servicos }: Props) {
 
   function renderEditor(d: Draft) {
     const key = d.key;
+    const extra = isExtra(d.slug);
+    // Extras chegam a cêntimos (deslocação a 0,80€/km); as categorias são a euro
+    // inteiro e o spinner de 0,01 só atrapalhava.
+    const precoStep = extra ? "0.01" : "1";
+    const precoMode = extra ? ("decimal" as const) : ("numeric" as const);
     return (
       <div className="rounded-md border border-border-strong bg-surface-elevated p-3 space-y-3" style={{ margin: "0 0 9px", background: "var(--sand-warm)" }}>
         {/* Linha 1: Título / Ordem / Activo */}
@@ -397,17 +522,19 @@ export function ServicosEditor({ servicos }: Props) {
               className="h-8 text-sm tabular-nums border-border-strong bg-background"
             />
           </div>
-          <div className="col-span-6 sm:col-span-2 flex items-end justify-center">
-            <label className="inline-flex items-center gap-1 text-xs cursor-pointer">
-              <input
-                type="checkbox"
-                checked={d.ativo}
-                onChange={(e) => update(key, { ativo: e.target.checked })}
-                className="h-4 w-4 rounded border-border accent-primary"
-              />
-              Activo
-            </label>
-          </div>
+          {!extra && (
+            <div className="col-span-6 sm:col-span-2 flex items-end justify-center">
+              <label className="inline-flex items-center gap-1 text-xs cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={d.ativo}
+                  onChange={(e) => update(key, { ativo: e.target.checked })}
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                Activo
+              </label>
+            </div>
+          )}
         </div>
 
         {/* Bloco de preço: toggle variantes */}
@@ -444,31 +571,56 @@ export function ServicosEditor({ servicos }: Props) {
           {!d.temVariantes ? (
             <div className="grid grid-cols-12 gap-2">
               <div className="col-span-5 sm:col-span-3 space-y-1">
-                <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">Preço mín (€)</Label>
+                <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">
+                  {extra ? (d.precoTipo === "percent" ? "Taxa (%)" : "Preço (€)") : "Preço mín (€)"}
+                </Label>
                 <Input
                   type="number"
-                  inputMode="numeric"
-                  step="1"
+                  inputMode={precoMode}
+                  step={precoStep}
                   min="0"
                   value={d.precoBase}
                   onChange={(e) => update(key, { precoBase: e.target.value })}
                   placeholder="—"
                   className="h-8 text-sm tabular-nums border-border-strong bg-background"
                 />
+                {extra && (
+                  <div className="flex gap-1 pt-1" role="radiogroup" aria-label="Unidade do preço">
+                    {(["eur", "percent"] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        role="radio"
+                        aria-checked={d.precoTipo === t}
+                        onClick={() => update(key, { precoTipo: t })}
+                        className={
+                          "h-6 px-2 rounded border text-[11px] font-mono " +
+                          (d.precoTipo === t
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-border-strong bg-background text-muted-foreground")
+                        }
+                      >
+                        {t === "eur" ? "€" : "% do orçamento"}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="col-span-5 sm:col-span-3 space-y-1">
-                <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">Preço máx (€)</Label>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  step="1"
-                  min="0"
-                  value={d.precoMax}
-                  onChange={(e) => update(key, { precoMax: e.target.value })}
-                  placeholder="opcional"
-                  className="h-8 text-sm tabular-nums border-border-strong bg-background"
-                />
-              </div>
+              {d.precoTipo !== "percent" && (
+                <div className="col-span-5 sm:col-span-3 space-y-1">
+                  <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">Preço máx (€)</Label>
+                  <Input
+                    type="number"
+                    inputMode={precoMode}
+                    step={precoStep}
+                    min="0"
+                    value={d.precoMax}
+                    onChange={(e) => update(key, { precoMax: e.target.value })}
+                    placeholder="opcional"
+                    className="h-8 text-sm tabular-nums border-border-strong bg-background"
+                  />
+                </div>
+              )}
               <div className="col-span-12 sm:col-span-6 space-y-1">
                 <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">Nota PT (sufixo)</Label>
                 <Input
@@ -485,17 +637,19 @@ export function ServicosEditor({ servicos }: Props) {
                   className="h-8 text-sm border-border-strong bg-background"
                 />
               </div>
-              <div className="col-span-12 flex items-center gap-2 pt-1">
-                <label className="inline-flex items-center gap-2 text-xs cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={d.precoDesde}
-                    onChange={(e) => update(key, { precoDesde: e.target.checked })}
-                    className="h-4 w-4 rounded border-border accent-primary"
-                  />
-                  <span>Mostrar como <b>desde X€</b> (máximo indefinido)</span>
-                </label>
-              </div>
+              {d.precoTipo !== "percent" && (
+                <div className="col-span-12 flex items-center gap-2 pt-1">
+                  <label className="inline-flex items-center gap-2 text-xs cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={d.precoDesde}
+                      onChange={(e) => update(key, { precoDesde: e.target.checked })}
+                      className="h-4 w-4 rounded border-border accent-primary"
+                    />
+                    <span>Mostrar como <b>desde X€</b> (máximo indefinido)</span>
+                  </label>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-2">
@@ -522,8 +676,8 @@ export function ServicosEditor({ servicos }: Props) {
                       <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">Mín (€)</Label>
                       <Input
                         type="number"
-                        inputMode="numeric"
-                        step="1"
+                        inputMode={precoMode}
+                        step={precoStep}
                         min="0"
                         value={v.preco}
                         onChange={(e) => updateVariante(key, vIdx, { preco: e.target.value })}
@@ -534,8 +688,8 @@ export function ServicosEditor({ servicos }: Props) {
                       <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">Máx (€)</Label>
                       <Input
                         type="number"
-                        inputMode="numeric"
-                        step="1"
+                        inputMode={precoMode}
+                        step={precoStep}
                         min="0"
                         value={v.precoMax}
                         onChange={(e) => updateVariante(key, vIdx, { precoMax: e.target.value })}
@@ -605,16 +759,54 @@ export function ServicosEditor({ servicos }: Props) {
           />
         </div>
 
-        {/* Imagem */}
-        <div className="space-y-1">
-          <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">Imagem</Label>
-          <ImageUploadZone
-            value={d.imageUrl ? [d.imageUrl] : []}
-            onChange={(urls) => update(key, { imageUrl: urls[0] ?? "" })}
-            disabled={savingKey === d.key}
-            max={1}
-          />
-        </div>
+        {/* Imagem — extras não têm card no site, logo não têm imagem. */}
+        {!extra && (
+          <div className="space-y-1">
+            <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">Imagem</Label>
+            <ImageUploadZone
+              value={d.imageUrl ? [d.imageUrl] : []}
+              onChange={(urls) => update(key, { imageUrl: urls[0] ?? "" })}
+              disabled={savingKey === d.key}
+              max={1}
+            />
+          </div>
+        )}
+
+        {/* Token — a única forma de um extra chegar ao site. */}
+        {extra && (
+          <div className="rounded border border-dashed border-border-strong bg-muted/50 p-2.5 space-y-1.5">
+            <Label className="text-[10px] uppercase font-semibold text-foreground/80 tracking-wide">
+              Como usar no texto do site
+            </Label>
+            <p className="text-xs text-foreground/80">
+              Este extra não aparece em nenhuma tabela. Para o preço entrar numa FAQ, nota ou
+              estatística, cola o token em <span className="font-mono">content/pt|en/servicos/*.json</span>{" "}
+              — funciona em qualquer uma das três categorias. Se apagares a linha, fica o valor
+              escrito depois do <span className="font-mono">|</span>.
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 min-w-0 truncate rounded bg-background border border-border-strong px-2 py-1 font-mono text-xs">
+                {tokenDoDraft(d, outrosTitulos(d))}
+              </code>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs shrink-0"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(tokenDoDraft(d, outrosTitulos(d)));
+                    toast({ title: "Token copiado" });
+                  } catch {
+                    toast({ title: "Não deu para copiar", description: tokenDoDraft(d, outrosTitulos(d)) });
+                  }
+                }}
+              >
+                <Copy className="h-3 w-3 mr-1" aria-hidden="true" />
+                Copiar
+              </Button>
+            </div>
+          </div>
+        )}
 
         {errors[d.key] && (
           <p className="text-xs text-rose-600 bg-rose-500/10 border border-rose-500/20 rounded px-2 py-1">
@@ -649,6 +841,53 @@ export function ServicosEditor({ servicos }: Props) {
     );
   }
 
+  /** Linha `.svc` — igual para categorias e extras. */
+  function renderLinha(d: Draft) {
+    const isOpen = openKeys.has(d.key);
+    const nome = d.titulo.trim() || (isExtra(d.slug) ? "(novo extra)" : "(novo serviço)");
+    return (
+      <div key={d.key}>
+        <div className="svc" style={isOpen ? { marginBottom: 6 } : undefined}>
+          <div style={{ minWidth: 0 }}>
+            <div className="s-name">
+              {nome}
+              {!d.ativo && !isExtra(d.slug) && (
+                <span className="pill mute" style={{ marginLeft: 8, verticalAlign: "middle" }}>
+                  Inativo
+                </span>
+              )}
+              {d.dirty && (
+                <span className="pill warm" style={{ marginLeft: 8, verticalAlign: "middle" }}>
+                  Por guardar
+                </span>
+              )}
+            </div>
+            <div className="s-desc">
+              {isExtra(d.slug) ? tokenDoDraft(d, outrosTitulos(d)) : d.descricao.trim() || "Sem descrição"}
+            </div>
+          </div>
+          <span className="s-price">{draftPreco(d)}</span>
+          <button
+            type="button"
+            className="s-edit"
+            onClick={() => toggleOpen(d.key)}
+            aria-expanded={isOpen}
+            aria-label={isOpen ? `Fechar edição de ${nome}` : `Editar ${nome}`}
+          >
+            {isOpen ? (
+              <ChevronUp className="ic" aria-hidden="true" />
+            ) : (
+              <Pencil className="ic" aria-hidden="true" />
+            )}
+          </button>
+        </div>
+        {isOpen && renderEditor(d)}
+      </div>
+    );
+  }
+
+  const extras = items.filter((d) => isExtra(d.slug));
+
   return (
     <>
       <Topbar
@@ -680,6 +919,17 @@ export function ServicosEditor({ servicos }: Props) {
                     <Plus className="ic" aria-hidden="true" /> {SERVICO_SLUG_LABEL[s]}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  role="menuitem"
+                  style={{ borderTop: "1px solid rgba(90,14,14,.10)" }}
+                  onClick={() => {
+                    addExtra();
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Plus className="ic" aria-hidden="true" /> Extra (todas as categorias)
+                </button>
               </div>
             )}
           </div>
@@ -703,49 +953,65 @@ export function ServicosEditor({ servicos }: Props) {
         return (
           <section key={slug} style={{ marginBottom: 22 }}>
             <p className="eyebrow">{SERVICO_SLUG_LABEL[slug]}</p>
-            {group.map((d) => {
-              const isOpen = openKeys.has(d.key);
-              return (
-                <div key={d.key}>
-                  <div className="svc" style={isOpen ? { marginBottom: 6 } : undefined}>
-                    <div style={{ minWidth: 0 }}>
-                      <div className="s-name">
-                        {d.titulo.trim() || "(novo serviço)"}
-                        {!d.ativo && (
-                          <span className="pill mute" style={{ marginLeft: 8, verticalAlign: "middle" }}>
-                            Inativo
-                          </span>
-                        )}
-                        {d.dirty && (
-                          <span className="pill warm" style={{ marginLeft: 8, verticalAlign: "middle" }}>
-                            Por guardar
-                          </span>
-                        )}
-                      </div>
-                      <div className="s-desc">{d.descricao.trim() || "Sem descrição"}</div>
-                    </div>
-                    <span className="s-price">{draftPreco(d)}</span>
-                    <button
-                      type="button"
-                      className="s-edit"
-                      onClick={() => toggleOpen(d.key)}
-                      aria-expanded={isOpen}
-                      aria-label={isOpen ? `Fechar edição de ${d.titulo || "novo serviço"}` : `Editar ${d.titulo || "novo serviço"}`}
-                    >
-                      {isOpen ? (
-                        <ChevronUp className="ic" aria-hidden="true" />
-                      ) : (
-                        <Pencil className="ic" aria-hidden="true" />
-                      )}
-                    </button>
-                  </div>
-                  {isOpen && renderEditor(d)}
-                </div>
-              );
-            })}
+            {group.map(renderLinha)}
           </section>
         );
       })}
+
+      {/*
+        Extras — taxas gerais (urgência, deslocação) que valem para as tres
+        categorias e por isso não pertencem a nenhuma tabela. A secção está
+        sempre visível, mesmo vazia: é o único sítio onde estas linhas se criam.
+      */}
+      <section style={{ marginBottom: 22 }}>
+        <p className="eyebrow">{SERVICO_GRUPO_LABEL[SERVICO_EXTRAS]} · todas as categorias</p>
+        <div className="note-strip" style={{ marginBottom: 10 }}>
+          <Info className="ic" aria-hidden="true" /> Não entram na tabela pública — alimentam o
+          texto (notas, FAQs, estatísticas) por token
+        </div>
+
+        {extras.length > 0 ? (
+          extras.map(renderLinha)
+        ) : (
+          <div className="empty" style={{ marginBottom: 10 }}>
+            <div className="t">Ainda não há extras</div>
+            <div className="desc">
+              Cria a taxa de urgência e a deslocação para o site passar a ler estes valores daqui
+              em vez do que está escrito nos ficheiros de conteúdo.
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2">
+          {EXTRAS_PRESETS.map((p) => {
+            const jaExiste = presetJaExiste(p);
+            return (
+              <Button
+                key={p.id}
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs"
+                onClick={() => addExtra(p)}
+                disabled={jaExiste}
+                title={jaExiste ? "Já existe uma linha com este nome" : undefined}
+              >
+                <Plus className="h-3 w-3 mr-1" aria-hidden="true" />
+                {p.titulo}
+              </Button>
+            );
+          })}
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-7 text-xs text-muted-foreground"
+            onClick={() => addExtra()}
+          >
+            <Plus className="h-3 w-3 mr-1" aria-hidden="true" />
+            Extra em branco
+          </Button>
+        </div>
+      </section>
+
     </>
   );
 }

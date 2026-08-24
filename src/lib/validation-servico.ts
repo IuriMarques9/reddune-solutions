@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SERVICO_SLUG } from "@/types/servico";
+import { SERVICO_GRUPO } from "@/types/servico";
 
 export const i18nTextSchema = z
   .object({
@@ -17,7 +17,7 @@ export const variantePrecoSchema = z.object({
 
 export const servicoSchema = z.object({
   id: z.string().min(1).max(128),
-  slug: z.enum(SERVICO_SLUG),
+  slug: z.enum(SERVICO_GRUPO),
   titulo: z.string().min(1).max(200),
   tituloI18n: i18nTextSchema,
   descricao: z.string().max(2000).nullish(),
@@ -25,6 +25,7 @@ export const servicoSchema = z.object({
   precoBase: z.number().finite().min(0).nullish(),
   precoMax: z.number().finite().min(0).nullish(),
   precoDesde: z.boolean().optional(),
+  precoTipo: z.enum(["eur", "percent"]).nullish(),
   variantes: z.array(variantePrecoSchema).max(20).nullish(),
   precoTexto: z.string().max(300).nullish(),
   precoTextoI18n: i18nTextSchema,

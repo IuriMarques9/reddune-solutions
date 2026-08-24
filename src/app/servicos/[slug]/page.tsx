@@ -17,7 +17,7 @@ import {
   type ServicoSlug,
   type ServiceContent,
 } from "@/lib/servicos-content";
-import { getServicosBySlug } from "@/lib/mongodb/servicos";
+import { getServicosBySlug, getServicosExtras } from "@/lib/mongodb/servicos";
 import { formatPreco, servicoTitulo, servicoDescricao, type PriceLabels, type Locale as ServicoLocale, type Servico } from "@/types/servico";
 import { interpolaPrecoTokens } from "@/lib/preco-tokens";
 import { getTranslations } from "next-intl/server";
@@ -325,14 +325,22 @@ export default async function ServicoSlugPage({ params }: PageProps) {
   // Preço mínimo real (admin-edited) para o Offer do JSON-LD.
   let priceFrom: number | undefined;
 
-  // Todas as linhas do slug, incl. inactivas: só as activas entram na tabela,
-  // mas TODAS alimentam os tokens {{preco:...}} — é assim que um extra
-  // (urgência, deslocação) vive na DB sem aparecer como linha pública.
-  let servicosDoSlug: Servico[] = [];
+  // Fontes dos tokens {{preco:...}}, por ordem de prioridade:
+  //   1. Todas as linhas do slug, incl. inactivas — só as activas entram na
+  //      tabela, mas TODAS alimentam o texto corrido.
+  //   2. O grupo "Extras" (slug "extras"): taxas gerais — urgência, deslocação —
+  //      partilhadas por todas as categorias e sem tabela pública nenhuma.
+  // A ordem importa: uma linha da própria categoria ganha sempre a um extra com
+  // o mesmo nome, para uma categoria poder ter a sua taxa própria.
+  let fontesToken: Servico[] = [];
 
   // Override items.list with DB-backed serviços (admin-edited prices).
   try {
-    servicosDoSlug = await getServicosBySlug(typedSlug, false);
+    const [servicosDoSlug, extras] = await Promise.all([
+      getServicosBySlug(typedSlug, false),
+      getServicosExtras(),
+    ]);
+    fontesToken = [...servicosDoSlug, ...extras];
     const dbServicos = servicosDoSlug.filter((s) => s.ativo);
     const precos = dbServicos.flatMap((s) => [
       ...(typeof s.precoBase === "number" ? [s.precoBase] : []),
@@ -388,9 +396,9 @@ export default async function ServicoSlugPage({ params }: PageProps) {
   // Tokens {{preco:label|fallback}} de note/FAQs/stats.sub resolvem contra a
   // DB — mudar o preço no painel muda também o texto corrido e o FAQPage
   // JSON-LD (construído a seguir, já sobre o texto interpolado). Com a DB em
-  // baixo, servicosDoSlug=[] e todos os tokens caem no fallback do ficheiro.
+  // baixo, fontesToken=[] e todos os tokens caem no fallback do ficheiro.
   const locTokens: ServicoLocale = locale === "en" ? "en" : "pt";
-  const interp = (t: string) => interpolaPrecoTokens(t, servicosDoSlug, locTokens);
+  const interp = (t: string) => interpolaPrecoTokens(t, fontesToken, locTokens);
   content.items.note = interp(content.items.note);
   content.stats = content.stats.map((s) => (s.sub ? { ...s, sub: interp(s.sub) } : s));
   content.faqs.list = content.faqs.list.map(({ q, a }) => ({ q: interp(q), a: interp(a) }));

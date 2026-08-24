@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { interpolaPrecoTokens } from "./preco-tokens";
+import {
+  interpolaPrecoTokens,
+  labelTokenSugerido,
+  tokenSugerido,
+} from "./preco-tokens";
 import type { Servico } from "@/types/servico";
 
 function servico(partial: Partial<Servico>): Servico {
@@ -104,5 +108,113 @@ describe("interpolaPrecoTokens", () => {
       precoBase: 0.8,
     });
     expect(interpolaPrecoTokens("{{preco:call-out|x}}", [s], "en")).toBe("0.80€");
+  });
+
+  it("linha do grupo extras alimenta o token", () => {
+    const urgencia = servico({
+      slug: "extras",
+      titulo: "Taxa de urgência (<48h)",
+      precoBase: 25,
+    });
+    expect(interpolaPrecoTokens("{{preco:urgência|99€}}", [urgencia], "pt")).toBe(
+      "25€",
+    );
+  });
+
+  it("linha da categoria ganha ao extra com o mesmo nome", () => {
+    // A página monta as fontes por prioridade: linhas do slug, extras a seguir.
+    const daCategoria = servico({ titulo: "Taxa de urgência", precoBase: 40 });
+    const oExtra = servico({
+      slug: "extras",
+      titulo: "Taxa de urgência (<48h)",
+      precoBase: 25,
+    });
+    expect(
+      interpolaPrecoTokens("{{preco:urgência|99€}}", [daCategoria, oExtra], "pt"),
+    ).toBe("40€");
+  });
+});
+
+describe("labelTokenSugerido", () => {
+  it("escolhe a palavra mais distintiva do título", () => {
+    expect(labelTokenSugerido("Taxa de urgência (<48h)")).toBe("urgência");
+    expect(labelTokenSugerido("Deslocação ao domicílio")).toBe("Deslocação");
+  });
+
+  it("estica o label quando outra linha tem a mesma palavra", () => {
+    expect(
+      labelTokenSugerido("Taxa de urgência web", ["Taxa de urgência (<48h)"]),
+    ).toBe("urgência web");
+  });
+
+  it("sem colisão fica só a palavra", () => {
+    expect(
+      labelTokenSugerido("Taxa de urgência web", ["Deslocação ao domicílio"]),
+    ).toBe("urgência");
+  });
+
+  it("título vazio não rebenta", () => {
+    expect(labelTokenSugerido("   ")).toBe("");
+  });
+});
+
+describe("percentagem (precoTipo)", () => {
+  const URGENCIA_WEB = servico({
+    slug: "extras",
+    titulo: "Taxa de urgência web",
+    precoBase: 25,
+    precoTipo: "percent",
+  });
+
+  it("token de linha percent renderiza % em vez de €", () => {
+    expect(
+      interpolaPrecoTokens("{{preco:urgência web|20%}}", [URGENCIA_WEB], "pt"),
+    ).toBe("25%");
+  });
+
+  it("as duas urgências convivem: € para assistência, % para web", () => {
+    const urgencia48 = servico({
+      slug: "extras",
+      titulo: "Taxa de urgência (<48h)",
+      precoBase: 25,
+      ordem: 0,
+    });
+    const fontes = [urgencia48, { ...URGENCIA_WEB, ordem: 2 }];
+    expect(interpolaPrecoTokens("{{preco:urgência|x}}", fontes, "pt")).toBe("25€");
+    expect(interpolaPrecoTokens("{{preco:urgência web|x}}", fontes, "pt")).toBe("25%");
+  });
+
+  it("tokenSugerido com percent escreve o fallback em %", () => {
+    expect(
+      tokenSugerido("Taxa de urgência web", 25, "pt", "percent", [
+        "Taxa de urgência (<48h)",
+      ]),
+    ).toBe("{{preco:urgência web|25%}}");
+  });
+});
+
+describe("tokenSugerido", () => {
+  it("volta a resolver para o mesmo preço que o gerou", () => {
+    const token = tokenSugerido("Taxa de urgência (<48h)", 25, "pt");
+    expect(token).toBe("{{preco:urgência|25€}}");
+    const linha = servico({
+      slug: "extras",
+      titulo: "Taxa de urgência (<48h)",
+      precoBase: 25,
+    });
+    expect(interpolaPrecoTokens(token, [linha], "pt")).toBe("25€");
+  });
+
+  it("decimais seguem o locale", () => {
+    expect(tokenSugerido("Deslocação ao domicílio", 0.8, "pt")).toBe(
+      "{{preco:Deslocação|0,80€}}",
+    );
+    expect(tokenSugerido("Deslocação ao domicílio", 0.8, "en")).toBe(
+      "{{preco:Deslocação|0.80€}}",
+    );
+  });
+
+  it("sem preço fica um travessão à espera do valor", () => {
+    expect(tokenSugerido("Extra novo", null, "pt")).toBe("{{preco:Extra|—}}");
   });
 });

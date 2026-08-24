@@ -77,6 +77,7 @@ export async function POST(request: Request) {
     precoBase: variantes && variantes.length > 0 ? null : precoBase,
     precoMax: variantes && variantes.length > 0 ? null : precoMax,
     precoDesde,
+    precoTipo: keep(input.precoTipo, existing?.precoTipo),
     variantes: variantes && variantes.length > 0 ? variantes : null,
     precoTexto: keep(input.precoTexto, existing?.precoTexto),
     precoTextoI18n: keep(input.precoTextoI18n, existing?.precoTextoI18n),

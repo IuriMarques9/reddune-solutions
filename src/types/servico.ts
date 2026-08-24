@@ -12,6 +12,33 @@ export const SERVICO_SLUG_LABEL: Record<ServicoSlug, string> = {
   "software-recuperacao": "Software & Recuperação",
 };
 
+/**
+ * Grupo "Extras" — taxas gerais (urgência, deslocação) que valem para TODAS as
+ * categorias e por isso não pertencem à tabela de preços de nenhuma.
+ *
+ * NÃO é uma categoria pública: fica de fora de `SERVICO_SLUG`, logo nunca gera
+ * `/servicos/extras`, nunca entra nos filtros do portfólio nem nos tipos de
+ * projeto (ambos validam contra `SERVICO_SLUG`). As linhas existem só para
+ * alimentar os tokens `{{preco:label|fallback}}` do texto corrido — a página de
+ * cada serviço resolve-os contra as suas linhas MAIS os extras
+ * (`src/lib/preco-tokens.ts`).
+ */
+export const SERVICO_EXTRAS = "extras" as const;
+export type ServicoExtras = typeof SERVICO_EXTRAS;
+
+/** Tudo o que a colecção `servicos` aceita em `slug`: 3 categorias + extras. */
+export const SERVICO_GRUPO = [...SERVICO_SLUG, SERVICO_EXTRAS] as const;
+export type ServicoGrupo = ServicoSlug | ServicoExtras;
+
+export const SERVICO_GRUPO_LABEL: Record<ServicoGrupo, string> = {
+  ...SERVICO_SLUG_LABEL,
+  [SERVICO_EXTRAS]: "Extras",
+};
+
+export function isExtra(slug: string): slug is ServicoExtras {
+  return slug === SERVICO_EXTRAS;
+}
+
 // Texto bilingue opcional. PT é canónico; EN preenchido pelo admin.
 export type I18nText = { pt?: string | null; en?: string | null };
 
@@ -36,6 +63,14 @@ export function pickLocalized(
   return (legacy ?? "").trim();
 }
 
+/**
+ * Unidade do preço de uma linha: euros (default) ou percentagem. Percentagem
+ * existe para extras tipo "taxa de urgência web = +25% sobre o orçamento" —
+ * nunca entra na tabela pública (extras não têm tabela), só nos tokens
+ * `{{preco:…}}`, que a formatam como "25%" em vez de "25€".
+ */
+export type PrecoTipo = "eur" | "percent";
+
 export interface VariantePreco {
   label: string;       // legacy / canónico PT
   labelI18n?: I18nText | null; // override por locale
@@ -45,7 +80,8 @@ export interface VariantePreco {
 
 export interface Servico {
   id: string;
-  slug: ServicoSlug;
+  /** Categoria pública OU `"extras"` (linhas gerais, sem página própria). */
+  slug: ServicoGrupo;
   titulo: string;                      // legacy / canónico PT
   tituloI18n?: I18nText | null;        // override bilingue
   descricao: string | null;            // legacy / canónico PT
@@ -53,6 +89,8 @@ export interface Servico {
   precoBase: number | null;
   precoMax: number | null;
   precoDesde: boolean;
+  /** Unidade do preço — ausente/null = euros. Só os extras usam "percent". */
+  precoTipo?: PrecoTipo | null;
   variantes: VariantePreco[] | null;
   precoTexto: string | null;           // LEGACY string
   precoTextoI18n?: I18nText | null;

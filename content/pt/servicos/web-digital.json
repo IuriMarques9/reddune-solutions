@@ -49,7 +49,7 @@
         "price": "<b>À parte</b> · valor combinado"
       }
     ],
-    "note": "<em>O que faz subir o preço:</em> taxa de urgência, integrações (CRM, email, ERP/stock), textos mais elaborados, design premium, multilíngua, mais páginas e SEO mais completo. Urgências aceites sob disponibilidade, com taxa extra.",
+    "note": "<em>O que faz subir o preço:</em> taxa de urgência (+{{preco:urgência web|25%}} sobre o orçamento), integrações (CRM, email, ERP/stock), textos mais elaborados, design premium, multilíngua, mais páginas e SEO mais completo. Urgências aceites sob disponibilidade.",
     "noteCta": "Falar sobre o projeto",
     "noteCtaMessage": "Olá! Quero conversar sobre um projeto."
   },

@@ -64,7 +64,7 @@
       "value": "<48",
       "valueSuffix": "h",
       "label": "Urgência",
-      "sub": "taxa de {{preco:diagnóstico|25€}}"
+      "sub": "taxa de {{preco:urgência|25€}}"
     },
     {
       "value": "0,80",

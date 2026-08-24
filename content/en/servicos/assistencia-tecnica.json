@@ -64,7 +64,7 @@
       "value": "<48",
       "valueSuffix": "h",
       "label": "Rush",
-      "sub": "{{preco:diagnóstico|25€}} surcharge"
+      "sub": "{{preco:urgência|25€}} surcharge"
     },
     {
       "value": "0.80",

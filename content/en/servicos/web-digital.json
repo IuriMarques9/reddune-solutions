@@ -49,7 +49,7 @@
         "price": "<b>Separate</b> · agreed price"
       }
     ],
-    "note": "<em>What raises the price:</em> rush fee, integrations (CRM, email, ERP/stock), more elaborate copy, premium design, multilingual, more pages and broader SEO. Rush work accepted subject to availability, with an extra fee.",
+    "note": "<em>What raises the price:</em> rush fee (+{{preco:urgência web|25%}} on the quoted price), integrations (CRM, email, ERP/stock), more elaborate copy, premium design, multilingual, more pages and broader SEO. Rush work accepted subject to availability.",
     "noteCta": "Talk about the project",
     "noteCtaMessage": "Hi! I'd like to discuss a project."
   },
