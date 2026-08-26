@@ -36,9 +36,14 @@ import {
   type MetodoPagamento,
   type Pagamento,
 } from "@/types/pagamento";
-import { resumoMensalidade, isPlanoDespesa, CATEGORIA_CUSTO_PADRAO } from "@/lib/mensalidades";
+import {
+  resumoMensalidade,
+  isPlanoDespesa,
+  margemDoPlano,
+  CATEGORIA_CUSTO_PADRAO,
+} from "@/lib/mensalidades";
 import { LINHA_CATEGORIA, LINHA_CATEGORIA_LABEL, type LinhaCategoria } from "@/types/projeto";
-import { comIva, IVA_LABEL } from "@/lib/iva";
+import { comIva, IVA_LABEL, IVA_TAXA } from "@/lib/iva";
 import { parseMoney } from "@/lib/parse-number";
 import { safeDelete, safeJsonPost } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
@@ -208,6 +213,7 @@ function PlanoCard({
   // Plano sem valor previsto (lembrete de renovação): não há barra de progresso
   // nem "liquidado" que faça sentido — 0 por cobrar não quer dizer pago.
   const semValor = m.valor <= 0;
+  const margem = useMemo(() => margemDoPlano(m), [m]);
   const porLiquidar = cobrancas.filter((c) => c.estado !== "paga").length;
   const pct = resumo.valorTotal > 0 ? Math.min(100, (resumo.recebido / resumo.valorTotal) * 100) : 0;
 
@@ -231,6 +237,8 @@ function PlanoCard({
       ativo: m.ativo,
       dentroDoValor: m.dentroDoValor,
       comIva: m.comIva ?? false,
+      custo: m.custo ?? 0,
+      custoComIva: m.custoComIva ?? true,
       notas: m.notas,
       fechadoEm: m.fechadoEm,
       ...patch,
@@ -406,6 +414,28 @@ function PlanoCard({
           </div>
         )}
       </div>
+
+      {/* Margem — INTERNA. O cliente vê só o que paga. */}
+      {margem && (
+        <div
+          title="Só para ti: o cliente nunca vê o custo nem a margem. Ambos em base s/ IVA — o IVA que pagas é dedutível."
+          style={{
+            marginTop: 10,
+            fontFamily: "var(--font-mono)",
+            fontSize: 11.5,
+            display: "flex",
+            gap: 14,
+            flexWrap: "wrap",
+            color: "var(--ink-soft)",
+          }}
+        >
+          <span>cobro {money(margem.receita)} €</span>
+          <span>custa-me {money(margem.custo)} €</span>
+          <span style={{ color: margem.margem >= 0 ? "var(--dune)" : "var(--ember)", fontWeight: 700 }}>
+            margem {money(margem.margem)} € · {margem.pct}%
+          </span>
+        </div>
+      )}
 
       {/* Fim do plano: renovar ou fechar */}
       {resumo.terminada && !m.fechadoEm && (
@@ -623,6 +653,11 @@ function ConfirmarCobranca({
   const [categoria, setCategoria] = useState<DespesaCategoria>(
     plano.categoriaDespesa ?? "dominios"
   );
+  // Plano de receita COM custo: o mesmo gesto regista o que entrou e o que
+  // saiu. Vem pré-preenchido com o custo previsto, editável — a Vercel muda de
+  // preço e é o número real que conta.
+  const temCusto = !ehDespesa && (plano.custo ?? 0) > 0;
+  const [custoReal, setCustoReal] = useState(temCusto ? String(plano.custo) : "");
   const [data, setData] = useState(hoje);
   const ultimoMetodo = useMemo(() => {
     const ordenados = [...pagamentos].sort((a, b) => (a.data < b.data ? 1 : -1));
@@ -673,6 +708,29 @@ function ConfirmarCobranca({
       });
       return;
     }
+    // Um plano de receita com custo grava também a despesa: "tem de ser
+    // cobrado E entrar nos gastos" — um clique, os dois lados.
+    const cr = parseMoney(custoReal);
+    if (temCusto && cr != null && cr > 0) {
+      const resCusto = await safeJsonPost("/api/despesas/upsert", {
+        descricao: `${plano.titulo} — custo`,
+        categoria: plano.categoriaDespesa ?? "dominios",
+        valor: cr,
+        data,
+        projetoId,
+        notas: null,
+        mensalidadeId: c.mensalidadeId,
+        cobrancaNumero: c.numero,
+      });
+      if (!resCusto.ok) {
+        toast({
+          title: "Pagamento registado, mas o custo falhou",
+          description: resCusto.error,
+          variant: "destructive",
+        });
+      }
+    }
+
     onFechar();
     startTransition(() => router.refresh());
   }
@@ -759,6 +817,25 @@ function ConfirmarCobranca({
           )}
         </div>
       </div>
+      {temCusto && (
+        <div className="field">
+          <label htmlFor={`cb-custo-${c.mensalidadeId}-${c.numero}`}>
+            Custo real deste período € (entra nos gastos)
+          </label>
+          <input
+            id={`cb-custo-${c.mensalidadeId}-${c.numero}`}
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min="0"
+            value={custoReal}
+            onChange={(e) => setCustoReal(e.target.value)}
+            disabled={saving}
+            placeholder="deixa vazio para não registar gasto"
+          />
+        </div>
+      )}
+
       <div className="field">
         <label htmlFor={`cb-notas-${c.mensalidadeId}-${c.numero}`}>Observações</label>
         <textarea
@@ -783,6 +860,130 @@ function ConfirmarCobranca({
         </button>
       </div>
     </form>
+  );
+}
+
+
+/* ────────────── Custo e margem (INTERNO — o cliente nunca vê) ────────────── */
+
+/**
+ * O que o plano nos custa e o que sobra. `valorBase` é sempre a base s/ IVA; o
+ * custo pode vir bruto (é o que a factura diz) e o IVA pago é dedutível, por
+ * isso desconta-se antes de comparar. Sem isso a margem aparecia 23% abaixo da
+ * real.
+ */
+function BlocoMargem({
+  valorBase,
+  levaIva,
+  custo,
+  setCusto,
+  custoComIva,
+  setCustoComIva,
+  saving,
+}: {
+  valorBase: number | null;
+  levaIva: boolean;
+  custo: string;
+  setCusto: (v: string) => void;
+  custoComIva: boolean;
+  setCustoComIva: (v: boolean) => void;
+  saving: boolean;
+}) {
+  const c = parseMoney(custo);
+  const custoBase = c != null && c > 0 ? c / (custoComIva ? 1 + IVA_TAXA : 1) : null;
+  const margem = valorBase != null && custoBase != null ? valorBase - custoBase : null;
+  const pct = margem != null && valorBase && valorBase > 0 ? Math.round((margem / valorBase) * 100) : null;
+
+  return (
+    <div
+      style={{
+        border: "1px dashed rgba(90,14,14,.16)",
+        borderRadius: 10,
+        padding: "10px 12px",
+        marginBottom: 10,
+      }}
+    >
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
+        <div className="field">
+          <label htmlFor="mn-custo">Custa-me por período € (opcional)</label>
+          <input
+            id="mn-custo"
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min="0"
+            value={custo}
+            onChange={(e) => setCusto(e.target.value)}
+            disabled={saving}
+            placeholder="alojamento, BD, domínio"
+          />
+        </div>
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            fontSize: 12.5,
+            paddingTop: 18,
+            cursor: saving ? "default" : "pointer",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={custoComIva}
+            onChange={(e) => setCustoComIva(e.target.checked)}
+            disabled={saving}
+          />
+          Este custo já inclui IVA
+        </label>
+      </div>
+
+      {margem != null && valorBase != null ? (
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12,
+            borderTop: "1px dashed rgba(90,14,14,.12)",
+            paddingTop: 8,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          <span style={{ display: "flex", justifyContent: "space-between" }}>
+            <span className="muted">Cobro (base)</span>
+            <b>{money(valorBase)} €</b>
+          </span>
+          <span style={{ display: "flex", justifyContent: "space-between" }}>
+            <span className="muted">Custa-me (base)</span>
+            <b>−{money(custoBase!)} €</b>
+          </span>
+          <span
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              color: margem >= 0 ? "var(--dune)" : "var(--ember)",
+            }}
+          >
+            <span>Margem por {levaIva ? "período" : "período"}</span>
+            <b>
+              {money(margem)} €{pct != null ? ` · ${pct}%` : ""}
+            </b>
+          </span>
+        </div>
+      ) : (
+        <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: 0 }}>
+          Só para ti: o cliente vê apenas o que paga, nunca o custo nem a margem. O teu tempo
+          não se mete aqui — trabalho teu é lucro, não é custo.
+        </p>
+      )}
+      {margem != null && (
+        <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "8px 0 0" }}>
+          Só para ti — o cliente vê apenas o que paga. Ao registares o recebimento, o custo
+          entra como despesa deste projecto e o Lucro já aparece com a diferença.
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -812,9 +1013,12 @@ function PlanoForm({
   const [periodo, setPeriodo] = useState<MensalidadePeriodo>(mensalidade?.periodo ?? "mensal");
   const [primeira, setPrimeira] = useState(mensalidade?.primeiraCobranca ?? "");
   const [quantas, setQuantas] = useState(String(mensalidade?.numeroCobrancas ?? 12));
-  const [dentroDoValor, setDentroDoValor] = useState(mensalidade?.dentroDoValor ?? true);
   // Herda o do projecto num plano novo; num plano existente manda o que lá está.
   const [levaIva, setLevaIva] = useState(mensalidade?.comIva ?? projetoComIva);
+  const [custo, setCusto] = useState(
+    mensalidade?.custo && mensalidade.custo > 0 ? String(mensalidade.custo) : ""
+  );
+  const [custoComIva, setCustoComIva] = useState(mensalidade?.custoComIva ?? true);
   const [categoriaCusto, setCategoriaCusto] = useState<LinhaCategoria>(
     mensalidade?.categoriaCusto ?? CATEGORIA_CUSTO_PADRAO
   );
@@ -854,8 +1058,9 @@ function PlanoForm({
       primeiraCobranca: primeira,
       numeroCobrancas: n,
       ativo: mensalidade?.ativo ?? true,
-      dentroDoValor,
       comIva: levaIva,
+      custo: parseMoney(custo) ?? 0,
+      custoComIva,
       categoriaCusto,
       notas: notas.trim() || null,
       fechadoEm: mensalidade?.fechadoEm ?? null,
@@ -1023,35 +1228,8 @@ function PlanoForm({
         </span>
       </label>
 
-      <label
-        style={{
-          display: "flex",
-          alignItems: "flex-start",
-          gap: 8,
-          marginBottom: 10,
-          fontSize: 12.5,
-          cursor: saving ? "default" : "pointer",
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={dentroDoValor}
-          onChange={(e) => setDentroDoValor(e.target.checked)}
-          disabled={saving}
-          style={{ marginTop: 3 }}
-        />
-        <span>
-          Faz parte do valor do projecto
-          <span style={{ display: "block", color: "var(--ink-mute)", fontSize: 11.5 }}>
-            Ligado: estas cobranças SÃO o valor já orçamentado, partido em prestações — as
-            Dívidas não contam o mesmo dinheiro duas vezes. Desligado: é dinheiro por cima
-            (manutenção, alojamento, avença) e o painel cria a linha nos Custos por ti.
-          </span>
-        </span>
-      </label>
-
-      {/* Só aparece quando o plano vai mesmo gerar linha — senão é ruído. */}
-      {!dentroDoValor && (
+      {/* Todo o plano de receita é dono da sua linha nos Custos. */}
+      {!ehDespesa && (
         <div
           style={{
             border: "1px dashed rgba(90,14,14,.16)",
@@ -1076,20 +1254,33 @@ function PlanoForm({
             </select>
           </div>
           <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: 0 }}>
-            Nasce a linha{" "}
+            Nasce nos Custos a linha{" "}
             <b>
               {(titulo.trim() || (periodo === "anual" ? "Anuidade" : "Mensalidade"))} (
               {PERIODO_SUFIXO[periodo]})
             </b>
-            {v != null && <> — {money(v)} €</>}, com o valor de <b>um período</b>. Não conta
-            como gasto da RedDune: é dinheiro a receber, e serve para o cliente ver a rubrica
-            no portal. Editas ou apagas nos Custos como qualquer outra linha.
+            {v != null && Number.isFinite(n) && n > 0 && (
+              <> — {n} × {money(v)} € = {money(v * n)} €</>
+            )}
+            , ou seja o <b>plano todo</b>. É essa linha que põe o valor no orçamento do
+            projecto. Não conta como gasto da RedDune — é dinheiro a receber. Numa anuidade
+            que possa não ser renovada, põe <b>1 cobrança</b> e usa o botão Renovar a cada ano.
           </p>
         </div>
       )}
 
         </>
       )}
+
+      {!ehDespesa && <BlocoMargem
+        valorBase={v}
+        levaIva={levaIva}
+        custo={custo}
+        setCusto={setCusto}
+        custoComIva={custoComIva}
+        setCustoComIva={setCustoComIva}
+        saving={saving}
+      />}
 
       {ehDespesa && (
         <div

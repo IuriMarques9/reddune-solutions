@@ -84,10 +84,13 @@ export interface Mensalidade {
   // venceram por pagar mantêm-se: uma dívida não desaparece por se desligar o
   // plano (ver cobrancasDe em src/lib/mensalidades.ts).
   ativo: boolean;
-  // true = estas cobranças SÃO o valorEstimado do projecto partido em
-  // prestações (ex.: 12×366,67 € = os 4.400 € em falta). false = dinheiro por
-  // cima (ex.: manutenção anual). Sem isto a página Dívidas contava o mesmo
-  // dinheiro duas vezes.
+  // SEMPRE true nos planos de receita (2026-08-26, decisão do Iuri: "o plano
+  // cria uma linha automática nos Custos"). O plano é dono de uma fatia do
+  // orçamento — a sua linha — e cobra-a em prestações. As Dívidas descontam-na
+  // do restante do projecto, senão o mesmo dinheiro contava duas vezes: uma na
+  // linha, outra nas cobranças por liquidar.
+  // Continua no tipo, e não hardcoded, porque os planos de DESPESA são false —
+  // esses não são valor do projecto nenhum.
   dentroDoValor: boolean;
   // Categoria da linha que o plano cria nos Custos quando `dentroDoValor` é
   // false. Ignorada no caso contrário. Default "software" — o caso comum
@@ -96,6 +99,15 @@ export interface Mensalidade {
   // Categoria da Despesa gerada ao confirmar, nos planos de despesa. Default
   // "dominios" (Domínios & alojamento) — o caso que motivou isto.
   categoriaDespesa?: DespesaCategoria;
+  // O que ESTE plano nos custa por período (alojamento, base de dados, domínio).
+  // A margem é `valor − custo`, ambos em BASE s/ IVA. INTERNO: o cliente vê só
+  // o que paga — nunca o custo nem a margem (ver portal-dto).
+  // Ausente/0 = ainda não sabemos, ou não há custo (trabalho nosso é lucro).
+  custo?: number;
+  // O `custo` acima já vem com IVA (o que a factura da Vercel diz)? O IVA que
+  // pagamos é dedutível, por isso a margem calcula-se sobre as BASES — senão o
+  // custo aparecia inflacionado em 23% e a margem mentia para baixo.
+  custoComIva?: boolean;
   /** Notas INTERNAS — nunca vão ao portal do cliente. */
   notas: string | null;
   criadoEm: string;

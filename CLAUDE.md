@@ -83,14 +83,31 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   voltam a ser avulso (`desligarPagamentosDaMensalidade`).
 - Portal do cliente vê o plano e o que falta. NUNCA atrasos, notas internas nem
   `dentroDoValor`.
-- **Linha automática nos Custos** (2026-08-26): um plano com `dentroDoValor:
-  false` cria/actualiza uma linha marcada `ProjetoLinha.mensalidadeId`, via
-  `sincronizarLinhaDoPlano()`. Com `dentroDoValor: true` NÃO cria nada — esse
-  dinheiro já lá está e duplicaria o projecto. A linha vale UM período (490 €,
-  não os 3×490 €) e nasce com `gastoEmpresa: false`: é dinheiro a receber, não
-  um gasto nosso, e serve para o cliente ver a rubrica no portal. `valorEstimado`
-  é reposto como soma das linhas — a mesma conta do CustosCard. Linhas escritas
-  à mão nunca são tocadas; apagar o plano deixa a linha e só tira a marca.
+- **TODO plano de receita é dono da sua linha nos Custos** (decisão do Iuri,
+  2026-08-26 — o checkbox "faz parte do valor do projecto" foi REMOVIDO do
+  formulário; `dentroDoValor` fica no tipo e é sempre true em receita, false em
+  despesa). `sincronizarLinhaDoPlano()` cria/actualiza a linha marcada com
+  `ProjetoLinha.mensalidadeId`.
+  - A linha vale o **plano todo**: `quantidade = numeroCobrancas`. 12 × 366,67 €
+    = os 4.400 € em falta. Com quantidade 1 a soma das linhas nunca dava o valor
+    do projecto. Numa anuidade que possa não renovar: criar com **1 cobrança** e
+    usar o botão Renovar — o orçamento nunca promete anos não contratados.
+  - Nasce com `gastoEmpresa: false` (é dinheiro a receber) e `valorEstimado`
+    passa a ser a soma das linhas — a mesma conta do CustosCard.
+  - Como o valor do plano fica NAS LINHAS, `porCobrarDentroDoValor()` desconta-o
+    do restante do projecto em TODOS os planos de receita — senão contava duas
+    vezes: uma na linha, outra nas cobranças por liquidar.
+  - Linhas escritas à mão nunca são tocadas; apagar o plano deixa a linha e só
+    tira a marca. **Migração do Trakinas:** apagar a linha "3 fases da app 5400"
+    e deixar "Entrada 1.000" + a linha do plano (12 × 366,67 = 4.400).
+- **Custo e margem no plano** (2026-08-26): `Mensalidade.custo` + `custoComIva`.
+  `margemDoPlano()` devolve receita/custo/margem/pct, tudo em BASE s/ IVA — o
+  IVA pago é dedutível, por isso desconta-se antes de comparar (137,40 € de
+  factura = 111,71 € de custo real; margem 378,29 € e não 352,60 €).
+  **INTERNO**: o portal nunca vê custo nem margem, só o que o cliente paga.
+  Confirmar um recebimento grava o Pagamento E a Despesa do custo (editável no
+  momento — a Vercel muda de preço). O tempo do Iuri NÃO se regista: trabalho é
+  lucro, não é gasto.
 - **Planos de DESPESA** (2026-08-26): `Mensalidade.tipo: "receita" | "despesa"`
   (ausente = receita). Um plano de despesa é o que NÓS pagamos por causa do
   projecto — alojamento, base de dados, domínio. Nasceu da constatação de que a

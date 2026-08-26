@@ -30,13 +30,19 @@ const schema = z.object({
   primeiraCobranca: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (yyyy-mm-dd)"),
   numeroCobrancas: z.number().int().min(1).max(MENSALIDADE_MAX_COBRANCAS),
   ativo: z.boolean(),
-  dentroDoValor: z.boolean(),
+  // Já não vem do formulário: um plano de receita é SEMPRE dono da sua linha
+  // nos Custos, logo é sempre parte do valor. Fica opcional só para não partir
+  // chamadas antigas — o valor enviado é ignorado.
+  dentroDoValor: z.boolean().nullish(),
   // Omitido = herda o do projecto (mesma regra do Pagamento.comIva).
   comIva: z.boolean().nullish(),
   // Categoria da linha nos Custos — só conta quando dentroDoValor é false.
   categoriaCusto: z.enum(LINHA_CATEGORIA).nullish(),
   // Categoria da Despesa gerada ao confirmar, nos planos de despesa.
   categoriaDespesa: z.enum(DESPESA_CATEGORIA).nullish(),
+  // O que o plano nos custa por período, e se esse número já traz IVA.
+  custo: z.number().finite().min(0).nullish(),
+  custoComIva: z.boolean().nullish(),
   notas: z.string().max(2000).nullish(),
   fechadoEm: z.string().nullish(),
 });
@@ -77,13 +83,15 @@ export const POST = withAuth(async (session, request) => {
     primeiraCobranca: input.primeiraCobranca,
     numeroCobrancas: input.numeroCobrancas,
     ativo: input.ativo,
-    // Um plano de despesa nunca é "o valor do projecto partido em prestações":
+    // Receita: sempre parte do valor (é dona da sua linha). Despesa: nunca —
     // é dinheiro nosso a sair, nada tem que ver com o que a cliente paga.
-    dentroDoValor: tipo === "despesa" ? false : input.dentroDoValor,
+    dentroDoValor: tipo !== "despesa",
     // Idem para o IVA: a despesa regista o que saiu do banco, já com o que
     // vier na factura.
     comIva: tipo === "despesa" ? false : input.comIva ?? projeto.comIva ?? false,
     categoriaCusto: input.categoriaCusto ?? existente?.categoriaCusto ?? undefined,
+    custo: input.custo ?? undefined,
+    custoComIva: input.custoComIva ?? undefined,
     categoriaDespesa:
       tipo === "despesa"
         ? input.categoriaDespesa ?? existente?.categoriaDespesa ?? "dominios"

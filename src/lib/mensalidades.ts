@@ -26,7 +26,7 @@ export type ConfirmacaoDeCobranca = {
   mensalidadeId?: string | null;
   cobrancaNumero?: number | null;
 };
-import { comIva } from "@/lib/iva";
+import { cents, comIva, semIva } from "@/lib/iva";
 
 /** Antecedência com que uma cobrança por pagar passa a "a-vencer". */
 export const A_VENCER_DIAS = 7;
@@ -92,6 +92,35 @@ function estadoPorData(dataPrevista: string, hoje: string): CobrancaEstado {
 /** O plano é de despesa (dinheiro nosso a sair), não de receita. */
 export function isPlanoDespesa(m: Mensalidade): boolean {
   return m.tipo === "despesa";
+}
+
+/**
+ * O que o plano deixa por período, em BASE s/ IVA.
+ *
+ * `valor` já é base. O `custo` pode vir bruto (é o que a factura da Vercel diz)
+ * — e o IVA pago é dedutível, por isso desconta-se antes de comparar. Sem isto
+ * a margem aparecia 23% mais baixa do que a real.
+ *
+ * O tempo do Iuri NUNCA entra aqui: trabalho é lucro, não é custo (regra dele).
+ * A margem é o que sobra para pagar esse tempo e ainda dar lucro.
+ */
+export function margemDoPlano(m: Mensalidade): {
+  receita: number;
+  custo: number;
+  margem: number;
+  /** Percentagem da receita que fica (0 quando não há receita). */
+  pct: number;
+} | null {
+  const custoBase = m.custo && m.custo > 0 ? semIva(m.custo, m.custoComIva) : 0;
+  if (custoBase <= 0) return null;
+  const receita = cents(m.valor);
+  const margem = cents(receita - custoBase);
+  return {
+    receita,
+    custo: custoBase,
+    margem,
+    pct: receita > 0 ? Math.round((margem / receita) * 100) : 0,
+  };
 }
 
 /** Planos a receber do cliente — os únicos que são dívida, receita e portal. */
@@ -308,13 +337,13 @@ export function descricaoLinhaDoPlano(m: Mensalidade): string {
 /**
  * Mantém os Custos do projecto em sincronia com um plano recorrente.
  *
- * Só planos marcados "dinheiro por cima" (`dentroDoValor: false`) geram linha:
- * quando o plano É o valor do projecto partido em prestações, esse dinheiro já
- * está nos Custos e criar linha punha o projecto a valer o dobro.
+ * TODO plano de receita gera a sua linha (decisão do Iuri, 2026-08-26): o plano
+ * é dono de uma fatia do orçamento, e a linha é como essa fatia aparece ao
+ * cliente. Planos de DESPESA nunca geram — as linhas são o que o cliente paga.
  *
- * A linha vale UM período (490 €/ano, não os três anos): o que está garantido é
- * o ano corrente — decisão do Iuri. Os períodos seguintes aparecem como receita
- * quando forem cobrados.
+ * A linha vale o plano TODO (12 × 366,67 € = 4.400 €). Numa anuidade que possa
+ * não ser renovada, criar com 1 cobrança e usar o botão Renovar a cada ano —
+ * assim o orçamento nunca promete anos que ainda não estão contratados.
  *
  * Só toca em linhas com `mensalidadeId` deste plano. As escritas à mão ficam
  * intactas, sempre.
@@ -333,7 +362,7 @@ export function sincronizarLinhaDoPlano(
 
   // Um plano de DESPESA nunca gera linha nos Custos: as linhas são o que o
   // cliente paga. O gasto vive na colecção `despesas`, ao confirmar.
-  if (m.dentroDoValor || isPlanoDespesa(m)) {
+  if (isPlanoDespesa(m)) {
     // Passou a fazer parte do valor: a linha que o plano criou deixa de fazer
     // sentido (senão contava duas vezes).
     if (i < 0) return null;
@@ -345,7 +374,10 @@ export function sincronizarLinhaDoPlano(
     id: i >= 0 ? linhas[i].id : novoId(),
     descricao: descricaoLinhaDoPlano(m),
     categoria: m.categoriaCusto ?? CATEGORIA_CUSTO_PADRAO,
-    quantidade: 1,
+    // A linha vale o plano TODO — quantidade × valor. É isso que a torna dona
+    // de uma fatia do orçamento: 12 × 366,67 € = os 4.400 € em falta. Com
+    // quantidade 1 a soma das linhas nunca dava o valor do projecto.
+    quantidade: m.numeroCobrancas,
     // BASE s/ IVA: as linhas nunca levam IVA (regra do CLAUDE.md); o IVA é
     // aplicado no render por `Projeto.comIva`.
     precoUnit: m.valor,
@@ -448,7 +480,7 @@ export function porCobrarDentroDoValor(
 ): number {
   const ids = new Set(
     mensalidades
-      .filter((m) => m.projetoId === projetoId && m.dentroDoValor && !isPlanoDespesa(m))
+      .filter((m) => m.projetoId === projetoId && !isPlanoDespesa(m))
       .map((m) => m.id)
   );
   if (ids.size === 0) return 0;

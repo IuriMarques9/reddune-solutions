@@ -15,6 +15,7 @@ import {
   sincronizarLinhaDoPlano,
   descricaoLinhaDoPlano,
   isPlanoDespesa,
+  margemDoPlano,
   planosReceita,
   planosDespesa,
 } from "@/lib/mensalidades";
@@ -473,28 +474,41 @@ describe("sincronizarLinhaDoPlano", () => {
     dentroDoValor: false,
   });
 
-  it("NÃO cria linha quando o plano faz parte do valor do projecto", () => {
-    // A armadilha: as 12 mensalidades JÁ são a linha de mão-de-obra. Criar
-    // outra punha o projecto a valer o dobro.
-    const dentro = plano({ id: "m1", dentroDoValor: true });
-    expect(sincronizarLinhaDoPlano([maoObra], 5400, dentro, novoId)).toBeNull();
+  it("TODO plano de receita cria a sua linha — mesmo o de prestações", () => {
+    // Regra do Iuri (2026-08-26): o plano é dono de uma fatia do orçamento.
+    // As 12 × 366,67 € SÃO os 4.400 € — a linha antiga de 5.400 é que sai,
+    // ficando "Entrada 1.000" + a linha do plano.
+    const entrada: ProjetoLinha = {
+      id: "l-entrada",
+      descricao: "Entrada",
+      categoria: "mao-obra",
+      quantidade: 1,
+      precoUnit: 1000,
+    };
+    const r = sincronizarLinhaDoPlano([entrada], 1000, plano({ id: "m1" }), novoId)!;
+    expect(r.linhas).toHaveLength(2);
+    expect(r.linhas[1].quantidade).toBe(12);
+    expect(r.linhas[1].precoUnit).toBe(366.67);
+    expect(r.valorEstimado).toBeCloseTo(5400.04, 2);
   });
 
-  it("cria a linha quando é dinheiro por cima, e soma ao valor do projecto", () => {
+  it("a linha vale o plano TODO, não um período", () => {
     const r = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
     expect(r.linhas).toHaveLength(2);
     const nova = r.linhas[1];
     expect(nova.descricao).toBe("Manutenção anual (ano)");
+    expect(nova.quantidade).toBe(3);
     expect(nova.precoUnit).toBe(490);
     expect(nova.mensalidadeId).toBe("m-anual");
-    expect(r.valorEstimado).toBe(5890);
+    // 5.400 + 3 × 490 = 6.870
+    expect(r.valorEstimado).toBe(6870);
   });
 
-  it("a linha vale UM período, não o plano todo", () => {
-    // 3 × 490 € não são 1.470 € no orçamento: só está garantido o ano corrente.
-    const r = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
-    expect(r.linhas[1].precoUnit).toBe(490);
-    expect(r.valorEstimado).not.toBe(5400 + 1470);
+  it("anuidade que pode não renovar: 1 cobrança e usar Renovar", () => {
+    // Assim o orçamento nunca promete anos que ainda não estão contratados.
+    const umAno = { ...anual, numeroCobrancas: 1 };
+    const r = sincronizarLinhaDoPlano([maoObra], 5400, umAno, novoId)!;
+    expect(r.valorEstimado).toBe(5890);
   });
 
   it("não conta como gasto da RedDune", () => {
@@ -519,7 +533,8 @@ describe("sincronizarLinhaDoPlano", () => {
     expect(subiu.linhas).toHaveLength(2);
     expect(subiu.linhas[1].id).toBe(idLinha);
     expect(subiu.linhas[1].precoUnit).toBe(550);
-    expect(subiu.valorEstimado).toBe(5950);
+    // 5.400 + 3 × 550 = 7.050
+    expect(subiu.valorEstimado).toBe(7050);
   });
 
   it("não grava nada quando nada mudou", () => {
@@ -527,10 +542,12 @@ describe("sincronizarLinhaDoPlano", () => {
     expect(sincronizarLinhaDoPlano(inicial.linhas, inicial.valorEstimado, anual, novoId)).toBeNull();
   });
 
-  it("remove a linha se o plano passar a fazer parte do valor", () => {
+  it("remove a linha se o plano passar a ser de despesa", () => {
+    // Só os planos de despesa deixam de ter linha — as linhas são o que o
+    // cliente paga.
     const inicial = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
     const r = sincronizarLinhaDoPlano(
-      inicial.linhas, inicial.valorEstimado, { ...anual, dentroDoValor: true }, novoId
+      inicial.linhas, inicial.valorEstimado, { ...anual, tipo: "despesa" as const }, novoId
     )!;
     expect(r.linhas).toHaveLength(1);
     expect(r.valorEstimado).toBe(5400);
@@ -544,14 +561,14 @@ describe("sincronizarLinhaDoPlano", () => {
   it("preserva o orçamento de um projecto que ainda não tinha linhas", () => {
     // Sem isto, a soma das linhas passava a ser só o plano e o projecto
     // encolhia de 5.400 € para 490 €.
-    const r = sincronizarLinhaDoPlano(null, 5400, anual, novoId)!;
+    const r = sincronizarLinhaDoPlano(null, 5400, { ...anual, numeroCobrancas: 1 }, novoId)!;
     expect(r.linhas).toHaveLength(2);
     expect(r.linhas[0]).toMatchObject({ descricao: "Valor orçado", precoUnit: 5400 });
     expect(r.valorEstimado).toBe(5890);
   });
 
   it("projecto sem linhas e sem orçamento fica só com a linha do plano", () => {
-    const r = sincronizarLinhaDoPlano(null, null, anual, novoId)!;
+    const r = sincronizarLinhaDoPlano(null, null, { ...anual, numeroCobrancas: 1 }, novoId)!;
     expect(r.linhas).toHaveLength(1);
     expect(r.valorEstimado).toBe(490);
   });
@@ -647,20 +664,46 @@ describe("planos de despesa (o que NÓS pagamos)", () => {
   });
 });
 
+describe("margemDoPlano", () => {
+  it("é null sem custo — o painel não mostra bloco nenhum", () => {
+    expect(margemDoPlano(plano({ id: "m1", valor: 490 }))).toBeNull();
+    expect(margemDoPlano(plano({ id: "m1", valor: 490, custo: 0 }))).toBeNull();
+  });
+
+  it("desconta o IVA do custo antes de comparar (o IVA pago é dedutível)", () => {
+    // A factura da Vercel diz 137,40 €; a base são 111,71 €. Sem descontar, a
+    // margem aparecia 23% mais baixa do que a real.
+    const m = plano({ id: "m1", valor: 490, custo: 137.4, custoComIva: true });
+    const r = margemDoPlano(m)!;
+    expect(r.custo).toBeCloseTo(111.71, 2);
+    expect(r.margem).toBeCloseTo(378.29, 2);
+    expect(r.pct).toBe(77);
+  });
+
+  it("com custo já em base não mexe no número", () => {
+    const r = margemDoPlano(plano({ id: "m1", valor: 490, custo: 137.4, custoComIva: false }))!;
+    expect(r.custo).toBeCloseTo(137.4, 2);
+    expect(r.margem).toBeCloseTo(352.6, 2);
+  });
+
+  it("margem negativa quando o custo passa o preço", () => {
+    const r = margemDoPlano(plano({ id: "m1", valor: 100, custo: 150, custoComIva: false }))!;
+    expect(r.margem).toBeCloseTo(-50, 2);
+  });
+});
+
 describe("porCobrarDentroDoValor", () => {
-  it("devolve o que falta receber pelos planos que fazem parte do valor", () => {
-    // Sem isto, as Dívidas somavam os 4.400 € do projecto E as 12 mensalidades
-    // que SÃO esses 4.400 €.
-    const dentro = plano({ id: "m1", dentroDoValor: true });
-    const fora = plano({
-      id: "m2",
-      valor: 490,
-      periodo: "anual",
-      numeroCobrancas: 1,
-      dentroDoValor: false,
-    });
-    const cs = todasCobrancas([dentro, fora], [], "2026-09-01");
-    expect(porCobrarDentroDoValor([dentro, fora], cs, "proj-trakinas")).toBeCloseTo(4400.04, 2);
+  it("desconta TODOS os planos de receita do projecto", () => {
+    // Cada plano de receita é dono de uma linha, logo o seu valor já está no
+    // valorEstimado. Sem descontar, as Dívidas contavam-no duas vezes: uma na
+    // linha, outra nas cobranças por liquidar.
+    const mensal = plano({ id: "m1" }); // 12 × 366,67
+    const manutencao = plano({ id: "m2", valor: 490, periodo: "anual", numeroCobrancas: 1 });
+    const cs = todasCobrancas([mensal, manutencao], [], "2026-09-01");
+    expect(porCobrarDentroDoValor([mensal, manutencao], cs, "proj-trakinas")).toBeCloseTo(
+      4400.04 + 490,
+      2
+    );
   });
 
   it("desconta o que já foi pago", () => {
@@ -674,9 +717,9 @@ describe("porCobrarDentroDoValor", () => {
   });
 
   it("é zero para um projecto sem planos dentro do valor", () => {
-    const fora = plano({ id: "m2", dentroDoValor: false });
-    const cs = cobrancasDe(fora, [], "2026-09-01");
-    expect(porCobrarDentroDoValor([fora], cs, "proj-trakinas")).toBe(0);
-    expect(porCobrarDentroDoValor([fora], cs, "outro-projecto")).toBe(0);
+    // Agora TODO plano de receita é dono de linha, logo desconta sempre.
+    const outro = plano({ id: "m2", projetoId: "outro" });
+    const cs = cobrancasDe(outro, [], "2026-09-01");
+    expect(porCobrarDentroDoValor([outro], cs, "proj-trakinas")).toBe(0);
   });
 });
