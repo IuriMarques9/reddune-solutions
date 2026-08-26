@@ -14,6 +14,7 @@ const schema = z.object({
   id: z.string().max(128).optional(),
   projetoId: z.string().min(1).max(128),
   valor: z.number().finite().min(0),
+  comIva: z.boolean().nullish(),
   data: z.string().min(1),
   metodo: z.enum(METODO_PAGAMENTO).nullish(),
   notas: z.string().max(2000).nullish(),
@@ -45,6 +46,9 @@ export async function POST(request: Request) {
     projetoId: input.projetoId,
     clienteId: projeto.clienteId ?? null,
     valor: input.valor,
+    // Default = o do projecto, mas o painel manda-o explícito e pode divergir:
+    // parte do trabalho pode ser passada sem IVA no mesmo projecto.
+    comIva: input.comIva ?? projeto.comIva ?? false,
     data: input.data,
     metodo: input.metodo ?? null,
     notas: input.notas ?? null,

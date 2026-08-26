@@ -26,7 +26,12 @@ type Props = {
   triggerClassName?: string;
   stopPropagation?: boolean;
   pagoTotal?: number;
-  valorEstimado?: number | null;
+  /**
+   * Total a cobrar ao cliente, JÁ com IVA quando o projecto o leva (ver
+   * src/lib/iva.ts). Tem de ser bruto: `pagoTotal` também é bruto, e é a
+   * comparação dos dois que liberta o "Fechar".
+   */
+  totalACobrar?: number | null;
 };
 
 type QuickAction = { icon: React.ReactNode; label: string; target: ProjetoStatus };
@@ -49,7 +54,7 @@ export function InlineStatusSelect({
   triggerClassName,
   stopPropagation = true,
   pagoTotal,
-  valorEstimado,
+  totalACobrar,
 }: Props) {
   const router = useRouter();
   const { toast } = useToast();
@@ -85,8 +90,8 @@ export function InlineStatusSelect({
   }
   if (current === "terminado") {
     const liquidado =
-      valorEstimado == null ||
-      (pagoTotal != null && pagoTotal >= valorEstimado);
+      totalACobrar == null ||
+      (pagoTotal != null && pagoTotal >= totalACobrar);
     if (liquidado) {
       quickActions.push({ icon: <Lock className="h-3.5 w-3.5" />, label: "Fechar", target: "fechado" });
     }

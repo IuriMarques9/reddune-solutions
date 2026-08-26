@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check, Mail, ChevronRight } from "lucide-react";
 import { getAllProjetos } from "@/lib/mongodb/projetos";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
+import { totalACobrar } from "@/lib/iva";
 import { getAllClientes } from "@/lib/mongodb/clientes";
 import { requirePainelSession } from "@/lib/painel-auth";
 import { Topbar } from "@/components/painel/Topbar";
@@ -68,10 +69,15 @@ export default async function DividasPage({
     ultCobranca: string | null;
   };
 
+  // Comparação BRUTA: total a cobrar (com IVA quando o projecto o leva) contra
+  // o que foi pago. Ver src/lib/iva.ts.
   const rows: Row[] = allProjetos
-    .filter((p) => p.status === "terminado" && p.valorEstimado != null && (pagoPorProjeto.get(p.id) ?? 0) < (p.valorEstimado ?? 0))
+    .filter((p) => {
+      const total = totalACobrar(p);
+      return p.status === "terminado" && total != null && (pagoPorProjeto.get(p.id) ?? 0) < total;
+    })
     .map((p) => {
-      const restante = (p.valorEstimado ?? 0) - (pagoPorProjeto.get(p.id) ?? 0);
+      const restante = (totalACobrar(p) ?? 0) - (pagoPorProjeto.get(p.id) ?? 0);
       const dias = diasDesde(p.dataFechado ?? p.dataCriado);
       return {
         projeto: p,
@@ -156,7 +162,9 @@ export default async function DividasPage({
                       nome
                     )}
                   </td>
-                  <td className="col-hide-sm">{eur(p.valorEstimado ?? 0)} €</td>
+                  <td className="col-hide-sm" title={p.comIva ? `${eur(p.valorEstimado ?? 0)} € s/ IVA` : undefined}>
+                    {eur(totalACobrar(p) ?? 0)} €{p.comIva ? " c/ IVA" : ""}
+                  </td>
                   <td className="col-hide-sm">{eur(pago)} €</td>
                   <td className="num" style={{ color: "var(--ember)" }}>{eur(restante)} €</td>
                   <td className="muted col-hide-sm">{ultCobranca ? fmtDate(ultCobranca) : "—"}</td>

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { comIva as aplicaIva, IVA_LABEL } from "@/lib/iva";
 import {
   LINHA_CATEGORIA,
   LINHA_CATEGORIA_LABEL,
@@ -8,6 +9,8 @@ import {
 
 type Props = {
   linhas: ProjetoLinha[];
+  /** Linhas são sempre base s/ IVA; isto acrescenta a linha de IVA ao total. */
+  comIva?: boolean;
 };
 
 const CATEGORIA_COLOR: Record<LinhaCategoria, string> = {
@@ -19,8 +22,9 @@ const CATEGORIA_COLOR: Record<LinhaCategoria, string> = {
   outro: "bg-slate-500/10 text-slate-700 border-slate-500/30",
 };
 
-export function LinhasBreakdown({ linhas }: Props) {
+export function LinhasBreakdown({ linhas, comIva = false }: Props) {
   const total = linhas.reduce((s, l) => s + l.quantidade * l.precoUnit, 0);
+  const totalComIva = aplicaIva(total, comIva);
   // Baldes a partir de LINHA_CATEGORIA — acrescentar uma categoria não pode
   // deixar aqui um `undefined` a rebentar na soma ou no push.
   const byCat = Object.fromEntries(LINHA_CATEGORIA.map((c) => [c, 0])) as Record<
@@ -76,13 +80,27 @@ export function LinhasBreakdown({ linhas }: Props) {
         );
       })}
 
-      <div className="border-t border-border pt-3 flex items-center justify-between">
-        <span className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          Total
-        </span>
-        <span className="font-mono tabular-nums text-lg font-bold text-foreground">
-          {total.toFixed(2)}€
-        </span>
+      <div className="border-t border-border pt-3 space-y-1">
+        {comIva && (
+          <>
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>Subtotal s/ IVA</span>
+              <span className="font-mono tabular-nums">{total.toFixed(2)}€</span>
+            </div>
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>{IVA_LABEL}</span>
+              <span className="font-mono tabular-nums">{(totalComIva - total).toFixed(2)}€</span>
+            </div>
+          </>
+        )}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            {comIva ? "Total c/ IVA" : "Total"}
+          </span>
+          <span className="font-mono tabular-nums text-lg font-bold text-foreground">
+            {totalComIva.toFixed(2)}€
+          </span>
+        </div>
       </div>
     </div>
   );

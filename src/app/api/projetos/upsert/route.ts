@@ -111,6 +111,7 @@ export async function POST(request: Request) {
     dataCriado: input.id ? (existing?.dataCriado ?? input.dataCriado ?? now) : now,
     dataFechado: dataFechadoFinal,
     valorEstimado: pick("valorEstimado", null),
+    comIva: pick("comIva", false) ?? false,
     valorPago: pick("valorPago", null),
     metodoPagamento: pick("metodoPagamento", null),
     local: pick("local", null),

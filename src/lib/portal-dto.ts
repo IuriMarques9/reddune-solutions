@@ -8,6 +8,7 @@ import {
 } from "@/types/projeto";
 import type { Cliente } from "@/types/cliente";
 import type { Pagamento } from "@/types/pagamento";
+import { comIva, cents } from "@/lib/iva";
 
 // DTOs do portal do cliente: allowlist EXPLÍCITA. Campo novo no Projeto/Cliente
 // nunca chega ao portal sem ser adicionado aqui de propósito. Nunca fazer spread.
@@ -34,9 +35,17 @@ export type PortalArquivoDTO = {
 };
 export type PortalLinkDTO = { id: string; label: string; url: string };
 export type PortalValoresDTO = {
+  /** Total a pagar — JÁ com IVA quando o projecto o leva. É o número grande. */
   orcado: number;
+  /** Base s/ IVA. Igual a `orcado` quando o projecto não leva IVA. */
+  orcadoBase: number;
+  /** Parcela de IVA do orçamento (0 quando não leva). */
+  iva: number;
+  comIva: boolean;
+  /** Bruto recebido — o que o cliente entregou. */
   pago: number;
   emFalta: number;
+  /** Subtotais por categoria: sempre BASE s/ IVA (as linhas nunca levam IVA). */
   categorias: { label: string; total: number }[];
 };
 
@@ -74,7 +83,11 @@ export function toPortalProjeto(projeto: Projeto, pagamentos: Pagamento[]): Port
   // Mostrar valores se há orçamento OU se já houve pagamentos (ex.: sinal pago
   // antes de fechar o orçamento — o cliente deve ver que o sinal foi registado).
   if (orcado != null || pago > 0) {
-    const total = orcado ?? pago;
+    // Sem orçamento fechado o "total" é o que já foi pago — e esse valor já
+    // vem bruto, por isso não se lhe acrescenta IVA nenhum.
+    const base = orcado ?? pago;
+    const levaIva = orcado != null && (projeto.comIva ?? false);
+    const total = comIva(base, levaIva);
     // Subtotais por categoria de linha (ver LINHA_CATEGORIA) — sem quantidades,
     // preços unitários nem descrições (as linhas revelam margens). Construído a
     // partir das linhas do projecto, por isso acompanha categorias novas.
@@ -84,8 +97,11 @@ export function toPortalProjeto(projeto: Projeto, pagamentos: Pagamento[]): Port
     }
     valores = {
       orcado: total,
+      orcadoBase: base,
+      iva: cents(total - base),
+      comIva: levaIva,
       pago,
-      emFalta: Math.max(0, total - pago),
+      emFalta: Math.max(0, cents(total - pago)),
       categorias: [...porCategoria.entries()].map(([c, total]) => ({
         label: LINHA_CATEGORIA_LABEL[c] ?? c,
         total,

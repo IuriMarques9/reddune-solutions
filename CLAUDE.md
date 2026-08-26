@@ -27,6 +27,34 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
 - Preços do site são s/ IVA: sufixo "+ IVA" na loja, nota no card escuro dos
   serviços, JSON-LD `valueAddedTaxIncluded: false`.
 
+## IVA no painel (sessão 2026-08-26)
+- `IVA_TAXA = 0.23` em `src/lib/iva.ts` — **fixa**, decisão do Iuri (continente/
+  Algarve, sem campo no form). Mudá-la muda retroactivamente projectos antigos.
+- **Linhas e `valorEstimado` são SEMPRE a BASE s/ IVA.** O IVA nunca é gravado
+  lá dentro — deriva-se no render. Mantém a regra da casa (loja "+ IVA",
+  JSON-LD `valueAddedTaxIncluded: false`).
+- Dois flags, de propósito:
+  - `Projeto.comIva` — o orçamento deste cliente leva IVA por cima. Edita-se no
+    checkbox "Acrescentar IVA (23%)" do cartão Custos (`CustosCard`), não no
+    `ProjetoForm` (que não mexe em dinheiro).
+  - `Pagamento.comIva` — aquele recibo levou IVA. Herda o default do projecto ao
+    registar mas PODE divergir: o mesmo projecto pode ter parte passada sem IVA.
+- **`Pagamento.valor` é sempre BRUTO** (o que o cliente entregou). Por isso a
+  dívida compara bruto contra bruto — `totalACobrar(projeto) − Σ pagamentos` —
+  e fecha mesmo com pagamentos mistos. Nunca guardar a base num pagamento.
+- `totalACobrar()` sai do `valorEstimado` e **ignora as linhas** de propósito
+  (não muda números de projectos com `valorEstimado` dessincronizado). Só o
+  portal usa `orcamentoBasePortal()`, que prefere a soma das linhas — era já o
+  comportamento dele antes do IVA.
+- **Receita/lucro são sempre líquidos de IVA** (`semIva`): o IVA recebido é do
+  Estado. Vale no hero da ficha de projecto e nos Relatórios (receita mensal,
+  receita por cliente, `rec` por tipo). `porReceber` e a dívida ficam brutos.
+- Sítios que já sabem de IVA: ficha de projecto (hero, badges, aside,
+  pagamentos, custos), /painel/dividas, /painel/clientes(+ficha), /painel,
+  badge da sidebar, /painel/relatorios, kanban/cards e o portal do cliente.
+- **NÃO existe `Mensalidade`/planos recorrentes no repo** (verificado 2026-08-26).
+  Pagamentos recorrentes são registos avulso em `pagamentos`.
+
 ## Extras — taxas gerais (sessão 2026-08-24)
 - Taxas que valem para as três categorias (urgência, deslocação) vivem em
   `slug: "extras"` na colecção `servicos` — `SERVICO_EXTRAS` / `SERVICO_GRUPO`

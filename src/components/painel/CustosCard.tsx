@@ -8,6 +8,7 @@ import { LinhasEditor, computeTotal } from "./LinhasEditor";
 import type { Projeto, ProjetoLinha } from "@/types/projeto";
 import { DESPESA_CATEGORIA_LABEL, type Despesa } from "@/types/despesa";
 import { parseMoney } from "@/lib/parse-number";
+import { comIva as aplicaIva, eurIva, IVA_LABEL, IVA_TAXA } from "@/lib/iva";
 import { safeJsonPost } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
 
@@ -40,14 +41,27 @@ export function CustosCard({ projeto, despesas = [] }: Props) {
   );
   const hasLegacy = projeto.linhas == null && projeto.valorEstimado != null;
   const [useLegacy, setUseLegacy] = useState(hasLegacy);
+  // Linhas e valorEstimado são sempre BASE s/ IVA — este flag só decide se o
+  // cliente leva os 23% por cima. Ver src/lib/iva.ts.
+  const [comIva, setComIva] = useState(projeto.comIva ?? false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const gastoDespesas = despesas.reduce((s, d) => s + d.valor, 0);
 
-  const dirty = useLegacy
+  const ivaDirty = comIva !== (projeto.comIva ?? false);
+  const valoresDirty = useLegacy
     ? valorLegacy.trim() !== (projeto.valorEstimado != null ? String(projeto.valorEstimado) : "")
     : JSON.stringify(linhas) !== JSON.stringify(initial);
+  const dirty = ivaDirty || valoresDirty;
+
+  // Total mostrado no cartão: o que está no ecrã AGORA (linhas por editar ou
+  // campo legacy), para o número acompanhar o que se está a escrever. O resto
+  // do painel lê o `valorEstimado` já guardado — ver totalACobrar em lib/iva.
+  const baseAtual = useLegacy
+    ? parseMoney(valorLegacy) ?? 0
+    : computeTotal(linhas);
+  const totalComIva = aplicaIva(baseAtual, comIva);
 
   function convertLegacy() {
     const v = parseMoney(valorLegacy) ?? NaN;
@@ -68,23 +82,29 @@ export function CustosCard({ projeto, despesas = [] }: Props) {
   async function save() {
     setSaving(true);
     setError(null);
-    let payload: Record<string, unknown>;
-    if (useLegacy) {
-      const v = valorLegacy.trim() ? parseMoney(valorLegacy) : null;
-      if (valorLegacy.trim() && v === null) {
-        setError("Valor inválido.");
-        setSaving(false);
-        return;
+    // Só o IVA mudou -> mandar APENAS o flag. Se mandássemos sempre os valores,
+    // ligar o checkbox num projecto sem linhas nem valor gravava `linhas: []` e
+    // `valorEstimado: 0` por cima de `null` (passava a mostrar "Orçado 0 €").
+    const payload: Record<string, unknown> = {
+      id: projeto.id,
+      titulo: projeto.titulo,
+      status: projeto.status,
+      comIva,
+    };
+    if (valoresDirty) {
+      if (useLegacy) {
+        const v = valorLegacy.trim() ? parseMoney(valorLegacy) : null;
+        if (valorLegacy.trim() && v === null) {
+          setError("Valor inválido.");
+          setSaving(false);
+          return;
+        }
+        payload.valorEstimado = v;
+        payload.linhas = null;
+      } else {
+        payload.linhas = linhas;
+        payload.valorEstimado = computeTotal(linhas);
       }
-      payload = { id: projeto.id, titulo: projeto.titulo, status: projeto.status, valorEstimado: v, linhas: null };
-    } else {
-      payload = {
-        id: projeto.id,
-        titulo: projeto.titulo,
-        status: projeto.status,
-        linhas,
-        valorEstimado: computeTotal(linhas),
-      };
     }
     const res = await safeJsonPost("/api/projetos/upsert", payload);
     setSaving(false);
@@ -158,6 +178,54 @@ export function CustosCard({ projeto, despesas = [] }: Props) {
           gastoDespesas={gastoDespesas}
         />
       )}
+
+      {/* IVA — o orçamento acima é a BASE s/ IVA (regra da casa). Ligar isto
+          não mexe nas linhas: só acrescenta os 23% ao que o cliente paga. */}
+      <div
+        style={{
+          marginTop: 12,
+          paddingTop: 10,
+          borderTop: "1px dashed rgba(90,14,14,.14)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <label
+          style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, cursor: "pointer" }}
+        >
+          <input
+            type="checkbox"
+            className="accent-ember"
+            checked={comIva}
+            onChange={(e) => setComIva(e.target.checked)}
+            disabled={saving}
+          />
+          Acrescentar IVA ({Math.round(IVA_TAXA * 100)}%)
+        </label>
+        <div
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: 12.5,
+            display: "flex",
+            gap: 12,
+            flexWrap: "wrap",
+            alignItems: "baseline",
+          }}
+        >
+          <span style={{ color: "var(--ink-mute)" }}>Base: {eurIva(baseAtual)} €</span>
+          {comIva && (
+            <>
+              <span style={{ color: "var(--ink-mute)" }}>
+                {IVA_LABEL}: {eurIva(totalComIva - baseAtual)} €
+              </span>
+              <b style={{ fontSize: 13.5 }}>Total c/ IVA: {eurIva(totalComIva)} €</b>
+            </>
+          )}
+        </div>
+      </div>
 
       {despesas.length > 0 && (
         <div className="psub">

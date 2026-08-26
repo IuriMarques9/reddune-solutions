@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { getAllProjetos } from "@/lib/mongodb/projetos";
+import { totalACobrar } from "@/lib/iva";
 import { getAllClientes } from "@/lib/mongodb/clientes";
 import { getAllColaboradores } from "@/lib/mongodb/colaboradores";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
@@ -210,14 +211,14 @@ export default async function PainelOverviewPage({
     pagoPorProjeto.set(p.projetoId, (pagoPorProjeto.get(p.projetoId) ?? 0) + p.valor);
   }
 
-  const dividas = projetos.filter(
-    (p) =>
-      p.status === "terminado" &&
-      p.valorEstimado != null &&
-      (pagoPorProjeto.get(p.id) ?? 0) < p.valorEstimado
-  );
+  // Dívida sempre em valor BRUTO (com IVA quando o projecto o leva), para bater
+  // com os pagamentos registados. Ver src/lib/iva.ts.
+  const dividas = projetos.filter((p) => {
+    const total = totalACobrar(p);
+    return p.status === "terminado" && total != null && (pagoPorProjeto.get(p.id) ?? 0) < total;
+  });
   const dividasValor = dividas.reduce(
-    (sum, p) => sum + ((p.valorEstimado ?? 0) - (pagoPorProjeto.get(p.id) ?? 0)),
+    (sum, p) => sum + ((totalACobrar(p) ?? 0) - (pagoPorProjeto.get(p.id) ?? 0)),
     0
   );
 

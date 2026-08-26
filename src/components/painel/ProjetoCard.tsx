@@ -8,6 +8,7 @@ import {
   type ProjetoTipo,
 } from "@/types/projeto";
 import { SERVICO_SLUG_LABEL } from "@/types/servico";
+import { totalACobrar } from "@/lib/iva";
 
 type Props = {
   projeto: Projeto;
@@ -48,7 +49,8 @@ export function ProjetoCard({ projeto, className }: Props) {
   const categoria = projeto.categoria ? SERVICO_SLUG_LABEL[projeto.categoria] : null;
   const tipo = projeto.tipo ? PROJETO_TIPO_LABEL[projeto.tipo as ProjetoTipo] ?? projeto.tipo : null;
   const meta = [categoria, tipo].filter(Boolean).join(" · ");
-  const valor = formatValor(projeto.valorEstimado);
+  // Valor a cobrar (com IVA quando o projecto o leva) — ver src/lib/iva.ts.
+  const valor = formatValor(totalACobrar(projeto));
 
   return (
     <Link href={`/painel/projetos/${projeto.id}`} className={cn("projeto-card", className)}>

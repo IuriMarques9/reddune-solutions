@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { unstable_cache } from "next/cache";
 import { Poppins, Inter } from "next/font/google";
 import { auth } from "@/lib/auth";
+import { totalACobrar } from "@/lib/iva";
 import { PainelShell } from "@/components/painel/PainelShell";
 import { Toaster } from "@/components/ui/toaster";
 import { ConfirmProvider } from "@/components/ui/confirm-dialog";
@@ -48,12 +49,12 @@ const getSidebarCounts = unstable_cache(
     for (const p of pagamentos) {
       pagoPorProjeto.set(p.projetoId, (pagoPorProjeto.get(p.projetoId) ?? 0) + p.valor);
     }
-    const dividasCount = projetos.filter(
-      (p) =>
-        p.status === "terminado" &&
-        p.valorEstimado != null &&
-        (pagoPorProjeto.get(p.id) ?? 0) < p.valorEstimado
-    ).length;
+    // Contra o total a cobrar (já com IVA quando o projecto o leva) — os
+    // pagamentos são brutos, tem de se comparar bruto com bruto.
+    const dividasCount = projetos.filter((p) => {
+      const total = totalACobrar(p);
+      return p.status === "terminado" && total != null && (pagoPorProjeto.get(p.id) ?? 0) < total;
+    }).length;
 
     // Lembretes pendentes dos projetos VISÍVEIS em /painel/lembretes — mesmo conjunto
     // que a página lista, para o badge bater certo com o título "N abertas".

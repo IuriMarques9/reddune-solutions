@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Users } from "lucide-react";
 import { requirePainelSession } from "@/lib/painel-auth";
 import { getAllClientes } from "@/lib/mongodb/clientes";
+import { totalACobrar } from "@/lib/iva";
 import { getAllProjetos } from "@/lib/mongodb/projetos";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
 import { Topbar } from "@/components/painel/Topbar";
@@ -75,8 +76,10 @@ export default async function ClientesPage() {
     ) {
       a.trabalhoAtivo += 1;
     }
-    if (p.status === "terminado" && p.valorEstimado != null) {
-      const restante = p.valorEstimado - (pagoPorProjeto.get(p.id) ?? 0);
+    // Dívida bruta (com IVA quando o projecto o leva) — bate com os pagamentos.
+    const total = totalACobrar(p);
+    if (p.status === "terminado" && total != null) {
+      const restante = total - (pagoPorProjeto.get(p.id) ?? 0);
       if (restante > 0) a.divida += restante;
     }
     agg.set(p.clienteId, a);

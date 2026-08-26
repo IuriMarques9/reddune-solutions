@@ -361,6 +361,10 @@ export interface Projeto {
   dataCriado: string | null;
   dataFechado: string | null;
   valorEstimado: number | null;
+  // Acrescentar IVA ao orçamento deste projecto. `valorEstimado` e `linhas`
+  // são SEMPRE base s/ IVA — o IVA nunca é gravado lá dentro, deriva-se no
+  // render (ver src/lib/iva.ts). Opcional: docs antigos sem o campo = false.
+  comIva?: boolean;
   valorPago: number | null;
   metodoPagamento: string | null;
   local: ProjetoLocal | null;

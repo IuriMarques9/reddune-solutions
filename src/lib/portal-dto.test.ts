@@ -84,6 +84,9 @@ describe("toPortalProjeto", () => {
     const dto = toPortalProjeto(makeProjeto(), pagamentos);
     expect(dto.valores).toEqual({
       orcado: 400,
+      orcadoBase: 400,
+      iva: 0,
+      comIva: false,
       pago: 150,
       emFalta: 250,
       categorias: [
@@ -91,6 +94,19 @@ describe("toPortalProjeto", () => {
         { label: "Mão-de-obra", total: 150 },
       ],
     });
+  });
+
+  it("com IVA: total bruto, base e parcela separadas; categorias ficam s/ IVA", () => {
+    const p = { ...makeProjeto(), comIva: true };
+    const v = toPortalProjeto(p, pagamentos).valores!;
+    expect(v.comIva).toBe(true);
+    expect(v.orcadoBase).toBe(400);
+    expect(v.iva).toBe(92);
+    expect(v.orcado).toBe(492);
+    // Os pagamentos somam 150 (bruto) -> faltam 342, não 250.
+    expect(v.emFalta).toBe(342);
+    // As categorias continuam a ser a BASE: o IVA nunca entra nas linhas.
+    expect(v.categorias.reduce((s, c) => s + c.total, 0)).toBe(400);
   });
 
   it("valores null quando não há orçamento nem pagamentos", () => {
@@ -103,10 +119,22 @@ describe("toPortalProjeto", () => {
     const so1: Pagamento = { id: "s1", projetoId: "p1", clienteId: "c1", valor: 100, data: "2026-07-02", metodo: "mbway", notas: null, criadoEm: "2026-07-02" };
     expect(toPortalProjeto(p, [so1]).valores).toEqual({
       orcado: 100,
+      orcadoBase: 100,
+      iva: 0,
+      comIva: false,
       pago: 100,
       emFalta: 0,
       categorias: [],
     });
+  });
+
+  it("sem orçamento fechado não acrescenta IVA ao sinal (o pago já é bruto)", () => {
+    const p = { ...makeProjeto(), valorEstimado: null, linhas: null, comIva: true };
+    const so1: Pagamento = { id: "s1", projetoId: "p1", clienteId: "c1", valor: 100, comIva: true, data: "2026-07-02", metodo: "mbway", notas: null, criadoEm: "2026-07-02" };
+    const v = toPortalProjeto(p, [so1]).valores!;
+    expect(v.orcado).toBe(100);
+    expect(v.iva).toBe(0);
+    expect(v.comIva).toBe(false);
   });
 
   it("Total bate com a soma dos subtotais quando há linhas (ignora valorEstimado dessincronizado)", () => {
