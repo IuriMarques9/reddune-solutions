@@ -105,8 +105,16 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   - Como o valor do plano fica NAS LINHAS, `porCobrarDentroDoValor()` desconta-o
     do restante do projecto em TODOS os planos de receita — senão contava duas
     vezes: uma na linha, outra nas cobranças por liquidar.
-  - Linhas escritas à mão nunca são tocadas; apagar o plano deixa a linha e só
-    tira a marca. **Migração do Trakinas:** apagar a linha "3 fases da app 5400"
+  - Linhas escritas à mão nunca são tocadas. Apagar o plano: se JÁ houve
+    pagamentos a linha FICA (só perde a marca — o dinheiro foi real e pode estar
+    facturado); se nunca recebeu nada a linha SAI com ele, senão ficava um
+    fantasma no orçamento.
+  - **O CustosCard adopta as linhas novas sem recarregar** (`sincronizado` +
+    ajuste de estado no render). Sem isso, criar um plano gerava a linha na BD e
+    o cartão continuava a mostrar as antigas — parecia que o automático falhara.
+    Edições por gravar nunca são deitadas fora.
+  - Enquanto o plano está POR ARRANCAR não se mostra o interruptor Activo nem o
+    chip "desligado": o que há para fazer é **Arrancar**, e arrancar já liga. **Migração do Trakinas:** apagar a linha "3 fases da app 5400"
     e deixar "Entrada 1.000" + a linha do plano (12 × 366,67 = 4.400).
 - **IVA por linha** (2026-08-26): `ProjetoLinha.ivaProprio` — só as linhas
   criadas por planos o têm, e vale o IVA do PLANO. O checkbox "Acrescentar IVA"

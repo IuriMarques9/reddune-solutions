@@ -267,7 +267,7 @@ function PlanoCard({
               ? "as despesas continuam a contar nos gastos"
               : "os pagamentos continuam a contar na receita"
           }, só passam a avulso. Apaga-se o plano, não o dinheiro.`
-        : "Este plano ainda não tem nada registado.",
+        : "Nunca recebeu nada — a linha que criou nos Custos sai com ele.",
       confirmLabel: "Apagar plano",
       tone: "destructive",
     });
@@ -357,7 +357,7 @@ function PlanoCard({
             por arrancar
           </span>
         )}
-        {!m.ativo && (
+        {!m.ativo && !porArrancar && (
           <span
             title="Desligado: não gera cobranças novas. As que já venceram por pagar mantêm-se."
             style={{
@@ -505,8 +505,9 @@ function PlanoCard({
         </div>
       )}
 
-      {/* Interruptor */}
-      {!resumo.terminada && (
+      {/* Interruptor — só depois de arrancar. Um plano sem data ainda não está
+          a correr: o que há para fazer é Arrancar, não ligar/desligar. */}
+      {!resumo.terminada && !porArrancar && (
         <label
           style={{
             display: "inline-flex",
@@ -953,7 +954,12 @@ function ArrancarPlano({
         className="btn-primary"
         disabled={ocupado || !/^\d{4}-\d{2}-\d{2}$/.test(data)}
         onClick={async () => {
-          await onArrancar({ primeiraCobranca: data }, "Erro a arrancar o plano");
+          // Arrancar é ligar: um plano que começa a cobrar está, por definição,
+          // activo. Sem isto ficava com data mas sem gerar nada.
+          await onArrancar(
+            { primeiraCobranca: data, ativo: true, fechadoEm: null },
+            "Erro a arrancar o plano"
+          );
           setAberto(false);
         }}
       >

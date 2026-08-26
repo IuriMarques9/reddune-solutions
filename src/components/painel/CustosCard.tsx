@@ -36,6 +36,10 @@ export function CustosCard({ projeto, despesas = [] }: Props) {
   const [, startTransition] = useTransition();
   const initial: ProjetoLinha[] = projeto.linhas ?? [];
   const [linhas, setLinhas] = useState<ProjetoLinha[]>(initial);
+  // Retrato do que o SERVIDOR trouxe da última vez que sincronizámos. Sem isto
+  // o cartão ficava preso às linhas do primeiro render: criar um plano gerava a
+  // sua linha na base de dados e aqui não aparecia nada até recarregar a página.
+  const [sincronizado, setSincronizado] = useState(() => JSON.stringify(initial));
   const [valorLegacy, setValorLegacy] = useState(
     projeto.valorEstimado != null ? String(projeto.valorEstimado) : ""
   );
@@ -47,12 +51,24 @@ export function CustosCard({ projeto, despesas = [] }: Props) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // O servidor mudou por baixo (ex.: um plano acabou de criar a sua linha).
+  // Adoptamos o que veio — EXCEPTO se houver edições por gravar, que nunca se
+  // deitam fora sem o Iuri saber. Padrão de "ajustar estado quando as props
+  // mudam", feito no render de propósito: um useEffect pintava o valor velho
+  // primeiro e via-se o número a saltar.
+  const doServidor = JSON.stringify(initial);
+  if (doServidor !== sincronizado) {
+    const semEdicoesPendentes = JSON.stringify(linhas) === sincronizado;
+    setSincronizado(doServidor);
+    if (semEdicoesPendentes) setLinhas(initial);
+  }
+
   const gastoDespesas = despesas.reduce((s, d) => s + d.valor, 0);
 
   const ivaDirty = comIva !== (projeto.comIva ?? false);
   const valoresDirty = useLegacy
     ? valorLegacy.trim() !== (projeto.valorEstimado != null ? String(projeto.valorEstimado) : "")
-    : JSON.stringify(linhas) !== JSON.stringify(initial);
+    : JSON.stringify(linhas) !== doServidor;
   const dirty = ivaDirty || valoresDirty;
 
   // Total mostrado no cartão: o que está no ecrã AGORA (linhas por editar ou
