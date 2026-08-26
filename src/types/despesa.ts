@@ -80,4 +80,10 @@ export interface Despesa {
   colaboradorId?: string | null;
   notas: string | null;
   criadoEm: string; // ISO — quando foi registado no painel
+  // Ligação a um plano recorrente de DESPESA (ver src/types/mensalidade.ts):
+  // "sou a Nª renovação do plano X". Ambos opcionais — as despesas avulso de
+  // sempre continuam válidas sem migração. É esta ligação que marca uma
+  // previsão de gasto como já paga.
+  mensalidadeId?: string | null;
+  cobrancaNumero?: number | null;
 }

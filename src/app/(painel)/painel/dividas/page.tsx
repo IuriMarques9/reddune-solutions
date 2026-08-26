@@ -11,6 +11,7 @@ import { todayLisbonYmd } from "@/lib/dates";
 import {
   cobrancasVencidas,
   diffDias,
+  planosReceita,
   porCobrarDentroDoValor,
   somaPorCobrar,
   todasCobrancas,
@@ -53,13 +54,16 @@ export default async function DividasPage({
 }) {
   await requirePainelSession();
 
-  const [allProjetos, pagamentos, clientes, mensalidades, params] = await Promise.all([
+  const [allProjetos, pagamentos, clientes, todosPlanos, params] = await Promise.all([
     getAllProjetos(),
     getAllPagamentos(),
     getAllClientes(),
     getAllMensalidades(),
     searchParams,
   ]);
+  // Só o que a cliente nos deve. Um plano de despesa (alojamento, domínio) é
+  // dinheiro NOSSO a sair — não tem lugar numa página de "por cobrar".
+  const mensalidades = planosReceita(todosPlanos);
 
   const filter: Filter =
     params.f === "30+" || params.f === "semana" ? (params.f as Filter) : "todas";

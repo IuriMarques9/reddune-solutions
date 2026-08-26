@@ -38,6 +38,10 @@ export async function POST(request: Request) {
     // null para não deixar referências penduradas se a categoria mudar.
     colaboradorId: input.categoria === "colaboradores" ? input.colaboradorId ?? null : null,
     notas: input.notas ?? null,
+    // Os dois andam juntos: um sem o outro não identifica renovação nenhuma e
+    // deixava a previsão eternamente por fechar.
+    mensalidadeId: input.cobrancaNumero != null ? input.mensalidadeId ?? null : null,
+    cobrancaNumero: input.mensalidadeId != null ? input.cobrancaNumero ?? null : null,
     // Só aplicado no insert (upsertDespesa usa $setOnInsert).
     criadoEm: new Date().toISOString(),
   };
@@ -51,6 +55,7 @@ export async function POST(request: Request) {
     after: despesa,
   });
   revalidatePath("/painel/relatorios");
+  revalidatePath("/painel/calendario");
   revalidatePath("/painel");
   if (despesa.projetoId) revalidatePath(`/painel/projetos/${despesa.projetoId}`);
   if (despesa.colaboradorId) {

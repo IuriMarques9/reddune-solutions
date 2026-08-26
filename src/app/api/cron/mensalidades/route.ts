@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { getAllMensalidades } from "@/lib/mongodb/mensalidades";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
+import { getAllDespesas } from "@/lib/mongodb/despesas";
 import { getProjetoTitulosByIds } from "@/lib/mongodb/projetos";
 import {
   avisoKey,
@@ -59,13 +60,14 @@ export async function GET(request: Request) {
     );
   }
 
-  const [mensalidades, pagamentos] = await Promise.all([
+  const [mensalidades, pagamentos, despesas] = await Promise.all([
     getAllMensalidades(),
     getAllPagamentos(),
+    getAllDespesas(),
   ]);
 
   const hoje = todayLisbonYmd();
-  const cobrancas = todasCobrancas(mensalidades, pagamentos, hoje);
+  const cobrancas = todasCobrancas(mensalidades, [...pagamentos, ...despesas], hoje);
 
   // Três coisas dignas de um toque no telemóvel: venceu hoje, está em atraso,
   // ou o plano chegou ao fim e falta decidir.

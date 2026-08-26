@@ -95,7 +95,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
   // Cobranças derivadas no SERVIDOR, no fuso de Lisboa: o componente é cliente e
   // um browser noutro fuso classificaria as prestações de forma diferente.
   const hoje = todayLisbonYmd();
-  const cobrancas = todasCobrancas(mensalidades, pagamentos, hoje);
+  const cobrancas = todasCobrancas(mensalidades, [...pagamentos, ...despesas], hoje);
 
   return (
     <>
@@ -180,6 +180,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
             mensalidades={mensalidades}
             cobrancas={cobrancas}
             pagamentos={pagamentos}
+            despesas={despesas}
             projetoComIva={projeto.comIva ?? false}
             hoje={hoje}
           />

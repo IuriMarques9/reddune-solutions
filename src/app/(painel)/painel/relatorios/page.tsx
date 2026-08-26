@@ -23,6 +23,7 @@ import {
 import { todayLisbonDate, todayLisbonYmd } from "@/lib/dates";
 import {
   cobrancasNoMes,
+  planosReceita,
   pontualidade,
   receitaRecorrente,
   somaPorCobrar,
@@ -107,7 +108,9 @@ export default async function RelatoriosPage({
 
   // ── Planos recorrentes ──────────────────────────────────────────────────
   // As cobranças são derivadas (nunca guardadas): ver src/lib/mensalidades.ts.
-  const cobrancas = todasCobrancas(mensalidades, pagamentos, todayLisbonYmd());
+  // Previsto, receita recorrente e pontualidade são o lado da RECEITA. O lado
+  // da despesa já entra nos gastos pela colecção `despesas`, ao confirmar.
+  const cobrancas = todasCobrancas(planosReceita(mensalidades), pagamentos, todayLisbonYmd());
   // "Previsto" é o que estava COMBINADO para entrar este mês. Fica ao lado da
   // Receita, nunca misturado com ela: a Receita é dinheiro que entrou mesmo.
   const previstoMes = cobrancasNoMes(cobrancas, currentKey).reduce((s, c) => s + c.valor, 0);
@@ -115,7 +118,7 @@ export default async function RelatoriosPage({
   const recorrente = receitaRecorrente(mensalidades, cobrancas);
   const pont = pontualidade(cobrancas);
   // Planos activos, para o card mostrar de onde vem o MRR.
-  const planosRows = mensalidades
+  const planosRows = planosReceita(mensalidades)
     .filter((m) => m.ativo && !m.fechadoEm)
     .map((m) => {
       const minhas = cobrancas.filter((c) => c.mensalidadeId === m.id);

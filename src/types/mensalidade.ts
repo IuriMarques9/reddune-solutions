@@ -12,6 +12,22 @@
 // continua a contar sem alterações.
 
 import type { LinhaCategoria } from "@/types/projeto";
+import type { DespesaCategoria } from "@/types/despesa";
+
+// Um plano pode correr nos DOIS sentidos. "receita" é o que o cliente nos paga
+// (mensalidade, anuidade); "despesa" é o que NÓS pagamos todos os meses/anos
+// por causa deste projecto (alojamento, base de dados, domínio).
+//
+// Sem o lado da despesa o painel só sabia metade: a Márcia paga 490 €/ano de
+// manutenção, mas desses 490 € só uma parte sai mesmo do banco. O resto é
+// margem — e o tempo do Iuri NUNCA é custo (regra dele: trabalho é lucro).
+export const PLANO_TIPO = ["receita", "despesa"] as const;
+export type PlanoTipo = (typeof PLANO_TIPO)[number];
+
+export const PLANO_TIPO_LABEL: Record<PlanoTipo, string> = {
+  receita: "A receber do cliente",
+  despesa: "A pagar por nós",
+};
 
 export const MENSALIDADE_PERIODO = ["mensal", "anual"] as const;
 
@@ -40,12 +56,17 @@ export const MENSALIDADE_MAX_COBRANCAS = 120;
 export interface Mensalidade {
   id: string;
   projetoId: string;
+  // Ausente = "receita" (todos os planos criados antes desta funcionalidade).
+  tipo?: PlanoTipo;
   // Desnormalizado a partir do projecto no upsert, tal como em Pagamento — os
   // ecrãs de cliente não têm de ir buscar o projecto para saber de quem é.
   clienteId: string | null;
   /** "Mensalidade 12x", "Manutenção anual". Livre. */
   titulo: string;
-  /** Valor BASE de CADA cobrança, s/ IVA (coerente com o resto do site). */
+  // Valor BASE de CADA cobrança, s/ IVA (coerente com o resto do site).
+  // Num plano de DESPESA pode ser 0: serve de lembrete até a factura chegar, e
+  // o valor real escreve-se ao confirmar. Num plano de receita é obrigatório —
+  // não se combina uma mensalidade sem dizer quanto é.
   valor: number;
   // Este plano leva IVA por cima? Herda `Projeto.comIva` ao criar, mas pode
   // divergir (uma manutenção facturada com IVA num projecto sem). Opcional:
@@ -72,6 +93,9 @@ export interface Mensalidade {
   // false. Ignorada no caso contrário. Default "software" — o caso comum
   // (manutenção, alojamento, licenças).
   categoriaCusto?: LinhaCategoria;
+  // Categoria da Despesa gerada ao confirmar, nos planos de despesa. Default
+  // "dominios" (Domínios & alojamento) — o caso que motivou isto.
+  categoriaDespesa?: DespesaCategoria;
   /** Notas INTERNAS — nunca vão ao portal do cliente. */
   notas: string | null;
   criadoEm: string;

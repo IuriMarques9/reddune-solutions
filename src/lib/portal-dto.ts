@@ -11,7 +11,7 @@ import type { Pagamento } from "@/types/pagamento";
 import { comIva, cents } from "@/lib/iva";
 import type { Mensalidade } from "@/types/mensalidade";
 import { PERIODO_SUFIXO } from "@/types/mensalidade";
-import { cobrancasDe, proximaCobranca, resumoMensalidade } from "@/lib/mensalidades";
+import { cobrancasDe, isPlanoDespesa, proximaCobranca, resumoMensalidade } from "@/lib/mensalidades";
 import { todayLisbonYmd } from "@/lib/dates";
 
 // DTOs do portal do cliente: allowlist EXPLÍCITA. Campo novo no Projeto/Cliente
@@ -122,7 +122,9 @@ export function toPortalProjeto(
     // combinámos e onde vamos. Os fechados/desligados não interessam.
     const hoje = todayLisbonYmd();
     const planos: PortalPlanoDTO[] = mensalidades
-      .filter((m) => m.projetoId === projeto.id && m.ativo && !m.fechadoEm)
+      // `!isPlanoDespesa`: o que NÓS pagamos de alojamento não é da conta do
+      // cliente — nem o valor, nem a existência.
+      .filter((m) => m.projetoId === projeto.id && m.ativo && !m.fechadoEm && !isPlanoDespesa(m))
       .map((m) => {
         const cobrancas = cobrancasDe(m, pagamentos, hoje);
         const resumo = resumoMensalidade(m, cobrancas);

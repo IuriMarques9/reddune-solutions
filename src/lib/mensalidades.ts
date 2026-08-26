@@ -13,8 +13,19 @@ import {
   type CobrancaEstado,
   type Mensalidade,
 } from "@/types/mensalidade";
-import type { Pagamento } from "@/types/pagamento";
 import type { ProjetoLinha } from "@/types/projeto";
+
+/**
+ * O que fecha uma cobrança. Um `Pagamento` (plano de receita) ou uma `Despesa`
+ * (plano de despesa) servem os dois — só precisamos do valor, da data e da
+ * ligação ao plano. Tipar pela forma evita duplicar toda a derivação.
+ */
+export type ConfirmacaoDeCobranca = {
+  valor: number;
+  data: string;
+  mensalidadeId?: string | null;
+  cobrancaNumero?: number | null;
+};
 import { comIva } from "@/lib/iva";
 
 /** Antecedência com que uma cobrança por pagar passa a "a-vencer". */
@@ -62,12 +73,35 @@ function estadoDe(
   dataPrevista: string,
   hoje: string
 ): CobrancaEstado {
+  // Plano sem valor definido (só planos de despesa): é um lembrete até a
+  // factura chegar. Qualquer confirmação fecha-o; sem confirmação nunca está
+  // fechado — senão `0 >= 0` dava tudo por pago logo à nascença.
+  if (valor <= 0) return pago > 0 ? "paga" : estadoPorData(dataPrevista, hoje);
   if (pago + CENT >= valor) return "paga";
   if (pago > 0) return "parcial";
+  return estadoPorData(dataPrevista, hoje);
+}
+
+function estadoPorData(dataPrevista: string, hoje: string): CobrancaEstado {
   if (dataPrevista < hoje) return "vencida";
   // Vencer HOJE ainda não é estar em atraso — cai em "a-vencer" (diff 0).
   if (diffDias(hoje, dataPrevista) <= A_VENCER_DIAS) return "a-vencer";
   return "futura";
+}
+
+/** O plano é de despesa (dinheiro nosso a sair), não de receita. */
+export function isPlanoDespesa(m: Mensalidade): boolean {
+  return m.tipo === "despesa";
+}
+
+/** Planos a receber do cliente — os únicos que são dívida, receita e portal. */
+export function planosReceita(mensalidades: Mensalidade[]): Mensalidade[] {
+  return mensalidades.filter((m) => !isPlanoDespesa(m));
+}
+
+/** Planos a pagar por nós — alojamento, base de dados, domínio. */
+export function planosDespesa(mensalidades: Mensalidade[]): Mensalidade[] {
+  return mensalidades.filter(isPlanoDespesa);
 }
 
 /**
@@ -80,7 +114,7 @@ function estadoDe(
  */
 export function cobrancasDe(
   m: Mensalidade,
-  pagamentos: Pagamento[],
+  pagamentos: ConfirmacaoDeCobranca[],
   hoje: string
 ): Cobranca[] {
   const porNumero = new Map<number, { pago: number; dataPaga: string | null }>();
@@ -102,7 +136,7 @@ export function cobrancasDe(
   // que se compara com os pagamentos é o que o cliente entrega. Sem isto, numa
   // prestação de 366,67 € base o cliente pagava 451,00 € e a cobrança ficava
   // eternamente "parcial" — o pago passava o valor e nunca fechava certo.
-  const valorBruto = comIva(m.valor, m.comIva);
+  const valorBruto = isPlanoDespesa(m) ? m.valor : comIva(m.valor, m.comIva);
   const out: Cobranca[] = [];
   for (let numero = 1; numero <= m.numeroCobrancas; numero++) {
     const dataPrevista = addMeses(m.primeiraCobranca, (numero - 1) * passo);
@@ -129,7 +163,7 @@ export function cobrancasDe(
 /** Cobranças de vários planos, achatadas e ordenadas por data prevista. */
 export function todasCobrancas(
   mensalidades: Mensalidade[],
-  pagamentos: Pagamento[],
+  pagamentos: ConfirmacaoDeCobranca[],
   hoje: string
 ): Cobranca[] {
   return mensalidades
@@ -162,7 +196,7 @@ export function resumoMensalidade(m: Mensalidade, cobrancas: Cobranca[]): Resumo
   return {
     geradas: minhas.length,
     pagas,
-    valorTotal: comIva(m.valor, m.comIva) * m.numeroCobrancas,
+    valorTotal: (isPlanoDespesa(m) ? m.valor : comIva(m.valor, m.comIva)) * m.numeroCobrancas,
     recebido,
     porCobrar,
     vencidas: minhas.filter((c) => c.estado === "vencida" || c.estado === "parcial").length,
@@ -229,6 +263,7 @@ export function receitaRecorrente(
   let planosAtivos = 0;
   for (const m of mensalidades) {
     if (!m.ativo || m.fechadoEm) continue;
+    if (isPlanoDespesa(m)) continue; // não é receita nossa — é dinheiro a sair
     const abertas = cobrancas.filter((c) => c.mensalidadeId === m.id && c.estado !== "paga");
     if (abertas.length === 0) continue;
     planosAtivos += 1;
@@ -296,7 +331,9 @@ export function sincronizarLinhaDoPlano(
   const linhas = [...(linhasActuais ?? [])];
   const i = linhas.findIndex((l) => l.mensalidadeId === m.id);
 
-  if (m.dentroDoValor) {
+  // Um plano de DESPESA nunca gera linha nos Custos: as linhas são o que o
+  // cliente paga. O gasto vive na colecção `despesas`, ao confirmar.
+  if (m.dentroDoValor || isPlanoDespesa(m)) {
     // Passou a fazer parte do valor: a linha que o plano criou deixa de fazer
     // sentido (senão contava duas vezes).
     if (i < 0) return null;
@@ -371,6 +408,8 @@ export type CobrancaCalendario = Cobranca & {
   totalCobrancas: number;
   projetoTitulo: string;
   clienteNome: string | null;
+  /** true = dinheiro nosso a sair (alojamento, domínio), não a entrar. */
+  ehDespesa: boolean;
 };
 
 export function cobrancasParaCalendario(
@@ -389,6 +428,7 @@ export function cobrancasParaCalendario(
       totalCobrancas: m?.numeroCobrancas ?? c.numero,
       projetoTitulo: p?.titulo ?? "Projecto",
       clienteNome: p?.clienteNome ?? null,
+      ehDespesa: m ? isPlanoDespesa(m) : false,
     };
   });
 }
@@ -407,7 +447,9 @@ export function porCobrarDentroDoValor(
   projetoId: string
 ): number {
   const ids = new Set(
-    mensalidades.filter((m) => m.projetoId === projetoId && m.dentroDoValor).map((m) => m.id)
+    mensalidades
+      .filter((m) => m.projetoId === projetoId && m.dentroDoValor && !isPlanoDespesa(m))
+      .map((m) => m.id)
   );
   if (ids.size === 0) return 0;
   return somaPorCobrar(cobrancas.filter((c) => ids.has(c.mensalidadeId)));

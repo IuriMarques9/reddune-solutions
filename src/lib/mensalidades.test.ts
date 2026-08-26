@@ -14,6 +14,9 @@ import {
   porCobrarDentroDoValor,
   sincronizarLinhaDoPlano,
   descricaoLinhaDoPlano,
+  isPlanoDespesa,
+  planosReceita,
+  planosDespesa,
 } from "@/lib/mensalidades";
 import type { Mensalidade } from "@/types/mensalidade";
 import type { Pagamento } from "@/types/pagamento";
@@ -556,6 +559,91 @@ describe("sincronizarLinhaDoPlano", () => {
   it("descrição diz o período", () => {
     expect(descricaoLinhaDoPlano(anual)).toBe("Manutenção anual (ano)");
     expect(descricaoLinhaDoPlano(plano({ id: "x" }))).toBe("Mensalidade 12x (mês)");
+  });
+});
+
+describe("planos de despesa (o que NÓS pagamos)", () => {
+  // Caso real: a Márcia paga 490 €/ano de manutenção, mas desses 490 € só sai
+  // do banco o alojamento/BD/domínio. O resto é margem — e o tempo do Iuri
+  // nunca é custo (regra dele: trabalho é lucro).
+  const dominio = plano({
+    id: "d1",
+    tipo: "despesa",
+    titulo: "Alojamento e domínio",
+    valor: 0, // ainda não sabe quanto vai ser
+    periodo: "anual",
+    numeroCobrancas: 3,
+    primeiraCobranca: "2026-09-01",
+    dentroDoValor: false,
+  });
+
+  function despesa(p: Partial<Pagamento> & { id: string }): Pagamento {
+    return pagamento(p); // mesma forma: valor, data e a ligação ao plano
+  }
+
+  it("distingue os dois sentidos", () => {
+    const receita = plano({ id: "r1" });
+    expect(isPlanoDespesa(dominio)).toBe(true);
+    expect(isPlanoDespesa(receita)).toBe(false);
+    expect(planosReceita([receita, dominio]).map((m) => m.id)).toEqual(["r1"]);
+    expect(planosDespesa([receita, dominio]).map((m) => m.id)).toEqual(["d1"]);
+  });
+
+  it("um plano sem valor é um LEMBRETE, não algo já pago", () => {
+    // A armadilha: com valor 0, um `pago >= valor` ingénuo dava tudo por pago
+    // logo à nascença e o aviso nunca aparecia.
+    const cs = cobrancasDe(dominio, [], "2026-09-01");
+    expect(cs[0].valor).toBe(0);
+    expect(cs[0].estado).toBe("a-vencer");
+    expect(cobrancasDe(dominio, [], "2026-10-15")[0].estado).toBe("vencida");
+  });
+
+  it("qualquer valor confirmado fecha uma previsão sem valor", () => {
+    const cs = cobrancasDe(
+      dominio,
+      [despesa({ id: "dp1", mensalidadeId: "d1", cobrancaNumero: 1, valor: 137.4, data: "2026-09-03" })],
+      "2026-09-10"
+    );
+    expect(cs[0].estado).toBe("paga");
+    expect(cs[0].pago).toBe(137.4);
+    expect(cs[0].desvioDias).toBe(2);
+  });
+
+  it("com previsão de valor comporta-se como qualquer outro plano", () => {
+    const comValor = { ...dominio, valor: 120 };
+    const cs = cobrancasDe(
+      comValor,
+      [despesa({ id: "dp1", mensalidadeId: "d1", cobrancaNumero: 1, valor: 60 })],
+      "2026-09-10"
+    );
+    expect(cs[0].estado).toBe("parcial");
+  });
+
+  it("NUNCA leva IVA — a despesa regista o que saiu do banco", () => {
+    const cs = cobrancasDe({ ...dominio, valor: 100, comIva: true }, [], "2026-09-01");
+    expect(cs[0].valor).toBe(100);
+  });
+
+  it("não conta como receita recorrente", () => {
+    const receita = plano({ id: "r1" });
+    const cs = todasCobrancas([receita, dominio], [], "2026-09-01");
+    const rr = receitaRecorrente([receita, dominio], cs);
+    expect(rr.planosAtivos).toBe(1);
+    expect(rr.mrr).toBeCloseTo(366.67, 2);
+  });
+
+  it("nunca é dívida do cliente", () => {
+    const dentro = { ...dominio, dentroDoValor: true, valor: 490 };
+    const cs = cobrancasDe(dentro, [], "2026-09-01");
+    // Mesmo marcado dentroDoValor (não devia acontecer, mas defende-se),
+    // um plano de despesa não desconta nada ao que o cliente deve.
+    expect(porCobrarDentroDoValor([dentro], cs, "proj-trakinas")).toBe(0);
+  });
+
+  it("nunca cria linha nos Custos", () => {
+    // As linhas são o que o CLIENTE paga. O gasto vive nas despesas.
+    expect(sincronizarLinhaDoPlano([], null, dominio, () => "x")).toBeNull();
+    expect(sincronizarLinhaDoPlano([], 5400, { ...dominio, valor: 490 }, () => "x")).toBeNull();
   });
 });
 

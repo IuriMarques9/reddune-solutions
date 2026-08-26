@@ -10,6 +10,9 @@ export const despesaSchema = z.object({
   projetoId: z.string().max(128).nullish().transform((v) => v ?? null),
   colaboradorId: z.string().max(128).nullish().transform((v) => v ?? null),
   notas: z.string().max(2000).nullish().transform((v) => v ?? null),
+  // Ligação a um plano recorrente de despesa (ver types/mensalidade.ts).
+  mensalidadeId: z.string().max(128).nullish().transform((v) => v ?? null),
+  cobrancaNumero: z.number().int().min(1).max(120).nullish().transform((v) => v ?? null),
   criadoEm: z.string(),
 });
 

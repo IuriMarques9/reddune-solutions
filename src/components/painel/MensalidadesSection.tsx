@@ -17,17 +17,26 @@ import {
   MENSALIDADE_PERIODO,
   PERIODO_LABEL,
   PERIODO_SUFIXO,
+  PLANO_TIPO,
+  PLANO_TIPO_LABEL,
   type Cobranca,
   type Mensalidade,
   type MensalidadePeriodo,
+  type PlanoTipo,
 } from "@/types/mensalidade";
+import {
+  DESPESA_CATEGORIA,
+  DESPESA_CATEGORIA_LABEL,
+  type Despesa,
+  type DespesaCategoria,
+} from "@/types/despesa";
 import {
   METODO_PAGAMENTO,
   METODO_LABEL,
   type MetodoPagamento,
   type Pagamento,
 } from "@/types/pagamento";
-import { resumoMensalidade, CATEGORIA_CUSTO_PADRAO } from "@/lib/mensalidades";
+import { resumoMensalidade, isPlanoDespesa, CATEGORIA_CUSTO_PADRAO } from "@/lib/mensalidades";
 import { LINHA_CATEGORIA, LINHA_CATEGORIA_LABEL, type LinhaCategoria } from "@/types/projeto";
 import { comIva, IVA_LABEL } from "@/lib/iva";
 import { parseMoney } from "@/lib/parse-number";
@@ -42,6 +51,8 @@ type Props = {
   cobrancas: Cobranca[];
   /** Pagamentos do projecto — só para adivinhar o método usado da última vez. */
   pagamentos: Pagamento[];
+  /** Despesas do projecto — fecham as previsões dos planos de despesa. */
+  despesas: Despesa[];
   /** `Projeto.comIva` — o default de um plano novo (pode divergir por plano). */
   projetoComIva: boolean;
   /** yyyy-mm-dd de hoje em Lisboa, calculado no servidor. */
@@ -92,6 +103,7 @@ export function MensalidadesSection({
   mensalidades,
   cobrancas,
   pagamentos,
+  despesas,
   projetoComIva,
   hoje,
 }: Props) {
@@ -130,8 +142,9 @@ export function MensalidadesSection({
 
       {mensalidades.length === 0 && !aCriar ? (
         <p style={{ fontSize: 12, color: "var(--ink-mute)", fontStyle: "italic", margin: 0 }}>
-          Sem planos de pagamento. Um plano parte um valor em prestações (12 × 366,67 €) ou
-          cobra todos os anos (manutenção).
+          Sem planos. Um plano parte um valor em prestações (12 × 366,67 €), cobra todos os
+          anos (manutenção), ou lembra-te do que <em>tu</em> pagas — alojamento, base de dados,
+          domínio.
         </p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -150,6 +163,7 @@ export function MensalidadesSection({
                 mensalidade={m}
                 cobrancas={cobrancas.filter((c) => c.mensalidadeId === m.id)}
                 pagamentos={pagamentos}
+                despesas={despesas}
                 projetoId={projetoId}
                 hoje={hoje}
                 onEditar={() => setAEditar(m.id)}
@@ -168,6 +182,7 @@ function PlanoCard({
   mensalidade: m,
   cobrancas,
   pagamentos,
+  despesas,
   projetoId,
   hoje,
   onEditar,
@@ -175,10 +190,12 @@ function PlanoCard({
   mensalidade: Mensalidade;
   cobrancas: Cobranca[];
   pagamentos: Pagamento[];
+  despesas: Despesa[];
   projetoId: string;
   hoje: string;
   onEditar: () => void;
 }) {
+  const ehDespesa = isPlanoDespesa(m);
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
@@ -188,6 +205,10 @@ function PlanoCard({
   const [ocupado, setOcupado] = useState(false);
 
   const resumo = useMemo(() => resumoMensalidade(m, cobrancas), [m, cobrancas]);
+  // Plano sem valor previsto (lembrete de renovação): não há barra de progresso
+  // nem "liquidado" que faça sentido — 0 por cobrar não quer dizer pago.
+  const semValor = m.valor <= 0;
+  const porLiquidar = cobrancas.filter((c) => c.estado !== "paga").length;
   const pct = resumo.valorTotal > 0 ? Math.min(100, (resumo.recebido / resumo.valorTotal) * 100) : 0;
 
   // Mostra as pagas mais recentes e o que aí vem; o resto esconde-se atrás do
@@ -201,8 +222,10 @@ function PlanoCard({
       id: m.id,
       projetoId: m.projetoId,
       titulo: m.titulo,
+      tipo: m.tipo ?? "receita",
       valor: m.valor,
       periodo: m.periodo,
+      categoriaDespesa: m.categoriaDespesa,
       primeiraCobranca: m.primeiraCobranca,
       numeroCobrancas: m.numeroCobrancas,
       ativo: m.ativo,
@@ -221,16 +244,20 @@ function PlanoCard({
   }
 
   async function apagar() {
-    const ligados = pagamentos.filter((p) => p.mensalidadeId === m.id).length;
+    const ligados = (ehDespesa ? despesas : pagamentos).filter(
+      (p) => p.mensalidadeId === m.id
+    ).length;
     const ok = await confirm({
       title: "Apagar plano?",
       description: ligados
-        ? `Os ${ligados} pagamento${ligados === 1 ? "" : "s"} já registado${
-            ligados === 1 ? "" : "s"
-          } NÃO desaparece${ligados === 1 ? "" : "m"} — passa${
-            ligados === 1 ? "" : "m"
-          } a pagamento avulso e continua${ligados === 1 ? "" : "m"} a contar na receita. Só o plano é que deixa de existir.`
-        : "Este plano ainda não tem pagamentos ligados.",
+        ? `${ligados === 1 ? "O registo" : `Os ${ligados} registos`} já ${
+            ligados === 1 ? "feito" : "feitos"
+          } NÃO ${ligados === 1 ? "desaparece" : "desaparecem"}: ${
+            ehDespesa
+              ? "as despesas continuam a contar nos gastos"
+              : "os pagamentos continuam a contar na receita"
+          }, só passam a avulso. Apaga-se o plano, não o dinheiro.`
+        : "Este plano ainda não tem nada registado.",
       confirmLabel: "Apagar plano",
       tone: "destructive",
     });
@@ -263,9 +290,29 @@ function PlanoCard({
           style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}
           title={m.comIva ? `${money(m.valor)} € base + ${IVA_LABEL}` : undefined}
         >
-          {money(comIva(m.valor, m.comIva))} € / {sufixo}
-          {m.comIva ? " c/ IVA" : ""}
+          {m.valor > 0 ? (
+            <>
+              {money(ehDespesa ? m.valor : comIva(m.valor, m.comIva))} € / {sufixo}
+              {m.comIva ? " c/ IVA" : ""}
+            </>
+          ) : (
+            <span style={{ color: "var(--ink-mute)" }}>valor por definir / {sufixo}</span>
+          )}
         </span>
+        {ehDespesa && (
+          <span
+            title="Dinheiro NOSSO a sair (alojamento, base de dados, domínio). Não é dívida do cliente nem aparece no portal dele."
+            style={{
+              fontSize: 10.5,
+              padding: "1px 7px",
+              borderRadius: 999,
+              background: "rgba(176,121,63,.18)",
+              color: "#8a5a2b",
+            }}
+          >
+            a pagar por nós
+          </span>
+        )}
         <span
           className="mono"
           style={{ fontSize: 11.5, color: "var(--ink-mute)" }}
@@ -333,17 +380,31 @@ function PlanoCard({
             justifyContent: "space-between",
             fontFamily: "var(--font-mono)",
             fontSize: 11.5,
-            marginBottom: 4,
+            marginBottom: semValor ? 0 : 4,
           }}
         >
-          <span>{money(resumo.recebido)} € recebidos</span>
-          <span style={{ color: resumo.porCobrar > 0 ? "var(--ember)" : "var(--dune)" }}>
-            {resumo.porCobrar > 0 ? `${money(resumo.porCobrar)} € por cobrar` : "Liquidado"}
+          <span>
+            {money(resumo.recebido)} € {ehDespesa ? "pagos" : "recebidos"}
           </span>
+          {semValor ? (
+            <span style={{ color: porLiquidar > 0 ? "var(--ink-soft)" : "var(--dune)" }}>
+              {porLiquidar > 0
+                ? `${porLiquidar} por pagar · valor por definir`
+                : "Todas registadas"}
+            </span>
+          ) : (
+            <span style={{ color: resumo.porCobrar > 0 ? "var(--ember)" : "var(--dune)" }}>
+              {resumo.porCobrar > 0
+                ? `${money(resumo.porCobrar)} € ${ehDespesa ? "por pagar" : "por cobrar"}`
+                : "Liquidado"}
+            </span>
+          )}
         </div>
-        <div className="bar-track">
-          <div className="bar-fill" style={{ width: `${Math.max(2, pct)}%` }} />
-        </div>
+        {!semValor && (
+          <div className="bar-track">
+            <div className="bar-fill" style={{ width: `${Math.max(2, pct)}%` }} />
+          </div>
+        )}
       </div>
 
       {/* Fim do plano: renovar ou fechar */}
@@ -429,6 +490,7 @@ function PlanoCard({
               cobranca={c}
               projetoId={projetoId}
               pagamentos={pagamentos}
+              plano={m}
               comIva={m.comIva ?? false}
               hoje={hoje}
               onFechar={() => setAConfirmar(null)}
@@ -437,6 +499,7 @@ function PlanoCard({
             <LinhaCobranca
               key={c.numero}
               cobranca={c}
+              ehDespesa={ehDespesa}
               onConfirmar={() => setAConfirmar(c.numero)}
             />
           )
@@ -462,9 +525,11 @@ function PlanoCard({
 
 function LinhaCobranca({
   cobranca: c,
+  ehDespesa,
   onConfirmar,
 }: {
   cobranca: Cobranca;
+  ehDespesa: boolean;
   onConfirmar: () => void;
 }) {
   const paga = c.estado === "paga";
@@ -486,7 +551,13 @@ function LinhaCobranca({
       <span className="mono" style={{ fontSize: 12 }}>
         {fmtDate(c.dataPrevista)}
       </span>
-      <span style={{ fontSize: 12.5, fontWeight: 600 }}>{money(c.valor)} €</span>
+      <span style={{ fontSize: 12.5, fontWeight: 600 }}>
+        {c.valor > 0 ? (
+          `${money(c.valor)} €`
+        ) : (
+          <span style={{ color: "var(--ink-mute)", fontWeight: 400 }}>por definir</span>
+        )}
+      </span>
       <span style={{ fontSize: 11.5, color: ESTADO_COR[c.estado] }}>
         {COBRANCA_ESTADO_LABEL[c.estado]}
         {c.estado === "parcial" && ` · ${money(c.pago)} € de ${money(c.valor)} €`}
@@ -494,7 +565,7 @@ function LinhaCobranca({
       {/* A data REAL e o desvio face ao combinado — o pedido do Iuri. */}
       {c.dataPaga && (
         <span style={{ fontSize: 11.5, color: "var(--ink-mute)" }}>
-          pago a {fmtDate(c.dataPaga)}
+          {ehDespesa ? "pago a " : "pago a "}{fmtDate(c.dataPaga)}
           {c.desvioDias != null && ` · ${fmtDesvio(c.desvioDias)}`}
         </span>
       )}
@@ -506,7 +577,7 @@ function LinhaCobranca({
           onClick={onConfirmar}
         >
           <Check style={{ width: 13, height: 13 }} aria-hidden="true" />
-          Recebido
+          {ehDespesa ? "Paguei" : "Recebido"}
         </button>
       )}
     </div>
@@ -514,14 +585,19 @@ function LinhaCobranca({
 }
 
 /**
- * Confirmar que uma cobrança entrou. A data vem a HOJE mas é editável de
+ * Confirmar que o dinheiro se moveu. A data vem a HOJE mas é editável de
  * propósito: o cliente pode ter pago a anuidade num dia que não é o previsto, e
- * é a data real que conta para a receita do mês.
+ * é a data real que conta para o mês.
+ *
+ * Num plano de RECEITA grava um `Pagamento`; num plano de DESPESA grava uma
+ * `Despesa` ligada ao projecto. É o mesmo gesto, destinos diferentes — por isso
+ * o gasto do alojamento entra nos relatórios sem passos extra.
  */
 function ConfirmarCobranca({
   cobranca: c,
   projetoId,
   pagamentos,
+  plano,
   comIva: levaIva,
   hoje,
   onFechar,
@@ -529,17 +605,24 @@ function ConfirmarCobranca({
   cobranca: Cobranca;
   projetoId: string;
   pagamentos: Pagamento[];
+  plano: Mensalidade;
   /** O plano leva IVA — o recibo herda a marca, para o lucro descontar a parcela. */
   comIva: boolean;
   hoje: string;
   onFechar: () => void;
 }) {
+  const ehDespesa = isPlanoDespesa(plano);
   const router = useRouter();
   const { toast } = useToast();
   const [, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   const emFalta = Math.max(0, Math.round((c.valor - c.pago) * 100) / 100);
-  const [valor, setValor] = useState(String(emFalta));
+  // Sem previsão de valor (planos de despesa criados como lembrete) o campo
+  // nasce vazio — escreve-se o que a factura disser.
+  const [valor, setValor] = useState(emFalta > 0 ? String(emFalta) : "");
+  const [categoria, setCategoria] = useState<DespesaCategoria>(
+    plano.categoriaDespesa ?? "dominios"
+  );
   const [data, setData] = useState(hoje);
   const ultimoMetodo = useMemo(() => {
     const ordenados = [...pagamentos].sort((a, b) => (a.data < b.data ? 1 : -1));
@@ -559,20 +642,35 @@ function ConfirmarCobranca({
     }
     setSaving(true);
     setError(null);
-    const res = await safeJsonPost("/api/pagamentos/upsert", {
-      projetoId,
-      valor: v,
-      data,
-      metodo: metodo || null,
-      notas: notas.trim() || null,
-      comIva: levaIva,
-      mensalidadeId: c.mensalidadeId,
-      cobrancaNumero: c.numero,
-    });
+    const res = ehDespesa
+      ? await safeJsonPost("/api/despesas/upsert", {
+          descricao: plano.titulo,
+          categoria,
+          valor: v,
+          data,
+          projetoId,
+          notas: notas.trim() || null,
+          mensalidadeId: c.mensalidadeId,
+          cobrancaNumero: c.numero,
+        })
+      : await safeJsonPost("/api/pagamentos/upsert", {
+          projetoId,
+          valor: v,
+          data,
+          metodo: metodo || null,
+          notas: notas.trim() || null,
+          comIva: levaIva,
+          mensalidadeId: c.mensalidadeId,
+          cobrancaNumero: c.numero,
+        });
     setSaving(false);
     if (!res.ok) {
       setError(res.error);
-      toast({ title: "Erro a registar pagamento", description: res.error, variant: "destructive" });
+      toast({
+        title: ehDespesa ? "Erro a registar despesa" : "Erro a registar pagamento",
+        description: res.error,
+        variant: "destructive",
+      });
       return;
     }
     onFechar();
@@ -591,8 +689,10 @@ function ConfirmarCobranca({
       }}
     >
       <div style={{ fontSize: 12, color: "var(--ink-soft)", marginBottom: 8 }}>
-        Cobrança {c.numero} · prevista para {fmtDate(c.dataPrevista)}
-        {levaIva && <> · valor já com {IVA_LABEL}</>}
+        {ehDespesa ? "Renovação" : "Cobrança"} {c.numero} · prevista para{" "}
+        {fmtDate(c.dataPrevista)}
+        {levaIva && !ehDespesa && <> · valor já com {IVA_LABEL}</>}
+        {ehDespesa && c.valor <= 0 && <> · escreve o que a factura diz</>}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 12px" }}>
         <div className="field">
@@ -610,7 +710,9 @@ function ConfirmarCobranca({
           />
         </div>
         <div className="field">
-          <label htmlFor={`cb-data-${c.mensalidadeId}-${c.numero}`}>Entrou a</label>
+          <label htmlFor={`cb-data-${c.mensalidadeId}-${c.numero}`}>
+            {ehDespesa ? "Paguei a" : "Entrou a"}
+          </label>
           <input
             id={`cb-data-${c.mensalidadeId}-${c.numero}`}
             type="date"
@@ -621,20 +723,40 @@ function ConfirmarCobranca({
           />
         </div>
         <div className="field">
-          <label htmlFor={`cb-metodo-${c.mensalidadeId}-${c.numero}`}>Método</label>
-          <select
-            id={`cb-metodo-${c.mensalidadeId}-${c.numero}`}
-            value={metodo}
-            onChange={(e) => setMetodo(e.target.value as MetodoPagamento | "")}
-            disabled={saving}
-          >
-            <option value="">—</option>
-            {METODO_PAGAMENTO.map((mm) => (
-              <option key={mm} value={mm}>
-                {METODO_LABEL[mm]}
-              </option>
-            ))}
-          </select>
+          {ehDespesa ? (
+            <>
+              <label htmlFor={`cb-cat-${c.mensalidadeId}-${c.numero}`}>Categoria</label>
+              <select
+                id={`cb-cat-${c.mensalidadeId}-${c.numero}`}
+                value={categoria}
+                onChange={(e) => setCategoria(e.target.value as DespesaCategoria)}
+                disabled={saving}
+              >
+                {DESPESA_CATEGORIA.map((cc) => (
+                  <option key={cc} value={cc}>
+                    {DESPESA_CATEGORIA_LABEL[cc]}
+                  </option>
+                ))}
+              </select>
+            </>
+          ) : (
+            <>
+              <label htmlFor={`cb-metodo-${c.mensalidadeId}-${c.numero}`}>Método</label>
+              <select
+                id={`cb-metodo-${c.mensalidadeId}-${c.numero}`}
+                value={metodo}
+                onChange={(e) => setMetodo(e.target.value as MetodoPagamento | "")}
+                disabled={saving}
+              >
+                <option value="">—</option>
+                {METODO_PAGAMENTO.map((mm) => (
+                  <option key={mm} value={mm}>
+                    {METODO_LABEL[mm]}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
       </div>
       <div className="field">
@@ -680,6 +802,11 @@ function PlanoForm({
   const router = useRouter();
   const { toast } = useToast();
   const [, startTransition] = useTransition();
+  const [tipo, setTipo] = useState<PlanoTipo>(mensalidade?.tipo ?? "receita");
+  const ehDespesa = tipo === "despesa";
+  const [categoriaDespesa, setCategoriaDespesa] = useState<DespesaCategoria>(
+    mensalidade?.categoriaDespesa ?? "dominios"
+  );
   const [titulo, setTitulo] = useState(mensalidade?.titulo ?? "");
   const [valor, setValor] = useState(mensalidade ? String(mensalidade.valor) : "");
   const [periodo, setPeriodo] = useState<MensalidadePeriodo>(mensalidade?.periodo ?? "mensal");
@@ -703,7 +830,12 @@ function PlanoForm({
 
   async function submeter(e: React.FormEvent) {
     e.preventDefault();
-    if (v == null || v <= 0) return setError("Valor inválido.");
+    // Num plano de despesa o valor é opcional: nasce como lembrete da
+    // renovação e o número real escreve-se quando a factura chegar.
+    if (!ehDespesa && (v == null || v <= 0)) {
+      return setError("Um plano a receber precisa de um valor por cobrança.");
+    }
+    if (ehDespesa && valor.trim() !== "" && v == null) return setError("Valor inválido.");
     if (!Number.isFinite(n) || n < 1) return setError("Número de cobranças inválido.");
     if (!/^\d{4}-\d{2}-\d{2}$/.test(primeira)) return setError("Escolhe a data da primeira cobrança.");
 
@@ -712,8 +844,12 @@ function PlanoForm({
     const res = await safeJsonPost("/api/mensalidades/upsert", {
       id: mensalidade?.id,
       projetoId,
-      titulo: titulo.trim() || (periodo === "anual" ? "Anuidade" : "Mensalidade"),
-      valor: v,
+      titulo:
+        titulo.trim() ||
+        (ehDespesa ? "Renovação" : periodo === "anual" ? "Anuidade" : "Mensalidade"),
+      tipo,
+      valor: v ?? 0,
+      categoriaDespesa,
       periodo,
       primeiraCobranca: primeira,
       numeroCobrancas: n,
@@ -746,13 +882,35 @@ function PlanoForm({
       }}
     >
       <div className="field">
+        <label htmlFor="mn-tipo">Sentido do dinheiro</label>
+        <select
+          id="mn-tipo"
+          value={tipo}
+          onChange={(e) => setTipo(e.target.value as PlanoTipo)}
+          disabled={saving}
+        >
+          {PLANO_TIPO.map((t) => (
+            <option key={t} value={t}>
+              {PLANO_TIPO_LABEL[t]}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="field">
         <label htmlFor="mn-titulo">Nome do plano</label>
         <input
           id="mn-titulo"
           type="text"
           value={titulo}
           onChange={(e) => setTitulo(e.target.value)}
-          placeholder={periodo === "anual" ? "Manutenção anual" : "Mensalidade 12x"}
+          placeholder={
+            ehDespesa
+              ? "Alojamento e domínio"
+              : periodo === "anual"
+                ? "Manutenção anual"
+                : "Mensalidade 12x"
+          }
           maxLength={120}
           disabled={saving}
         />
@@ -760,7 +918,9 @@ function PlanoForm({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
         <div className="field">
-          <label htmlFor="mn-valor">Valor de cada cobrança € (s/ IVA)</label>
+          <label htmlFor="mn-valor">
+            {ehDespesa ? "Valor € (opcional)" : "Valor de cada cobrança € (s/ IVA)"}
+          </label>
           <input
             id="mn-valor"
             type="number"
@@ -770,7 +930,8 @@ function PlanoForm({
             value={valor}
             onChange={(e) => setValor(e.target.value)}
             disabled={saving}
-            required
+            required={!ehDespesa}
+            placeholder={ehDespesa ? "deixa vazio se ainda não sabes" : undefined}
           />
         </div>
         <div className="field">
@@ -833,6 +994,8 @@ function PlanoForm({
         )}
       </p>
 
+      {!ehDespesa && (
+        <>
       <label
         style={{
           display: "flex",
@@ -921,6 +1084,46 @@ function PlanoForm({
             {v != null && <> — {money(v)} €</>}, com o valor de <b>um período</b>. Não conta
             como gasto da RedDune: é dinheiro a receber, e serve para o cliente ver a rubrica
             no portal. Editas ou apagas nos Custos como qualquer outra linha.
+          </p>
+        </div>
+      )}
+
+        </>
+      )}
+
+      {ehDespesa && (
+        <div
+          style={{
+            border: "1px dashed rgba(90,14,14,.16)",
+            borderRadius: 10,
+            padding: "10px 12px",
+            marginBottom: 10,
+          }}
+        >
+          <div className="field" style={{ marginBottom: 6 }}>
+            <label htmlFor="mn-catdesp">Categoria da despesa</label>
+            <select
+              id="mn-catdesp"
+              value={categoriaDespesa}
+              onChange={(e) => setCategoriaDespesa(e.target.value as DespesaCategoria)}
+              disabled={saving}
+            >
+              {DESPESA_CATEGORIA.map((cc) => (
+                <option key={cc} value={cc}>
+                  {DESPESA_CATEGORIA_LABEL[cc]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: 0 }}>
+            Isto é dinheiro <b>teu</b> a sair. Não cria linha nos Custos, não é dívida do
+            cliente e <b>não aparece no portal dele</b>. No dia certo avisa-te no calendário e
+            no sino; carregas em <b>Paguei</b>, escreves o que a factura diz, e nasce a
+            despesa ligada a este projecto — a entrar logo nos gastos e no lucro.
+          </p>
+          <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "8px 0 0" }}>
+            O teu tempo de manutenção <b>não</b> se regista aqui: trabalho teu é lucro, não é
+            gasto. Só entra o que sai mesmo do banco.
           </p>
         </div>
       )}

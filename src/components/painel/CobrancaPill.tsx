@@ -20,18 +20,25 @@ export function CobrancaPill({
     maximumFractionDigits: 2,
   });
   const quem = c.clienteNome ?? c.projetoTitulo;
-  const estadoCls = c.estado === "paga" ? "done" : c.estado === "vencida" || c.estado === "parcial" ? "late" : "";
+  const estadoCls =
+    c.estado === "paga" ? "done" : c.estado === "vencida" || c.estado === "parcial" ? "late" : "";
+  // Sem valor previsto (lembrete de renovação) mostra-se o nome do plano — um
+  // "0,00 €" no calendário não diz nada e parece um erro.
+  const rotulo = c.valor > 0 ? `${valor} € · ${quem}` : c.planoTitulo;
+  const sinal = c.ehDespesa ? "↓" : "↑";
 
   return (
     <Link
       href={`/painel/projetos/${c.projetoId}#mensalidades`}
-      className={cn("cal-ev e", estadoCls, className)}
+      className={cn("cal-ev e", c.ehDespesa && "out", estadoCls, className)}
       style={style}
-      title={`${c.planoTitulo} ${c.numero}/${c.totalCobrancas} · ${valor} € · ${c.projetoTitulo}${
+      title={`${c.ehDespesa ? "A pagar por nós" : "A receber"} · ${c.planoTitulo} ${c.numero}/${
+        c.totalCobrancas
+      } · ${c.valor > 0 ? `${valor} €` : "valor por definir"} · ${c.projetoTitulo}${
         c.clienteNome ? ` — ${c.clienteNome}` : ""
       }`}
     >
-      {valor} € · {quem}
+      {sinal} {rotulo}
     </Link>
   );
 }

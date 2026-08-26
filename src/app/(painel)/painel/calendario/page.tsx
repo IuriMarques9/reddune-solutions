@@ -5,6 +5,7 @@ import { getAllProjetos } from "@/lib/mongodb/projetos";
 import { getAllLembretes } from "@/lib/mongodb/lembretes";
 import { getAllMensalidades } from "@/lib/mongodb/mensalidades";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
+import { getAllDespesas } from "@/lib/mongodb/despesas";
 import { Topbar } from "@/components/painel/Topbar";
 import { MonthCalendar } from "@/components/painel/MonthCalendar";
 import { WeekCalendar } from "@/components/painel/WeekCalendar";
@@ -78,18 +79,22 @@ export default async function CalendarioPage({
 }) {
   await requirePainelSession();
 
-  const [projetos, lembretes, mensalidades, pagamentos, params] = await Promise.all([
+  const [projetos, lembretes, mensalidades, pagamentos, despesas, params] = await Promise.all([
     getAllProjetos(),
     getAllLembretes(),
     getAllMensalidades(),
     getAllPagamentos(),
+    getAllDespesas(),
     searchParams,
   ]);
 
   // Cobranças derivadas no servidor (fuso de Lisboa) e já com o nome do plano,
   // do projecto e do cliente — as vistas do calendário são componentes cliente.
   const cobrancas = cobrancasParaCalendario(
-    todasCobrancas(mensalidades, pagamentos, todayLisbonYmd()),
+    // Pagamentos e despesas apontam ao plano pelo mesmo campo e nunca se
+    // cruzam (um pagamento nunca fecha um plano de despesa), por isso juntar as
+    // duas listas basta para derivar os dois sentidos de uma vez.
+    todasCobrancas(mensalidades, [...pagamentos, ...despesas], todayLisbonYmd()),
     mensalidades,
     projetos
   );

@@ -3,6 +3,7 @@ import { getComentariosNaoLidosRecentes } from "@/lib/mongodb/portal";
 import { getProjetoTitulosByIds } from "@/lib/mongodb/projetos";
 import { getAllMensalidades } from "@/lib/mongodb/mensalidades";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
+import { getAllDespesas } from "@/lib/mongodb/despesas";
 import { getDismissedNotifIds } from "@/lib/mongodb/notif-dismissed";
 import { SUBJECT_LABELS } from "@/lib/validation";
 import { apiOk, apiError, withAuth } from "@/lib/api";
@@ -49,16 +50,18 @@ type NotificationItem = {
 
 export const GET = withAuth(async () => {
   try {
-    const [leads, comentarios, dismissed, mensalidades, pagamentos] = await Promise.all([
+    const [leads, comentarios, dismissed, mensalidades, pagamentos, despesas] = await Promise.all([
       getLeadsNovosRecentes(MAX_LEADS),
       getComentariosNaoLidosRecentes(MAX_COMENTARIOS),
       getDismissedNotifIds(),
       getAllMensalidades(),
       getAllPagamentos(),
+      getAllDespesas(),
     ]);
 
     const hoje = todayLisbonYmd();
-    const cobrancas = todasCobrancas(mensalidades, pagamentos, hoje);
+    // Os dois sentidos: cobrar ao cliente E pagar o alojamento.
+    const cobrancas = todasCobrancas(mensalidades, [...pagamentos, ...despesas], hoje);
     const planoPorId = new Map(mensalidades.map((m) => [m.id, m]));
 
     const titulos = await getProjetoTitulosByIds([
