@@ -240,7 +240,9 @@ function buildAgenda(
       id: `c-${c.mensalidadeId}-${c.numero}`,
       href: `/painel/projetos/${c.projetoId}#mensalidades`,
       label: `${valor} € · ${c.clienteNome ?? c.projetoTitulo}`,
-      sub: `${c.planoTitulo} ${c.numero}/${c.totalCobrancas}`,
+      sub:
+        `${c.planoTitulo} ${c.numero}/${c.totalCobrancas}` +
+        (c.numero === c.totalCobrancas ? " · última" : ""),
       date: d,
       // Uma cobrança já paga não é accionável — fica só na grelha do mês.
       accionavel: c.estado !== "paga",

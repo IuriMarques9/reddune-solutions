@@ -156,6 +156,15 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
     é gasto. Só entra o que sai mesmo do banco.
   - `todasCobrancas` aceita pagamentos E despesas na mesma lista: apontam ao
     plano pelo mesmo campo e nunca se cruzam.
+- **Fim do plano visível** (2026-08-27): a última cobrança leva "· fim" no
+  calendário (a pill sabe-o por `numero === totalCobrancas`) e "· última" na
+  agenda. O aside da ficha tem o card **Planos** por baixo de Colaboradores:
+  próxima e "Acaba a" — numa cobrança só diz "Última", que seria a mesma data
+  duas vezes. É resumo de consulta; a edição vive no cartão da coluna principal.
+- **Duplicações removidas** (2026-08-27): o lápis "Editar" do card do kanban
+  fazia o mesmo que clicar no card; o aside "Informações" mostrava Cliente e
+  Valor estimado, que o hero mesmo por cima já dá (cliente com link, Orçado com
+  IVA). Ficam as datas, que o hero não tem.
 - Push diário: `/api/cron/mensalidades` (Vercel Cron 08:00 UTC em `vercel.json`)
   precisa da env **`CRON_SECRET`** — sem ela devolve 401 a tudo, inclusive ao
   próprio cron. Hobby permite crons (1×/dia, ±59 min). Dedup em

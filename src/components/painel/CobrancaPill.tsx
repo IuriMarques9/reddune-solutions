@@ -26,6 +26,9 @@ export function CobrancaPill({
   // "0,00 €" no calendário não diz nada e parece um erro.
   const rotulo = c.valor > 0 ? `${valor} € · ${quem}` : c.planoTitulo;
   const sinal = c.ehDespesa ? "↓" : "↑";
+  // A última prestação é a que interessa marcar: é quando o plano acaba e há
+  // decisão a tomar (renovar ou fechar).
+  const ehUltima = c.numero === c.totalCobrancas;
 
   return (
     <Link
@@ -34,11 +37,12 @@ export function CobrancaPill({
       style={style}
       title={`${c.ehDespesa ? "A pagar por nós" : "A receber"} · ${c.planoTitulo} ${c.numero}/${
         c.totalCobrancas
-      } · ${c.valor > 0 ? `${valor} €` : "valor por definir"} · ${c.projetoTitulo}${
-        c.clienteNome ? ` — ${c.clienteNome}` : ""
-      }`}
+      }${ehUltima ? " (última — depois é renovar ou fechar)" : ""} · ${
+        c.valor > 0 ? `${valor} €` : "valor por definir"
+      } · ${c.projetoTitulo}${c.clienteNome ? ` — ${c.clienteNome}` : ""}`}
     >
       {sinal} {rotulo}
+      {ehUltima && <> · fim</>}
     </Link>
   );
 }

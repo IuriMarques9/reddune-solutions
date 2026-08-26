@@ -3,10 +3,9 @@ import Link from "next/link";
 import {
   ArrowLeft,
   Calendar,
-  User,
-  Euro,
   CheckCircle2,
   ListChecks,
+  CalendarClock,
   Pencil,
   type LucideIcon,
 } from "lucide-react";
@@ -32,8 +31,15 @@ import { HardwareSection } from "@/components/painel/HardwareSection";
 import { ColaboradoresSection } from "@/components/painel/ColaboradoresSection";
 import { sanitizeArquivo } from "@/types/projeto";
 import { gastoEmpresaDoProjeto } from "@/lib/gastos";
-import { totalACobrar, semIva, cents, eurIva, eurCompacto, IVA_LABEL } from "@/lib/iva";
-import { todasCobrancas } from "@/lib/mensalidades";
+import { totalACobrar, semIva, cents, eurCompacto, IVA_LABEL } from "@/lib/iva";
+import {
+  todasCobrancas,
+  isPlanoDespesa,
+  isPlanoPorArrancar,
+  proximaCobranca,
+  resumoMensalidade,
+} from "@/lib/mensalidades";
+import { PERIODO_SUFIXO, type Cobranca, type Mensalidade } from "@/types/mensalidade";
 import { StatusBadge } from "@/components/painel/StatusBadge";
 import { todayLisbonYmd } from "@/lib/dates";
 
@@ -205,42 +211,13 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
           <div className="card">
             <div className="card-label" style={{ marginBottom: 12 }}>Informações</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {projeto.clienteNome && (
-                <div className="info-row">
-                  <User aria-hidden="true" />
-                  <div>
-                    <div className="l">Cliente</div>
-                    <div className="val">
-                      {projeto.clienteId ? (
-                        <Link
-                          href={`/painel/clientes/${projeto.clienteId}`}
-                          className="hover:underline"
-                        >
-                          {projeto.clienteNome}
-                        </Link>
-                      ) : (
-                        projeto.clienteNome
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+              {/* Cliente e valor NÃO se repetem aqui: o hero, mesmo por cima,
+                  já mostra o cliente (com link) e o Orçado com o IVA. Ficam as
+                  datas, que o hero não tem. */}
               <InfoRow icon={Calendar} label="Prazo" value={formatDate(projeto.prazo)} />
               <InfoRow icon={Calendar} label="Criado" value={formatDate(projeto.dataCriado)} />
               {projeto.dataFechado && (
                 <InfoRow icon={CheckCircle2} label="Fechado" value={formatDate(projeto.dataFechado)} />
-              )}
-              {projeto.valorEstimado != null && (
-                <InfoRow
-                  icon={Euro}
-                  label={projeto.comIva ? "Valor estimado (c/ IVA)" : "Valor estimado"}
-                  value={`${eurIva(totalACobrar(projeto) ?? projeto.valorEstimado)} €`}
-                  hint={
-                    projeto.comIva
-                      ? `${eurIva(projeto.valorEstimado)} € + ${IVA_LABEL}`
-                      : undefined
-                  }
-                />
               )}
             </div>
           </div>
@@ -253,9 +230,98 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
             despesas={despesas}
             colaboradores={colaboradores}
           />
+
+          {/* Planos — resumo de consulta: quando entra a próxima e quando
+              acaba. Editam-se no cartão da coluna principal (#mensalidades). */}
+          <PlanosAside mensalidades={mensalidades} cobrancas={cobrancas} />
         </aside>
       </div>
     </>
+  );
+}
+
+
+/**
+ * Resumo dos planos no aside: o que se consulta muito (próxima cobrança, fim)
+ * e não se altera aqui. A edição vive no cartão da coluna principal.
+ */
+function PlanosAside({
+  mensalidades,
+  cobrancas,
+}: {
+  mensalidades: Mensalidade[];
+  cobrancas: Cobranca[];
+}) {
+  if (mensalidades.length === 0) return null;
+  const money = (n: number) =>
+    n.toLocaleString("pt-PT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const dia = (ymd: string) => {
+    const [y, m, d] = ymd.split("-").map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString("pt-PT", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  return (
+    <div className="card">
+      <div className="card-label" style={{ marginBottom: 12 }}>
+        <CalendarClock className="ic" aria-hidden="true" />
+        Planos
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {mensalidades.map((m) => {
+          const minhas = cobrancas.filter((c) => c.mensalidadeId === m.id);
+          const resumo = resumoMensalidade(m, minhas);
+          const proxima = proximaCobranca(minhas);
+          const fim = minhas.length > 0 ? minhas[minhas.length - 1].dataPrevista : null;
+          const porArrancar = isPlanoPorArrancar(m);
+          return (
+            <div key={m.id} style={{ fontSize: 12.5 }}>
+              <a href="#mensalidades" style={{ color: "var(--ink)", fontWeight: 600 }}>
+                {m.titulo}
+              </a>
+              <div className="mono muted" style={{ fontSize: 11.5, marginTop: 2 }}>
+                {m.valor > 0 ? `${money(m.valor)} € / ${PERIODO_SUFIXO[m.periodo]}` : "valor por definir"}
+                {" · "}
+                {resumo.pagas}/{m.numeroCobrancas}
+                {isPlanoDespesa(m) ? " · a pagar" : ""}
+              </div>
+              {porArrancar ? (
+                <div className="muted" style={{ fontSize: 11.5, marginTop: 2 }}>
+                  Por arrancar
+                </div>
+              ) : (
+                <div style={{ fontSize: 11.5, marginTop: 2, color: "var(--ink-soft)" }}>
+                  {/* Numa cobrança só, "próxima" e "fim" são o mesmo dia — dizer
+                      as duas era repetir a mesma data duas vezes. */}
+                  {proxima && fim && proxima.dataPrevista === fim ? (
+                    <>
+                      Última: <b>{dia(fim)}</b>
+                    </>
+                  ) : (
+                    <>
+                      {proxima && (
+                        <>
+                          Próxima: {dia(proxima.dataPrevista)}
+                          <br />
+                        </>
+                      )}
+                      {fim && (
+                        <>
+                          Acaba a <b>{dia(fim)}</b>
+                        </>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 

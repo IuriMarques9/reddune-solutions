@@ -240,17 +240,6 @@ function KanbanCard({
         <button
           type="button"
           className="kc-act"
-          title="Editar"
-          aria-label={`Editar ${projeto.titulo}`}
-          onClick={(e) =>
-            quickAction(e, () => router.push(`/painel/projetos/${projeto.id}`))
-          }
-        >
-          <Pencil className="ic" aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="kc-act"
           title={portalAtivo ? "Abrir portal do cliente" : "Portal do cliente (gerar link)"}
           aria-label={`Portal do cliente de ${projeto.titulo}`}
           onClick={(e) =>
