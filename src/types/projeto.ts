@@ -195,6 +195,11 @@ export interface ProjetoLinha {
   // apagar o plano deixa a linha cá e só tira a marca — o dinheiro foi real.
   // Ausente = linha escrita à mão, e o painel nunca lhe toca.
   mensalidadeId?: string | null;
+  // IVA PRÓPRIO desta linha, independente do `Projeto.comIva`. Só as linhas
+  // criadas por planos o têm: o plano decide o seu IVA e a linha segue-o, senão
+  // o checkbox global do projecto contava IVA por cima de um valor que já o
+  // levava. `undefined` = linha escrita à mão, segue o projecto como sempre.
+  ivaProprio?: boolean;
 }
 
 /** Total de gasto da empresa nas linhas de um projecto (só linhas marcadas). */

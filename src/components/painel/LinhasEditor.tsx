@@ -242,6 +242,25 @@ export function LinhasEditor({ linhas, onChange, disabled, gastoDespesas = 0 }: 
                       aria-label="Data do gasto"
                     />
                   )}
+                  {/* Linhas criadas por um plano trazem o IVA do plano — o
+                      checkbox global do projecto não lhes toca. Dizê-lo aqui
+                      evita a pergunta "este valor já leva IVA?". */}
+                  {l.ivaProprio !== undefined && (
+                    <span
+                      className="tchip-cat"
+                      title={
+                        l.ivaProprio
+                          ? "Esta linha vem de um plano com IVA — o checkbox do projecto não lhe acrescenta mais nada."
+                          : "Esta linha vem de um plano sem IVA — o checkbox do projecto não lhe acrescenta IVA."
+                      }
+                      style={{
+                        background: l.ivaProprio ? "rgba(214,66,42,.12)" : "rgba(90,14,14,.07)",
+                        color: l.ivaProprio ? "var(--ember)" : "var(--ink-mute)",
+                      }}
+                    >
+                      {l.ivaProprio ? "c/ IVA" : "s/ IVA"}
+                    </span>
+                  )}
                   <span className="lsub">{subtotal.toFixed(2)}€</span>
                 </div>
               </div>

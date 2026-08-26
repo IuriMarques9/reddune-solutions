@@ -61,7 +61,50 @@ export type ProjetoValores = {
  * projectos cujo `valorEstimado` esteja dessincronizado das linhas.
  */
 export function totalACobrar(projeto: ProjetoValores): number | null {
+  // Projecto com linhas de plano: o IVA é decidido LINHA A LINHA, porque o
+  // checkbox global só manda nas linhas escritas à mão. Ver totalACobrarLinhas.
+  if (temIvaPorLinha(projeto)) return totalACobrarLinhas(projeto);
   return projeto.valorEstimado == null ? null : comIva(projeto.valorEstimado, projeto.comIva);
+}
+
+/** Alguma linha traz IVA próprio (só as criadas por planos recorrentes). */
+export function temIvaPorLinha(projeto: ProjetoValores): boolean {
+  return (projeto.linhas ?? []).some((l) => l.ivaProprio !== undefined);
+}
+
+/** Esta linha leva IVA? A sua própria regra, ou a do projecto se não tiver. */
+export function linhaLevaIva(l: ProjetoLinha, projetoComIva: boolean | undefined): boolean {
+  return l.ivaProprio ?? projetoComIva ?? false;
+}
+
+/**
+ * Total a cobrar somando linha a linha, cada uma com o seu IVA. É isto que o
+ * cliente paga quando um projecto mistura linhas normais (seguem o checkbox do
+ * projecto) com linhas de planos (seguem o IVA do plano).
+ *
+ * Deliberadamente NÃO usado em projectos sem linhas de plano: aí mantém-se a
+ * conta antiga sobre `valorEstimado`, para não mexer nos números de projectos
+ * cujo valorEstimado esteja dessincronizado das linhas.
+ */
+export function totalACobrarLinhas(projeto: ProjetoValores): number | null {
+  const linhas = projeto.linhas ?? [];
+  if (linhas.length === 0) return projeto.valorEstimado == null ? null : projeto.valorEstimado;
+  return cents(
+    linhas.reduce(
+      (s, l) => s + comIva(l.quantidade * l.precoUnit, linhaLevaIva(l, projeto.comIva)),
+      0
+    )
+  );
+}
+
+/** Parcela de IVA de um projecto que mistura linhas com IVA próprio. */
+export function ivaDoProjeto(projeto: ProjetoValores): number {
+  const total = totalACobrar(projeto);
+  if (total == null) return 0;
+  const base = temIvaPorLinha(projeto)
+    ? cents((projeto.linhas ?? []).reduce((s, l) => s + l.quantidade * l.precoUnit, 0))
+    : projeto.valorEstimado ?? 0;
+  return cents(total - base);
 }
 
 /**

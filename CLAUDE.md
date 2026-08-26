@@ -100,6 +100,15 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   - Linhas escritas à mão nunca são tocadas; apagar o plano deixa a linha e só
     tira a marca. **Migração do Trakinas:** apagar a linha "3 fases da app 5400"
     e deixar "Entrada 1.000" + a linha do plano (12 × 366,67 = 4.400).
+- **IVA por linha** (2026-08-26): `ProjetoLinha.ivaProprio` — só as linhas
+  criadas por planos o têm, e vale o IVA do PLANO. O checkbox "Acrescentar IVA"
+  do projecto passa a mandar **só nas linhas escritas à mão**; sem isto contava
+  IVA por cima de um valor que já o levava. Quando alguma linha tem
+  `ivaProprio`, `totalACobrar()` soma **linha a linha** (`totalACobrarLinhas`);
+  sem nenhuma, mantém EXACTAMENTE a conta antiga sobre `valorEstimado` — para
+  não mexer nos números de projectos com valorEstimado dessincronizado.
+  `valorEstimado` continua a ser a BASE. Cartão de Custos e portal mostram
+  "Base · IVA · Total a cobrar"; a linha leva o chip `c/ IVA` / `s/ IVA`.
 - **Custo e margem no plano** (2026-08-26): `Mensalidade.custo` + `custoComIva`.
   `margemDoPlano()` devolve receita/custo/margem/pct, tudo em BASE s/ IVA — o
   IVA pago é dedutível, por isso desconta-se antes de comparar (137,40 € de

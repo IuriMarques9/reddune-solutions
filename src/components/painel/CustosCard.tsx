@@ -8,7 +8,7 @@ import { LinhasEditor, computeTotal } from "./LinhasEditor";
 import type { Projeto, ProjetoLinha } from "@/types/projeto";
 import { DESPESA_CATEGORIA_LABEL, type Despesa } from "@/types/despesa";
 import { parseMoney } from "@/lib/parse-number";
-import { comIva as aplicaIva, eurIva, IVA_LABEL, IVA_TAXA } from "@/lib/iva";
+import { comIva as aplicaIva, totalACobrarLinhas, eurIva, IVA_LABEL, IVA_TAXA } from "@/lib/iva";
 import { safeJsonPost } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
 
@@ -61,7 +61,13 @@ export function CustosCard({ projeto, despesas = [] }: Props) {
   const baseAtual = useLegacy
     ? parseMoney(valorLegacy) ?? 0
     : computeTotal(linhas);
-  const totalComIva = aplicaIva(baseAtual, comIva);
+  // Linhas de planos trazem o IVA do seu plano (`ivaProprio`) e o checkbox
+  // global NÃO lhes toca — senão contava IVA duas vezes sobre o mesmo dinheiro.
+  // Nesse caso o total soma linha a linha, cada uma com a sua regra.
+  const ivaPorLinha = !useLegacy && linhas.some((l) => l.ivaProprio !== undefined);
+  const totalComIva = ivaPorLinha
+    ? totalACobrarLinhas({ valorEstimado: baseAtual, comIva, linhas }) ?? baseAtual
+    : aplicaIva(baseAtual, comIva);
 
   function convertLegacy() {
     const v = parseMoney(valorLegacy) ?? NaN;
@@ -204,6 +210,11 @@ export function CustosCard({ projeto, despesas = [] }: Props) {
             disabled={saving}
           />
           Acrescentar IVA ({Math.round(IVA_TAXA * 100)}%)
+          {ivaPorLinha && (
+            <span style={{ color: "var(--ink-mute)", fontSize: 11.5 }}>
+              — só nas linhas escritas à mão
+            </span>
+          )}
         </label>
         <div
           style={{
@@ -216,12 +227,12 @@ export function CustosCard({ projeto, despesas = [] }: Props) {
           }}
         >
           <span style={{ color: "var(--ink-mute)" }}>Base: {eurIva(baseAtual)} €</span>
-          {comIva && (
+          {totalComIva !== baseAtual && (
             <>
               <span style={{ color: "var(--ink-mute)" }}>
                 {IVA_LABEL}: {eurIva(totalComIva - baseAtual)} €
               </span>
-              <b style={{ fontSize: 13.5 }}>Total c/ IVA: {eurIva(totalComIva)} €</b>
+              <b style={{ fontSize: 13.5 }}>Total a cobrar: {eurIva(totalComIva)} €</b>
             </>
           )}
         </div>

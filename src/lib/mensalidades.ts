@@ -384,6 +384,9 @@ export function sincronizarLinhaDoPlano(
     gastoEmpresa: false,
     data: null,
     mensalidadeId: m.id,
+    // O IVA desta linha é o do PLANO, não o do projecto: o checkbox global só
+    // manda nas linhas escritas à mão. Sem isto o total contava IVA duas vezes.
+    ivaProprio: m.comIva ?? false,
   };
 
   if (i >= 0) {
@@ -393,7 +396,8 @@ export function sincronizarLinhaDoPlano(
       a.descricao === linha.descricao &&
       a.categoria === linha.categoria &&
       a.quantidade === linha.quantidade &&
-      a.precoUnit === linha.precoUnit
+      a.precoUnit === linha.precoUnit &&
+      a.ivaProprio === linha.ivaProprio
     ) {
       return null;
     }

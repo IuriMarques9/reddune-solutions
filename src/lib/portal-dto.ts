@@ -8,7 +8,7 @@ import {
 } from "@/types/projeto";
 import type { Cliente } from "@/types/cliente";
 import type { Pagamento } from "@/types/pagamento";
-import { comIva, cents } from "@/lib/iva";
+import { comIva, cents, temIvaPorLinha, totalACobrarLinhas } from "@/lib/iva";
 import type { Mensalidade } from "@/types/mensalidade";
 import { PERIODO_SUFIXO } from "@/types/mensalidade";
 import { cobrancasDe, isPlanoDespesa, proximaCobranca, resumoMensalidade } from "@/lib/mensalidades";
@@ -109,8 +109,14 @@ export function toPortalProjeto(
     // Sem orçamento fechado o "total" é o que já foi pago — e esse valor já
     // vem bruto, por isso não se lhe acrescenta IVA nenhum.
     const base = orcado ?? pago;
-    const levaIva = orcado != null && (projeto.comIva ?? false);
-    const total = comIva(base, levaIva);
+    // Com linhas de planos o IVA é decidido LINHA A LINHA: o checkbox do
+    // projecto só manda nas escritas à mão. Sem isto o cliente via a base como
+    // total e o número não batia com o que lhe é cobrado.
+    const porLinha = orcado != null && temIvaPorLinha(projeto);
+    const levaIva = orcado != null && (porLinha || (projeto.comIva ?? false));
+    const total = porLinha
+      ? totalACobrarLinhas(projeto) ?? base
+      : comIva(base, levaIva);
     // Subtotais por categoria de linha (ver LINHA_CATEGORIA) — sem quantidades,
     // preços unitários nem descrições (as linhas revelam margens). Construído a
     // partir das linhas do projecto, por isso acompanha categorias novas.
