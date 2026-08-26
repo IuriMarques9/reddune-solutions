@@ -24,25 +24,32 @@ export function CobrancaPill({
     c.estado === "paga" ? "done" : c.estado === "vencida" || c.estado === "parcial" ? "late" : "";
   // Sem valor previsto (lembrete de renovação) mostra-se o nome do plano — um
   // "0,00 €" no calendário não diz nada e parece um erro.
-  const rotulo = c.valor > 0 ? `${valor} € · ${quem}` : c.planoTitulo;
-  const sinal = c.ehDespesa ? "↓" : "↑";
-  // A última prestação é a que interessa marcar: é quando o plano acaba e há
-  // decisão a tomar (renovar ou fechar).
-  const ehUltima = c.numero === c.totalCobrancas;
+  const ehFim = c.ehFimDoPlano;
+  const rotulo = ehFim
+    ? `${c.planoTitulo} acaba`
+    : c.valor > 0
+      ? `${valor} € · ${quem}`
+      : c.planoTitulo;
+  const sinal = ehFim ? "⤓" : c.ehDespesa ? "↓" : "↑";
 
   return (
     <Link
       href={`/painel/projetos/${c.projetoId}#mensalidades`}
-      className={cn("cal-ev e", c.ehDespesa && "out", estadoCls, className)}
+      className={cn("cal-ev e", (c.ehDespesa || ehFim) && "out", estadoCls, className)}
       style={style}
-      title={`${c.ehDespesa ? "A pagar por nós" : "A receber"} · ${c.planoTitulo} ${c.numero}/${
-        c.totalCobrancas
-      }${ehUltima ? " (última — depois é renovar ou fechar)" : ""} · ${
-        c.valor > 0 ? `${valor} €` : "valor por definir"
-      } · ${c.projetoTitulo}${c.clienteNome ? ` — ${c.clienteNome}` : ""}`}
+      title={
+        ehFim
+          ? `${c.planoTitulo} cobre até aqui — renovar ou deixar cair · ${c.projetoTitulo}${
+              c.clienteNome ? ` — ${c.clienteNome}` : ""
+            }`
+          : `${c.ehDespesa ? "A pagar por nós" : "A receber"} · ${c.planoTitulo} ${c.numero}/${
+              c.totalCobrancas
+            } · ${c.valor > 0 ? `${valor} €` : "valor por definir"} · ${c.projetoTitulo}${
+              c.clienteNome ? ` — ${c.clienteNome}` : ""
+            }`
+      }
     >
       {sinal} {rotulo}
-      {ehUltima && <> · fim</>}
     </Link>
   );
 }

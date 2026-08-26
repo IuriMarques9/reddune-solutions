@@ -156,11 +156,17 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
     é gasto. Só entra o que sai mesmo do banco.
   - `todasCobrancas` aceita pagamentos E despesas na mesma lista: apontam ao
     plano pelo mesmo campo e nunca se cruzam.
-- **Fim do plano visível** (2026-08-27): a última cobrança leva "· fim" no
-  calendário (a pill sabe-o por `numero === totalCobrancas`) e "· última" na
-  agenda. O aside da ficha tem o card **Planos** por baixo de Colaboradores:
-  próxima e "Acaba a" — numa cobrança só diz "Última", que seria a mesma data
-  duas vezes. É resumo de consulta; a edição vive no cartão da coluna principal.
+- **`fimDaCobertura()`** (2026-08-27): o fim de um plano é a última cobrança
+  **MAIS um período** — uma anuidade paga a 27/06/2026 cobre até 27/06/2027.
+  NÃO é o dia da última cobrança: o painel dizia "acaba" no próprio dia do
+  pagamento (defeito real, apanhado na anuidade dos Amigos do Bairro).
+  `cobrancasParaCalendario` gera uma entrada extra nessa data com
+  `ehFimDoPlano` (numero 0, pill `⤓ … acaba`) — é aí que há decisão a tomar.
+  O aside da ficha tem o card **Planos** por baixo de Colaboradores: próxima e
+  "Cobre até". Resumo de consulta; a edição vive no cartão da coluna principal.
+- **Formulário sem parágrafos grandes** (2026-08-27): o essencial fica no
+  texto, o detalhe passa para o componente `Ajuda` (ícone ⓘ com tooltip). Não
+  voltar a escrever blocos de 3 linhas no form — ninguém os lê à segunda vez.
 - **Duplicações removidas** (2026-08-27): o lápis "Editar" do card do kanban
   fazia o mesmo que clicar no card; o aside "Informações" mostrava Cliente e
   Valor estimado, que o hero mesmo por cima já dá (cliente com link, Orçado com

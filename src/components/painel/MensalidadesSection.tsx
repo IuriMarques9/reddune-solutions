@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   CalendarClock,
   Check,
+  Info,
   Loader2,
   Pencil,
   Plus,
@@ -100,6 +101,29 @@ const ESTADO_COR: Record<Cobranca["estado"], string> = {
   "a-vencer": "var(--apricot)",
   futura: "var(--ink-mute)",
 };
+
+/**
+ * Detalhe atrás de um ícone. O formulário estava a ficar com parágrafos
+ * grandes que ninguém lê à segunda vez — o essencial fica no texto, o resto
+ * passa a estar aqui.
+ */
+function Ajuda({ texto }: { texto: string }) {
+  return (
+    <span
+      title={texto}
+      aria-label={texto}
+      style={{
+        display: "inline-flex",
+        verticalAlign: "middle",
+        color: "var(--ink-mute)",
+        cursor: "help",
+        marginLeft: 4,
+      }}
+    >
+      <Info style={{ width: 12, height: 12 }} aria-hidden="true" />
+    </span>
+  );
+}
 
 /** Quantas cobranças se mostram antes de ser preciso carregar em "ver todas". */
 const VISIVEIS_POR_DEFEITO = 6;
@@ -1049,14 +1073,14 @@ function BlocoMargem({
         </div>
       ) : (
         <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: 0 }}>
-          Só para ti: o cliente vê apenas o que paga, nunca o custo nem a margem. O teu tempo
-          não se mete aqui — trabalho teu é lucro, não é custo.
+          Só para ti — o cliente nunca vê isto.
+          <Ajuda texto="O cliente vê apenas o que paga, nunca o custo nem a margem. O teu tempo não se mete aqui: trabalho teu é lucro, não é custo. Só entra o que sai do banco." />
         </p>
       )}
       {margem != null && (
         <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "8px 0 0" }}>
-          Só para ti — o cliente vê apenas o que paga. Ao registares o recebimento, o custo
-          entra como despesa deste projecto e o Lucro já aparece com a diferença.
+          Só para ti.
+          <Ajuda texto="O cliente vê apenas o que paga. Ao registares o recebimento, o custo entra como despesa deste projecto e o Lucro já aparece com a diferença." />
         </p>
       )}
     </div>
@@ -1265,14 +1289,13 @@ function PlanoForm({
       <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "0 0 10px" }}>
         {porArrancar ? (
           <>
-            <b>Deixa vazio se ainda não arrancou.</b> O preço fica fechado e a linha entra nos
-            Custos, mas o calendário só nasce quando o cliente pagar — depois é só carregar em
-            Arrancar no cartão do plano.
+            <b>Vazio se ainda não arrancou.</b>
+            <Ajuda texto="O preço fica fechado e a linha entra nos Custos, mas o calendário só nasce quando o cliente pagar. Depois carregas em Arrancar no cartão do plano." />
           </>
         ) : (
           <>
-            As cobranças seguintes caem no mesmo dia do mês (ou do ano). Dia 31 passa para o
-            último dia dos meses mais curtos.
+            As seguintes caem no mesmo dia.
+            <Ajuda texto="Mesmo dia do mês (ou do ano) da primeira. Dia 31 passa para o último dia dos meses mais curtos." />
           </>
         )}
         {total != null && (
@@ -1342,17 +1365,15 @@ function PlanoForm({
             </select>
           </div>
           <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: 0 }}>
-            Nasce nos Custos a linha{" "}
+            Nasce a linha{" "}
             <b>
               {(titulo.trim() || (periodo === "anual" ? "Anuidade" : "Mensalidade"))} (
               {PERIODO_SUFIXO[periodo]})
             </b>
             {v != null && Number.isFinite(n) && n > 0 && (
-              <> — {n} × {money(v)} € = {money(v * n)} €</>
+              <> — {n} × {money(v)} € = <b>{money(v * n)} €</b></>
             )}
-            , ou seja o <b>plano todo</b>. É essa linha que põe o valor no orçamento do
-            projecto. Não conta como gasto da RedDune — é dinheiro a receber. Numa anuidade
-            que possa não ser renovada, põe <b>1 cobrança</b> e usa o botão Renovar a cada ano.
+            <Ajuda texto="A linha vale o plano todo e é ela que põe o valor no orçamento do projecto. Não conta como gasto da RedDune — é dinheiro a receber. Numa anuidade que possa não ser renovada, põe 1 cobrança e usa o botão Renovar a cada ano." />
           </p>
         </div>
       )}
@@ -1395,14 +1416,8 @@ function PlanoForm({
             </select>
           </div>
           <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: 0 }}>
-            Isto é dinheiro <b>teu</b> a sair. Não cria linha nos Custos, não é dívida do
-            cliente e <b>não aparece no portal dele</b>. No dia certo avisa-te no calendário e
-            no sino; carregas em <b>Paguei</b>, escreves o que a factura diz, e nasce a
-            despesa ligada a este projecto — a entrar logo nos gastos e no lucro.
-          </p>
-          <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "8px 0 0" }}>
-            O teu tempo de manutenção <b>não</b> se regista aqui: trabalho teu é lucro, não é
-            gasto. Só entra o que sai mesmo do banco.
+            Dinheiro <b>teu</b> a sair. Não vai ao portal.
+            <Ajuda texto="Não cria linha nos Custos nem é dívida do cliente. No dia certo avisa-te no calendário e no sino; carregas em Paguei, escreves o que a factura diz, e nasce a despesa ligada a este projecto. O teu tempo não se regista aqui — trabalho teu é lucro, não é gasto." />
           </p>
         </div>
       )}

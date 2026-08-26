@@ -16,6 +16,7 @@ import {
   descricaoLinhaDoPlano,
   isPlanoDespesa,
   isPlanoPorArrancar,
+  fimDaCobertura,
   margemDoPlano,
   planosReceita,
   planosDespesa,
@@ -708,6 +709,44 @@ describe("plano por arrancar (sem data de início)", () => {
     expect(cs).toHaveLength(12);
     expect(cs[0].dataPrevista).toBe("2026-11-15");
     expect(cs[1].dataPrevista).toBe("2026-12-15");
+  });
+});
+
+describe("fimDaCobertura", () => {
+  // O defeito que o Iuri apanhou: a anuidade dos Amigos do Bairro foi paga a
+  // 27/06/2026 e o painel dizia que "acabava" nesse mesmo dia. Cobre até 2027.
+  it("uma anuidade paga cobre até um ano depois", () => {
+    const anual = plano({
+      id: "m1",
+      periodo: "anual",
+      numeroCobrancas: 1,
+      primeiraCobranca: "2026-06-27",
+    });
+    expect(fimDaCobertura(anual)).toBe("2027-06-27");
+  });
+
+  it("três anuidades cobrem até três anos depois da primeira", () => {
+    const tres = plano({
+      id: "m1",
+      periodo: "anual",
+      numeroCobrancas: 3,
+      primeiraCobranca: "2026-09-01",
+    });
+    expect(fimDaCobertura(tres)).toBe("2029-09-01");
+  });
+
+  it("12 mensalidades cobrem os 12 meses a contar da primeira", () => {
+    expect(fimDaCobertura(plano({ id: "m1" }))).toBe("2027-09-01");
+  });
+
+  it("nunca é o dia da última cobrança", () => {
+    const m = plano({ id: "m1" });
+    const ultima = cobrancasDe(m, [], "2026-09-01").at(-1)!;
+    expect(fimDaCobertura(m)).not.toBe(ultima.dataPrevista);
+  });
+
+  it("é null enquanto o plano não arrancar", () => {
+    expect(fimDaCobertura(plano({ id: "m1", primeiraCobranca: null }))).toBeNull();
   });
 });
 

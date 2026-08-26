@@ -89,6 +89,24 @@ function estadoPorData(dataPrevista: string, hoje: string): CobrancaEstado {
   return "futura";
 }
 
+/**
+ * Até quando o plano cobre — a data da ÚLTIMA cobrança MAIS um período.
+ *
+ * Uma anuidade paga a 27/06/2026 dá serviço até 27/06/2027: o fim não é o dia
+ * em que se cobra, é o dia em que a cobertura expira. Era o defeito que o Iuri
+ * apanhou — o painel dizia "acaba" no próprio dia do pagamento.
+ *
+ * É também a data de renovação: é aí que há decisão a tomar.
+ * `null` num plano por arrancar (sem datas ainda).
+ */
+export function fimDaCobertura(m: Mensalidade): string | null {
+  if (!m.primeiraCobranca) return null;
+  const passo = PERIODO_MESES[m.periodo];
+  // Da primeira até ao fim: (N−1) períodos para chegar à última cobrança, mais
+  // um período de cobertura dessa última.
+  return addMeses(m.primeiraCobranca, m.numeroCobrancas * passo);
+}
+
 /** Combinado mas ainda sem data — arranca quando o cliente pagar. */
 export function isPlanoPorArrancar(m: Mensalidade): boolean {
   return !m.primeiraCobranca;
@@ -455,6 +473,9 @@ export type CobrancaCalendario = Cobranca & {
   clienteNome: string | null;
   /** true = dinheiro nosso a sair (alojamento, domínio), não a entrar. */
   ehDespesa: boolean;
+  // true = não é cobrança nenhuma, é o dia em que a cobertura acaba (última
+  // cobrança + um período). É aí que se decide renovar.
+  ehFimDoPlano: boolean;
 };
 
 export function cobrancasParaCalendario(
@@ -464,7 +485,37 @@ export function cobrancasParaCalendario(
 ): CobrancaCalendario[] {
   const planos = new Map(mensalidades.map((m) => [m.id, m]));
   const proj = new Map(projetos.map((p) => [p.id, p]));
-  return cobrancas.map((c) => {
+
+  // Uma entrada extra por plano no dia em que a cobertura expira — é aí que há
+  // decisão (renovar ou deixar cair), e não no dia da última cobrança.
+  const fins: CobrancaCalendario[] = [];
+  for (const m of mensalidades) {
+    if (m.fechadoEm) continue;
+    const fim = fimDaCobertura(m);
+    if (!fim) continue;
+    const p = proj.get(m.projetoId);
+    fins.push({
+      mensalidadeId: m.id,
+      projetoId: m.projetoId,
+      clienteId: m.clienteId,
+      // numero 0: não é prestação nenhuma, é o fim do plano.
+      numero: 0,
+      dataPrevista: fim,
+      valor: m.valor,
+      pago: 0,
+      dataPaga: null,
+      desvioDias: null,
+      estado: "futura",
+      planoTitulo: m.titulo,
+      totalCobrancas: m.numeroCobrancas,
+      projetoTitulo: p?.titulo ?? "Projecto",
+      clienteNome: p?.clienteNome ?? null,
+      ehDespesa: isPlanoDespesa(m),
+      ehFimDoPlano: true,
+    });
+  }
+
+  const entradas = cobrancas.map((c) => {
     const m = planos.get(c.mensalidadeId);
     const p = proj.get(c.projetoId);
     return {
@@ -474,8 +525,11 @@ export function cobrancasParaCalendario(
       projetoTitulo: p?.titulo ?? "Projecto",
       clienteNome: p?.clienteNome ?? null,
       ehDespesa: m ? isPlanoDespesa(m) : false,
+      ehFimDoPlano: false,
     };
   });
+
+  return [...entradas, ...fins];
 }
 
 /**

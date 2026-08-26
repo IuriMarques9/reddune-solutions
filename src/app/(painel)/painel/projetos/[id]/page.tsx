@@ -38,6 +38,7 @@ import {
   isPlanoPorArrancar,
   proximaCobranca,
   resumoMensalidade,
+  fimDaCobertura,
 } from "@/lib/mensalidades";
 import { PERIODO_SUFIXO, type Cobranca, type Mensalidade } from "@/types/mensalidade";
 import { StatusBadge } from "@/components/painel/StatusBadge";
@@ -275,7 +276,9 @@ function PlanosAside({
           const minhas = cobrancas.filter((c) => c.mensalidadeId === m.id);
           const resumo = resumoMensalidade(m, minhas);
           const proxima = proximaCobranca(minhas);
-          const fim = minhas.length > 0 ? minhas[minhas.length - 1].dataPrevista : null;
+          // Fim = última cobrança + um período: uma anuidade paga em Junho
+          // cobre até Junho do ano seguinte, não acaba no dia em que se paga.
+          const fim = fimDaCobertura(m);
           const porArrancar = isPlanoPorArrancar(m);
           return (
             <div key={m.id} style={{ fontSize: 12.5 }}>
@@ -296,23 +299,15 @@ function PlanosAside({
                 <div style={{ fontSize: 11.5, marginTop: 2, color: "var(--ink-soft)" }}>
                   {/* Numa cobrança só, "próxima" e "fim" são o mesmo dia — dizer
                       as duas era repetir a mesma data duas vezes. */}
-                  {proxima && fim && proxima.dataPrevista === fim ? (
+                  {proxima && (
                     <>
-                      Última: <b>{dia(fim)}</b>
+                      Próxima: {dia(proxima.dataPrevista)}
+                      <br />
                     </>
-                  ) : (
+                  )}
+                  {fim && (
                     <>
-                      {proxima && (
-                        <>
-                          Próxima: {dia(proxima.dataPrevista)}
-                          <br />
-                        </>
-                      )}
-                      {fim && (
-                        <>
-                          Acaba a <b>{dia(fim)}</b>
-                        </>
-                      )}
+                      Cobre até <b>{dia(fim)}</b>
                     </>
                   )}
                 </div>

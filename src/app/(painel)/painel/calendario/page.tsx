@@ -239,10 +239,12 @@ function buildAgenda(
     entries.push({
       id: `c-${c.mensalidadeId}-${c.numero}`,
       href: `/painel/projetos/${c.projetoId}#mensalidades`,
-      label: `${valor} € · ${c.clienteNome ?? c.projetoTitulo}`,
-      sub:
-        `${c.planoTitulo} ${c.numero}/${c.totalCobrancas}` +
-        (c.numero === c.totalCobrancas ? " · última" : ""),
+      label: c.ehFimDoPlano
+        ? `${c.planoTitulo} acaba`
+        : `${valor} € · ${c.clienteNome ?? c.projetoTitulo}`,
+      sub: c.ehFimDoPlano
+        ? "Acaba — renovar ou deixar cair"
+        : `${c.planoTitulo} ${c.numero}/${c.totalCobrancas}`,
       date: d,
       // Uma cobrança já paga não é accionável — fica só na grelha do mês.
       accionavel: c.estado !== "paga",
