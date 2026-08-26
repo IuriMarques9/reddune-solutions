@@ -27,7 +27,8 @@ import {
   type MetodoPagamento,
   type Pagamento,
 } from "@/types/pagamento";
-import { resumoMensalidade } from "@/lib/mensalidades";
+import { resumoMensalidade, CATEGORIA_CUSTO_PADRAO } from "@/lib/mensalidades";
+import { LINHA_CATEGORIA, LINHA_CATEGORIA_LABEL, type LinhaCategoria } from "@/types/projeto";
 import { comIva, IVA_LABEL } from "@/lib/iva";
 import { parseMoney } from "@/lib/parse-number";
 import { safeDelete, safeJsonPost } from "@/lib/safe-fetch";
@@ -687,6 +688,9 @@ function PlanoForm({
   const [dentroDoValor, setDentroDoValor] = useState(mensalidade?.dentroDoValor ?? true);
   // Herda o do projecto num plano novo; num plano existente manda o que lá está.
   const [levaIva, setLevaIva] = useState(mensalidade?.comIva ?? projetoComIva);
+  const [categoriaCusto, setCategoriaCusto] = useState<LinhaCategoria>(
+    mensalidade?.categoriaCusto ?? CATEGORIA_CUSTO_PADRAO
+  );
   const [notas, setNotas] = useState(mensalidade?.notas ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -716,6 +720,7 @@ function PlanoForm({
       ativo: mensalidade?.ativo ?? true,
       dentroDoValor,
       comIva: levaIva,
+      categoriaCusto,
       notas: notas.trim() || null,
       fechadoEm: mensalidade?.fechadoEm ?? null,
     });
@@ -877,10 +882,48 @@ function PlanoForm({
           <span style={{ display: "block", color: "var(--ink-mute)", fontSize: 11.5 }}>
             Ligado: estas cobranças SÃO o valor já orçamentado, partido em prestações — as
             Dívidas não contam o mesmo dinheiro duas vezes. Desligado: é dinheiro por cima
-            (manutenção, alojamento, avença).
+            (manutenção, alojamento, avença) e o painel cria a linha nos Custos por ti.
           </span>
         </span>
       </label>
+
+      {/* Só aparece quando o plano vai mesmo gerar linha — senão é ruído. */}
+      {!dentroDoValor && (
+        <div
+          style={{
+            border: "1px dashed rgba(90,14,14,.16)",
+            borderRadius: 10,
+            padding: "10px 12px",
+            marginBottom: 10,
+          }}
+        >
+          <div className="field" style={{ marginBottom: 6 }}>
+            <label htmlFor="mn-cat">Categoria nos Custos</label>
+            <select
+              id="mn-cat"
+              value={categoriaCusto}
+              onChange={(e) => setCategoriaCusto(e.target.value as LinhaCategoria)}
+              disabled={saving}
+            >
+              {LINHA_CATEGORIA.map((c) => (
+                <option key={c} value={c}>
+                  {LINHA_CATEGORIA_LABEL[c]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: 0 }}>
+            Nasce a linha{" "}
+            <b>
+              {(titulo.trim() || (periodo === "anual" ? "Anuidade" : "Mensalidade"))} (
+              {PERIODO_SUFIXO[periodo]})
+            </b>
+            {v != null && <> — {money(v)} €</>}, com o valor de <b>um período</b>. Não conta
+            como gasto da RedDune: é dinheiro a receber, e serve para o cliente ver a rubrica
+            no portal. Editas ou apagas nos Custos como qualquer outra linha.
+          </p>
+        </div>
+      )}
 
       <div className="field">
         <label htmlFor="mn-notas">Notas internas</label>

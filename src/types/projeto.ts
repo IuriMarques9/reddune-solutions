@@ -190,6 +190,11 @@ export interface ProjetoLinha {
   // Data (yyyy-mm-dd) em que o gasto aconteceu — regime de caixa. Opcional:
   // vazio/null cai no comportamento antigo (mês do dataCriado do projecto).
   data?: string | null;
+  // Linha GERADA por um plano recorrente marcado "dinheiro por cima" (ver
+  // src/types/mensalidade.ts). O painel mantém-na em sincronia com o plano;
+  // apagar o plano deixa a linha cá e só tira a marca — o dinheiro foi real.
+  // Ausente = linha escrita à mão, e o painel nunca lhe toca.
+  mensalidadeId?: string | null;
 }
 
 /** Total de gasto da empresa nas linhas de um projecto (só linhas marcadas). */

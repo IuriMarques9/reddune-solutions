@@ -83,6 +83,14 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   voltam a ser avulso (`desligarPagamentosDaMensalidade`).
 - Portal do cliente vê o plano e o que falta. NUNCA atrasos, notas internas nem
   `dentroDoValor`.
+- **Linha automática nos Custos** (2026-08-26): um plano com `dentroDoValor:
+  false` cria/actualiza uma linha marcada `ProjetoLinha.mensalidadeId`, via
+  `sincronizarLinhaDoPlano()`. Com `dentroDoValor: true` NÃO cria nada — esse
+  dinheiro já lá está e duplicaria o projecto. A linha vale UM período (490 €,
+  não os 3×490 €) e nasce com `gastoEmpresa: false`: é dinheiro a receber, não
+  um gasto nosso, e serve para o cliente ver a rubrica no portal. `valorEstimado`
+  é reposto como soma das linhas — a mesma conta do CustosCard. Linhas escritas
+  à mão nunca são tocadas; apagar o plano deixa a linha e só tira a marca.
 - Push diário: `/api/cron/mensalidades` (Vercel Cron 08:00 UTC em `vercel.json`)
   precisa da env **`CRON_SECRET`** — sem ela devolve 401 a tudo, inclusive ao
   próprio cron. Hobby permite crons (1×/dia, ±59 min). Dedup em

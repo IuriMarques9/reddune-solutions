@@ -11,6 +11,8 @@
 // receita (relatórios, dívidas, top clientes, perfil do cliente, portal)
 // continua a contar sem alterações.
 
+import type { LinhaCategoria } from "@/types/projeto";
+
 export const MENSALIDADE_PERIODO = ["mensal", "anual"] as const;
 
 export type MensalidadePeriodo = (typeof MENSALIDADE_PERIODO)[number];
@@ -66,6 +68,10 @@ export interface Mensalidade {
   // cima (ex.: manutenção anual). Sem isto a página Dívidas contava o mesmo
   // dinheiro duas vezes.
   dentroDoValor: boolean;
+  // Categoria da linha que o plano cria nos Custos quando `dentroDoValor` é
+  // false. Ignorada no caso contrário. Default "software" — o caso comum
+  // (manutenção, alojamento, licenças).
+  categoriaCusto?: LinhaCategoria;
   /** Notas INTERNAS — nunca vão ao portal do cliente. */
   notas: string | null;
   criadoEm: string;

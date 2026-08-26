@@ -8,11 +8,13 @@
 // arquitectura em src/types/mensalidade.ts.
 import {
   PERIODO_MESES,
+  PERIODO_SUFIXO,
   type Cobranca,
   type CobrancaEstado,
   type Mensalidade,
 } from "@/types/mensalidade";
 import type { Pagamento } from "@/types/pagamento";
+import type { ProjetoLinha } from "@/types/projeto";
 import { comIva } from "@/lib/iva";
 
 /** Antecedência com que uma cobrança por pagar passa a "a-vencer". */
@@ -258,6 +260,105 @@ export function pontualidade(cobrancas: Cobranca[]): Pontualidade {
     mediaDias: pagas.length > 0 ? soma / pagas.length : 0,
     total: pagas.length,
   };
+}
+
+/** Categoria por defeito da linha que um plano cria nos Custos. */
+export const CATEGORIA_CUSTO_PADRAO = "software" as const;
+
+/** Descrição da linha gerada — o título do plano, com o período à frente. */
+export function descricaoLinhaDoPlano(m: Mensalidade): string {
+  return `${m.titulo} (${PERIODO_SUFIXO[m.periodo]})`;
+}
+
+/**
+ * Mantém os Custos do projecto em sincronia com um plano recorrente.
+ *
+ * Só planos marcados "dinheiro por cima" (`dentroDoValor: false`) geram linha:
+ * quando o plano É o valor do projecto partido em prestações, esse dinheiro já
+ * está nos Custos e criar linha punha o projecto a valer o dobro.
+ *
+ * A linha vale UM período (490 €/ano, não os três anos): o que está garantido é
+ * o ano corrente — decisão do Iuri. Os períodos seguintes aparecem como receita
+ * quando forem cobrados.
+ *
+ * Só toca em linhas com `mensalidadeId` deste plano. As escritas à mão ficam
+ * intactas, sempre.
+ *
+ * Devolve `null` em `linhas`/`valorEstimado` quando não há nada a mudar — o
+ * chamador não deve gravar nesse caso.
+ */
+export function sincronizarLinhaDoPlano(
+  linhasActuais: ProjetoLinha[] | null | undefined,
+  valorEstimadoActual: number | null | undefined,
+  m: Mensalidade,
+  novoId: () => string
+): { linhas: ProjetoLinha[]; valorEstimado: number | null } | null {
+  const linhas = [...(linhasActuais ?? [])];
+  const i = linhas.findIndex((l) => l.mensalidadeId === m.id);
+
+  if (m.dentroDoValor) {
+    // Passou a fazer parte do valor: a linha que o plano criou deixa de fazer
+    // sentido (senão contava duas vezes).
+    if (i < 0) return null;
+    linhas.splice(i, 1);
+    return { linhas, valorEstimado: somaLinhas(linhas, valorEstimadoActual) };
+  }
+
+  const linha: ProjetoLinha = {
+    id: i >= 0 ? linhas[i].id : novoId(),
+    descricao: descricaoLinhaDoPlano(m),
+    categoria: m.categoriaCusto ?? CATEGORIA_CUSTO_PADRAO,
+    quantidade: 1,
+    // BASE s/ IVA: as linhas nunca levam IVA (regra do CLAUDE.md); o IVA é
+    // aplicado no render por `Projeto.comIva`.
+    precoUnit: m.valor,
+    gastoEmpresa: false,
+    data: null,
+    mensalidadeId: m.id,
+  };
+
+  if (i >= 0) {
+    // Nada mudou — não sujar o projecto nem a auditoria com uma gravação igual.
+    const a = linhas[i];
+    if (
+      a.descricao === linha.descricao &&
+      a.categoria === linha.categoria &&
+      a.quantidade === linha.quantidade &&
+      a.precoUnit === linha.precoUnit
+    ) {
+      return null;
+    }
+    linhas[i] = { ...a, ...linha };
+    return { linhas, valorEstimado: somaLinhas(linhas, valorEstimadoActual) };
+  }
+
+  // Primeira linha num projecto que só tinha `valorEstimado` (modelo antigo):
+  // preserva o valor numa linha própria, senão a soma das linhas passava a ser
+  // só o plano e o orçamento do projecto encolhia.
+  if (linhas.length === 0 && valorEstimadoActual != null && valorEstimadoActual > 0) {
+    linhas.push({
+      id: novoId(),
+      descricao: "Valor orçado",
+      categoria: "outro",
+      quantidade: 1,
+      precoUnit: valorEstimadoActual,
+      gastoEmpresa: false,
+      data: null,
+    });
+  }
+
+  linhas.push(linha);
+  return { linhas, valorEstimado: somaLinhas(linhas, valorEstimadoActual) };
+}
+
+/**
+ * `valorEstimado` = soma das linhas — a mesma conta que o cartão de Custos faz
+ * ao gravar (CustosCard). Sem linhas devolve o valor antigo: nunca escrever 0
+ * por cima de um orçamento que existia.
+ */
+function somaLinhas(linhas: ProjetoLinha[], anterior: number | null | undefined): number | null {
+  if (linhas.length === 0) return anterior ?? null;
+  return Math.round(linhas.reduce((s, l) => s + l.quantidade * l.precoUnit, 0) * 100) / 100;
 }
 
 /**

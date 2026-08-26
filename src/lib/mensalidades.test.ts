@@ -12,9 +12,12 @@ import {
   receitaRecorrente,
   pontualidade,
   porCobrarDentroDoValor,
+  sincronizarLinhaDoPlano,
+  descricaoLinhaDoPlano,
 } from "@/lib/mensalidades";
 import type { Mensalidade } from "@/types/mensalidade";
 import type { Pagamento } from "@/types/pagamento";
+import type { ProjetoLinha } from "@/types/projeto";
 
 // Caso real do Atelier dos Trakinas: 4.400 € em 12 mensalidades de 366,67 €,
 // mais 490 €/ano de manutenção. Serve de base a quase todos os testes.
@@ -447,6 +450,114 @@ describe("pontualidade", () => {
       expect(cs[0].valor).toBeCloseTo(366.67, 2);
     });
   });
+
+describe("sincronizarLinhaDoPlano", () => {
+  let n = 0;
+  const novoId = () => `linha-${++n}`;
+  const maoObra: ProjetoLinha = {
+    id: "l-existente",
+    descricao: "Desenvolvimento da app",
+    categoria: "mao-obra",
+    quantidade: 1,
+    precoUnit: 5400,
+  };
+  const anual = plano({
+    id: "m-anual",
+    titulo: "Manutenção anual",
+    valor: 490,
+    periodo: "anual",
+    numeroCobrancas: 3,
+    dentroDoValor: false,
+  });
+
+  it("NÃO cria linha quando o plano faz parte do valor do projecto", () => {
+    // A armadilha: as 12 mensalidades JÁ são a linha de mão-de-obra. Criar
+    // outra punha o projecto a valer o dobro.
+    const dentro = plano({ id: "m1", dentroDoValor: true });
+    expect(sincronizarLinhaDoPlano([maoObra], 5400, dentro, novoId)).toBeNull();
+  });
+
+  it("cria a linha quando é dinheiro por cima, e soma ao valor do projecto", () => {
+    const r = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
+    expect(r.linhas).toHaveLength(2);
+    const nova = r.linhas[1];
+    expect(nova.descricao).toBe("Manutenção anual (ano)");
+    expect(nova.precoUnit).toBe(490);
+    expect(nova.mensalidadeId).toBe("m-anual");
+    expect(r.valorEstimado).toBe(5890);
+  });
+
+  it("a linha vale UM período, não o plano todo", () => {
+    // 3 × 490 € não são 1.470 € no orçamento: só está garantido o ano corrente.
+    const r = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
+    expect(r.linhas[1].precoUnit).toBe(490);
+    expect(r.valorEstimado).not.toBe(5400 + 1470);
+  });
+
+  it("não conta como gasto da RedDune", () => {
+    // É dinheiro a receber; enquanto não for pago não desconta nada a ninguém.
+    const r = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
+    expect(r.linhas[1].gastoEmpresa).toBe(false);
+  });
+
+  it("respeita a categoria escolhida", () => {
+    const r = sincronizarLinhaDoPlano(
+      [maoObra], 5400, { ...anual, categoriaCusto: "outro" }, novoId
+    )!;
+    expect(r.linhas[1].categoria).toBe("outro");
+  });
+
+  it("actualiza a linha em vez de criar outra quando o plano muda", () => {
+    const inicial = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
+    const idLinha = inicial.linhas[1].id;
+    const subiu = sincronizarLinhaDoPlano(
+      inicial.linhas, inicial.valorEstimado, { ...anual, valor: 550 }, novoId
+    )!;
+    expect(subiu.linhas).toHaveLength(2);
+    expect(subiu.linhas[1].id).toBe(idLinha);
+    expect(subiu.linhas[1].precoUnit).toBe(550);
+    expect(subiu.valorEstimado).toBe(5950);
+  });
+
+  it("não grava nada quando nada mudou", () => {
+    const inicial = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
+    expect(sincronizarLinhaDoPlano(inicial.linhas, inicial.valorEstimado, anual, novoId)).toBeNull();
+  });
+
+  it("remove a linha se o plano passar a fazer parte do valor", () => {
+    const inicial = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
+    const r = sincronizarLinhaDoPlano(
+      inicial.linhas, inicial.valorEstimado, { ...anual, dentroDoValor: true }, novoId
+    )!;
+    expect(r.linhas).toHaveLength(1);
+    expect(r.valorEstimado).toBe(5400);
+  });
+
+  it("nunca toca em linhas escritas à mão", () => {
+    const r = sincronizarLinhaDoPlano([maoObra], 5400, anual, novoId)!;
+    expect(r.linhas[0]).toEqual(maoObra);
+  });
+
+  it("preserva o orçamento de um projecto que ainda não tinha linhas", () => {
+    // Sem isto, a soma das linhas passava a ser só o plano e o projecto
+    // encolhia de 5.400 € para 490 €.
+    const r = sincronizarLinhaDoPlano(null, 5400, anual, novoId)!;
+    expect(r.linhas).toHaveLength(2);
+    expect(r.linhas[0]).toMatchObject({ descricao: "Valor orçado", precoUnit: 5400 });
+    expect(r.valorEstimado).toBe(5890);
+  });
+
+  it("projecto sem linhas e sem orçamento fica só com a linha do plano", () => {
+    const r = sincronizarLinhaDoPlano(null, null, anual, novoId)!;
+    expect(r.linhas).toHaveLength(1);
+    expect(r.valorEstimado).toBe(490);
+  });
+
+  it("descrição diz o período", () => {
+    expect(descricaoLinhaDoPlano(anual)).toBe("Manutenção anual (ano)");
+    expect(descricaoLinhaDoPlano(plano({ id: "x" }))).toBe("Mensalidade 12x (mês)");
+  });
+});
 
 describe("porCobrarDentroDoValor", () => {
   it("devolve o que falta receber pelos planos que fazem parte do valor", () => {

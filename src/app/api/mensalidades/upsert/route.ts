@@ -3,7 +3,9 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import { apiError, apiOk, parseJson, withAuth } from "@/lib/api";
 import { getMensalidadeById, upsertMensalidade } from "@/lib/mongodb/mensalidades";
-import { getProjetoById } from "@/lib/mongodb/projetos";
+import { getProjetoById, patchProjeto } from "@/lib/mongodb/projetos";
+import { sincronizarLinhaDoPlano } from "@/lib/mensalidades";
+import { LINHA_CATEGORIA } from "@/types/projeto";
 import { logMutation } from "@/lib/mongodb/mutation-audit";
 import {
   MENSALIDADE_MAX_COBRANCAS,
@@ -26,6 +28,8 @@ const schema = z.object({
   dentroDoValor: z.boolean(),
   // Omitido = herda o do projecto (mesma regra do Pagamento.comIva).
   comIva: z.boolean().nullish(),
+  // Categoria da linha nos Custos — só conta quando dentroDoValor é false.
+  categoriaCusto: z.enum(LINHA_CATEGORIA).nullish(),
   notas: z.string().max(2000).nullish(),
   fechadoEm: z.string().nullish(),
 });
@@ -59,6 +63,7 @@ export const POST = withAuth(async (session, request) => {
     ativo: input.ativo,
     dentroDoValor: input.dentroDoValor,
     comIva: input.comIva ?? projeto.comIva ?? false,
+    categoriaCusto: input.categoriaCusto ?? existente?.categoriaCusto ?? undefined,
     notas: input.notas?.trim() || null,
     // Só aplicado no insert (upsertMensalidade usa $setOnInsert).
     criadoEm: existente?.criadoEm ?? new Date().toISOString(),
@@ -66,6 +71,23 @@ export const POST = withAuth(async (session, request) => {
   };
 
   await upsertMensalidade(mensalidade);
+
+  // Custos: um plano "dinheiro por cima" ganha a sua linha, para o cliente ver
+  // a rubrica no portal. `gastoEmpresa: false` — é dinheiro a receber, não um
+  // gasto nosso; enquanto não for pago não desconta nada à RedDune.
+  const sync = sincronizarLinhaDoPlano(
+    projeto.linhas,
+    projeto.valorEstimado,
+    mensalidade,
+    randomUUID
+  );
+  if (sync) {
+    await patchProjeto(input.projetoId, {
+      linhas: sync.linhas,
+      valorEstimado: sync.valorEstimado,
+    });
+  }
+
   await logMutation({
     collection: "mensalidades",
     entityId: id,
