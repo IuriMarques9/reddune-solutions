@@ -11,7 +11,13 @@ import type { Pagamento } from "@/types/pagamento";
 import { comIva, cents, temIvaPorLinha, totalACobrarLinhas } from "@/lib/iva";
 import type { Mensalidade } from "@/types/mensalidade";
 import { PERIODO_SUFIXO } from "@/types/mensalidade";
-import { cobrancasDe, isPlanoDespesa, proximaCobranca, resumoMensalidade } from "@/lib/mensalidades";
+import {
+  cobrancasDe,
+  isPlanoDespesa,
+  isPlanoPorArrancar,
+  proximaCobranca,
+  resumoMensalidade,
+} from "@/lib/mensalidades";
 import { todayLisbonYmd } from "@/lib/dates";
 
 // DTOs do portal do cliente: allowlist EXPLÍCITA. Campo novo no Projeto/Cliente
@@ -64,8 +70,10 @@ export type PortalPlanoDTO = {
   periodoSufixo: string;
   total: number;
   pagas: number;
-  /** yyyy-mm-dd da próxima por liquidar; null se estiver tudo pago. */
+  /** yyyy-mm-dd da próxima por liquidar; null se estiver tudo pago OU por arrancar. */
   proximaData: string | null;
+  /** Combinado mas ainda sem calendário — arranca no primeiro pagamento. */
+  porArrancar: boolean;
 };
 
 export type PortalProjetoDTO = {
@@ -143,6 +151,7 @@ export function toPortalProjeto(
           total: m.numeroCobrancas,
           pagas: resumo.pagas,
           proximaData: proximaCobranca(cobrancas)?.dataPrevista ?? null,
+          porArrancar: isPlanoPorArrancar(m),
         };
       });
 

@@ -15,6 +15,7 @@ import {
   sincronizarLinhaDoPlano,
   descricaoLinhaDoPlano,
   isPlanoDespesa,
+  isPlanoPorArrancar,
   margemDoPlano,
   planosReceita,
   planosDespesa,
@@ -661,6 +662,52 @@ describe("planos de despesa (o que NÓS pagamos)", () => {
     // As linhas são o que o CLIENTE paga. O gasto vive nas despesas.
     expect(sincronizarLinhaDoPlano([], null, dominio, () => "x")).toBeNull();
     expect(sincronizarLinhaDoPlano([], 5400, { ...dominio, valor: 490 }, () => "x")).toBeNull();
+  });
+});
+
+describe("plano por arrancar (sem data de início)", () => {
+  // Regra do Iuri: o preço fecha-se quando se combina, mas a data só existe
+  // quando o cliente paga a primeira. Até lá não há calendário nenhum.
+  const combinado = plano({ id: "m1", primeiraCobranca: null });
+
+  it("reconhece o estado", () => {
+    expect(isPlanoPorArrancar(combinado)).toBe(true);
+    expect(isPlanoPorArrancar(plano({ id: "m2" }))).toBe(false);
+  });
+
+  it("não gera cobrança nenhuma — nada vence, nada avisa", () => {
+    expect(cobrancasDe(combinado, [], "2026-09-01")).toEqual([]);
+    expect(todasCobrancas([combinado], [], "2026-12-31")).toEqual([]);
+    expect(cobrancasVencidas(todasCobrancas([combinado], [], "2027-12-31"))).toEqual([]);
+  });
+
+  it("não é dado como terminado só por não ter cobranças", () => {
+    // `pagas >= numeroCobrancas` com 0 e 12 continua false — mas era aqui que
+    // um plano de 0 cobranças podia passar por cumprido.
+    const r = resumoMensalidade(combinado, []);
+    expect(r.geradas).toBe(0);
+    expect(r.terminada).toBe(false);
+    expect(r.porCobrar).toBe(0);
+  });
+
+  it("não conta como receita recorrente enquanto não arrancar", () => {
+    // Sem cobranças abertas não há MRR: ainda não está a render nada.
+    expect(receitaRecorrente([combinado], []).planosAtivos).toBe(0);
+  });
+
+  it("MAS a linha nos Custos é criada na mesma — o preço está fechado", () => {
+    const r = sincronizarLinhaDoPlano([], null, combinado, () => "l1")!;
+    expect(r.linhas).toHaveLength(1);
+    expect(r.linhas[0].quantidade).toBe(12);
+    expect(r.valorEstimado).toBeCloseTo(4400.04, 2);
+  });
+
+  it("ao arrancar, o calendário nasce a partir da data do primeiro pagamento", () => {
+    const arrancou = { ...combinado, primeiraCobranca: "2026-11-15" };
+    const cs = cobrancasDe(arrancou, [], "2026-11-15");
+    expect(cs).toHaveLength(12);
+    expect(cs[0].dataPrevista).toBe("2026-11-15");
+    expect(cs[1].dataPrevista).toBe("2026-12-15");
   });
 });
 

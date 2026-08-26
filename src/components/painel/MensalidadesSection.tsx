@@ -39,6 +39,7 @@ import {
 import {
   resumoMensalidade,
   isPlanoDespesa,
+  isPlanoPorArrancar,
   margemDoPlano,
   CATEGORIA_CUSTO_PADRAO,
 } from "@/lib/mensalidades";
@@ -213,6 +214,7 @@ function PlanoCard({
   // Plano sem valor previsto (lembrete de renovação): não há barra de progresso
   // nem "liquidado" que faça sentido — 0 por cobrar não quer dizer pago.
   const semValor = m.valor <= 0;
+  const porArrancar = isPlanoPorArrancar(m);
   const margem = useMemo(() => margemDoPlano(m), [m]);
   const porLiquidar = cobrancas.filter((c) => c.estado !== "paga").length;
   const pct = resumo.valorTotal > 0 ? Math.min(100, (resumo.recebido / resumo.valorTotal) * 100) : 0;
@@ -341,6 +343,20 @@ function PlanoCard({
             dentro do valor
           </span>
         )}
+        {porArrancar && (
+          <span
+            title="Combinado mas sem data. A linha já está nos Custos; o calendário nasce quando o cliente pagar."
+            style={{
+              fontSize: 10.5,
+              padding: "1px 7px",
+              borderRadius: 999,
+              background: "rgba(176,121,63,.18)",
+              color: "#8a5a2b",
+            }}
+          >
+            por arrancar
+          </span>
+        )}
         {!m.ativo && (
           <span
             title="Desligado: não gera cobranças novas. As que já venceram por pagar mantêm-se."
@@ -394,7 +410,12 @@ function PlanoCard({
           <span>
             {money(resumo.recebido)} € {ehDespesa ? "pagos" : "recebidos"}
           </span>
-          {semValor ? (
+          {porArrancar ? (
+            // Sem cobranças, `porCobrar` é 0 — e 0 por cobrar NÃO é liquidado.
+            <span style={{ color: "var(--ink-soft)" }}>
+              {money(resumo.valorTotal)} € combinados
+            </span>
+          ) : semValor ? (
             <span style={{ color: porLiquidar > 0 ? "var(--ink-soft)" : "var(--dune)" }}>
               {porLiquidar > 0
                 ? `${porLiquidar} por pagar · valor por definir`
@@ -408,7 +429,7 @@ function PlanoCard({
             </span>
           )}
         </div>
-        {!semValor && (
+        {!semValor && !porArrancar && (
           <div className="bar-track">
             <div className="bar-fill" style={{ width: `${Math.max(2, pct)}%` }} />
           </div>
@@ -509,6 +530,28 @@ function PlanoCard({
           />
           Activo
         </label>
+      )}
+
+      {porArrancar && (
+        <div
+          style={{
+            marginTop: 10,
+            padding: "8px 10px",
+            borderRadius: 10,
+            background: "rgba(176,121,63,.10)",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
+          <span style={{ fontSize: 12.5 }}>
+            Sem data — nada vence nem avisa. Arranca quando o cliente pagar a primeira.
+          </span>
+          <span style={{ marginLeft: "auto" }}>
+            <ArrancarPlano onArrancar={gravar} ocupado={ocupado} hoje={hoje} />
+          </span>
+        </div>
       )}
 
       {/* Cobranças */}
@@ -864,6 +907,65 @@ function ConfirmarCobranca({
 }
 
 
+
+/**
+ * Pôr o plano a andar. A data que interessa é a do PRIMEIRO pagamento — é ela
+ * que define o dia do mês de todas as cobranças seguintes.
+ */
+function ArrancarPlano({
+  onArrancar,
+  ocupado,
+  hoje,
+}: {
+  onArrancar: (patch: Partial<Mensalidade>, erroMsg: string) => Promise<void>;
+  ocupado: boolean;
+  hoje: string;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const [data, setData] = useState(hoje);
+
+  if (!aberto) {
+    return (
+      <button
+        type="button"
+        className="btn-ghost"
+        onClick={() => setAberto(true)}
+        disabled={ocupado}
+      >
+        <CalendarClock style={{ width: 13, height: 13 }} aria-hidden="true" />
+        Arrancar
+      </button>
+    );
+  }
+
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+      <input
+        type="date"
+        className="in-sm"
+        value={data}
+        onChange={(e) => setData(e.target.value)}
+        disabled={ocupado}
+        aria-label="Data da primeira cobrança"
+      />
+      <button
+        type="button"
+        className="btn-primary"
+        disabled={ocupado || !/^\d{4}-\d{2}-\d{2}$/.test(data)}
+        onClick={async () => {
+          await onArrancar({ primeiraCobranca: data }, "Erro a arrancar o plano");
+          setAberto(false);
+        }}
+      >
+        Confirmar
+      </button>
+      <button type="button" className="btn-ghost" onClick={() => setAberto(false)} disabled={ocupado}>
+        Cancelar
+      </button>
+    </span>
+  );
+}
+
 /* ────────────── Custo e margem (INTERNO — o cliente nunca vê) ────────────── */
 
 /**
@@ -1012,6 +1114,7 @@ function PlanoForm({
   const [valor, setValor] = useState(mensalidade ? String(mensalidade.valor) : "");
   const [periodo, setPeriodo] = useState<MensalidadePeriodo>(mensalidade?.periodo ?? "mensal");
   const [primeira, setPrimeira] = useState(mensalidade?.primeiraCobranca ?? "");
+  const porArrancar = primeira.trim() === "";
   const [quantas, setQuantas] = useState(String(mensalidade?.numeroCobrancas ?? 12));
   // Herda o do projecto num plano novo; num plano existente manda o que lá está.
   const [levaIva, setLevaIva] = useState(mensalidade?.comIva ?? projetoComIva);
@@ -1041,7 +1144,9 @@ function PlanoForm({
     }
     if (ehDespesa && valor.trim() !== "" && v == null) return setError("Valor inválido.");
     if (!Number.isFinite(n) || n < 1) return setError("Número de cobranças inválido.");
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(primeira)) return setError("Escolhe a data da primeira cobrança.");
+    if (primeira.trim() !== "" && !/^\d{4}-\d{2}-\d{2}$/.test(primeira)) {
+      return setError("Data inválida.");
+    }
 
     setSaving(true);
     setError(null);
@@ -1055,7 +1160,7 @@ function PlanoForm({
       valor: v ?? 0,
       categoriaDespesa,
       periodo,
-      primeiraCobranca: primeira,
+      primeiraCobranca: primeira.trim() || null,
       numeroCobrancas: n,
       ativo: mensalidade?.ativo ?? true,
       comIva: levaIva,
@@ -1158,14 +1263,13 @@ function PlanoForm({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
         <div className="field">
-          <label htmlFor="mn-primeira">Primeira cobrança</label>
+          <label htmlFor="mn-primeira">Primeira cobrança (opcional)</label>
           <input
             id="mn-primeira"
             type="date"
             value={primeira}
             onChange={(e) => setPrimeira(e.target.value)}
             disabled={saving}
-            required
           />
         </div>
         <div className="field">
@@ -1185,8 +1289,18 @@ function PlanoForm({
 
       {/* O dia do mês sai da data da primeira cobrança — não há campo separado. */}
       <p style={{ fontSize: 11.5, color: "var(--ink-mute)", margin: "0 0 10px" }}>
-        As cobranças seguintes caem no mesmo dia do mês (ou do ano). Dia 31 passa para o último
-        dia dos meses mais curtos.
+        {porArrancar ? (
+          <>
+            <b>Deixa vazio se ainda não arrancou.</b> O preço fica fechado e a linha entra nos
+            Custos, mas o calendário só nasce quando o cliente pagar — depois é só carregar em
+            Arrancar no cartão do plano.
+          </>
+        ) : (
+          <>
+            As cobranças seguintes caem no mesmo dia do mês (ou do ano). Dia 31 passa para o
+            último dia dos meses mais curtos.
+          </>
+        )}
         {total != null && (
           <>
             {" "}

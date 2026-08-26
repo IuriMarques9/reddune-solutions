@@ -27,7 +27,12 @@ const schema = z.object({
   valor: z.number().finite().min(0),
   periodo: z.enum(MENSALIDADE_PERIODO),
   // A única âncora de datas do plano — ver a nota em src/types/mensalidade.ts.
-  primeiraCobranca: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (yyyy-mm-dd)"),
+  // Opcional: um plano pode ser combinado hoje e só arrancar quando o cliente
+  // pagar. Sem data não gera cobranças nenhumas.
+  primeiraCobranca: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (yyyy-mm-dd)")
+    .nullish(),
   numeroCobrancas: z.number().int().min(1).max(MENSALIDADE_MAX_COBRANCAS),
   ativo: z.boolean(),
   // Já não vem do formulário: um plano de receita é SEMPRE dono da sua linha
@@ -80,7 +85,7 @@ export const POST = withAuth(async (session, request) => {
     titulo: input.titulo.trim(),
     valor: input.valor,
     periodo: input.periodo,
-    primeiraCobranca: input.primeiraCobranca,
+    primeiraCobranca: input.primeiraCobranca || null,
     numeroCobrancas: input.numeroCobrancas,
     ativo: input.ativo,
     // Receita: sempre parte do valor (é dona da sua linha). Despesa: nunca —

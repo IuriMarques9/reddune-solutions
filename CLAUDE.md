@@ -66,6 +66,14 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
 - `primeiraCobranca` é a ÚNICA âncora de datas. NÃO acrescentar `diaVencimento`:
   dois campos que podem discordar são uma classe inteira de bugs. Cobrança N =
   primeira + (N−1) meses (ou anos), com o dia limitado ao último do mês.
+- **A data é OPCIONAL** (2026-08-26): `primeiraCobranca: null` = plano combinado
+  mas POR ARRANCAR. O preço fecha-se quando se combina, mas a data só existe
+  quando o cliente paga a primeira (regra do Iuri). Sem data, `cobrancasDe`
+  devolve `[]` — nada vence, nada avisa, não conta como receita recorrente. A
+  linha nos Custos é criada na mesma: o valor está combinado e é devido.
+  Cuidado com `porCobrar === 0` nesse estado: 0 por cobrar NÃO é "Liquidado" —
+  o cartão mostra "X € combinados". Botão **Arrancar** no cartão pede a data e
+  o calendário nasce a partir dela.
 - O dinheiro continua a ser um `Pagamento` normal, com `mensalidadeId` +
   `cobrancaNumero` (ambos opcionais — os avulso de sempre não precisam de
   migração). É essa ligação que marca uma prestação como paga.

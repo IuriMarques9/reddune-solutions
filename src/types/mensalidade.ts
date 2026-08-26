@@ -77,7 +77,11 @@ export interface Mensalidade {
   // ÚNICA âncora de datas: yyyy-mm-dd da primeira cobrança. Não há campo
   // `diaVencimento` separado de propósito — dois campos que podem discordar são
   // uma classe inteira de bugs. O dia do mês sai desta data.
-  primeiraCobranca: string;
+  //
+  // NULL = plano combinado mas POR ARRANCAR: o preço está fechado e a linha já
+  // está nos Custos, mas o calendário só nasce quando o cliente pagar (decisão
+  // do Iuri). Sem data não há cobranças nenhumas — nem avisos, nem atrasos.
+  primeiraCobranca: string | null;
   /** Quantas cobranças o plano tem no total (fixo; renovar = aumentar). */
   numeroCobrancas: number;
   // O interruptor. Desligar PÁRA de gerar cobranças futuras, mas as que já

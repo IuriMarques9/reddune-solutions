@@ -333,10 +333,16 @@ export default async function PortalPage({ params }: { params: Params }) {
                       <span className="text-[rgba(247,238,219,0.70)]"> / {pl.periodoSufixo}</span>
                     </div>
                     <div className="mt-0.5 text-[13px] text-[rgba(247,238,219,0.70)]">
-                      {pl.pagas} paga{pl.pagas === 1 ? "" : "s"}
-                      {pl.proximaData
-                        ? ` · próxima a ${dataPt(pl.proximaData)}`
-                        : " · plano concluído"}
+                      {pl.porArrancar ? (
+                        "Começa no primeiro pagamento"
+                      ) : (
+                        <>
+                          {pl.pagas} paga{pl.pagas === 1 ? "" : "s"}
+                          {pl.proximaData
+                            ? ` · próxima a ${dataPt(pl.proximaData)}`
+                            : " · plano concluído"}
+                        </>
+                      )}
                     </div>
                   </li>
                 ))}

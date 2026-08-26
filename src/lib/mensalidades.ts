@@ -89,6 +89,11 @@ function estadoPorData(dataPrevista: string, hoje: string): CobrancaEstado {
   return "futura";
 }
 
+/** Combinado mas ainda sem data — arranca quando o cliente pagar. */
+export function isPlanoPorArrancar(m: Mensalidade): boolean {
+  return !m.primeiraCobranca;
+}
+
 /** O plano é de despesa (dinheiro nosso a sair), não de receita. */
 export function isPlanoDespesa(m: Mensalidade): boolean {
   return m.tipo === "despesa";
@@ -159,6 +164,10 @@ export function cobrancasDe(
     if (d && (!slot.dataPaga || d > slot.dataPaga)) slot.dataPaga = d;
     porNumero.set(n, slot);
   }
+
+  // Plano por arrancar: sem data não há calendário. O valor já está nos Custos
+  // (é dinheiro combinado e devido), mas nada vence enquanto não arrancar.
+  if (!m.primeiraCobranca) return [];
 
   const passo = PERIODO_MESES[m.periodo];
   // BRUTO: `m.valor` é a base s/ IVA (como o valorEstimado e as linhas), mas o
