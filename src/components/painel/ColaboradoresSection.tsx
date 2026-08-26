@@ -190,12 +190,14 @@ export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props
         Colaboradores
         {hasData && !open && (
           <span
+            className="truncate"
             style={{
               fontFamily: "var(--font-mono)",
               fontSize: 10,
               color: "var(--ink-mute)",
               letterSpacing: ".04em",
               textTransform: "none",
+              minWidth: 0,
             }}
           >
             {[
@@ -216,21 +218,9 @@ export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props
           </p>
         ) : (
           rows.map((r) => (
-            <div
-              key={r.key}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "minmax(140px, 1fr) minmax(0, 1.4fr) 110px 26px",
-                gap: 8,
-                alignItems: "center",
-                border: "1px solid rgba(90,14,14,.10)",
-                borderRadius: 10,
-                padding: "7px 9px",
-                background: "#fff",
-                marginBottom: 8,
-              }}
-            >
+            <div key={r.key} className="colab-row">
               <ColaboradorPicker
+                className="colab-pick"
                 colaboradores={colaboradores}
                 value={r.colaboradorId}
                 onChange={(id) => updateRow(r.key, { colaboradorId: id })}
@@ -238,7 +228,7 @@ export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props
                 excluir={rows.filter((x) => x.key !== r.key).map((x) => x.colaboradorId)}
               />
               <input
-                className="in-sm"
+                className="in-sm colab-papel"
                 value={r.papel}
                 onChange={(e) => updateRow(r.key, { papel: e.target.value })}
                 maxLength={300}
@@ -247,7 +237,7 @@ export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props
                 aria-label="Papel neste projecto"
               />
               <input
-                className="in-sm"
+                className="in-sm colab-valor"
                 type="text"
                 inputMode="decimal"
                 value={r.valorAcordado}
@@ -258,7 +248,7 @@ export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props
               />
               <button
                 type="button"
-                className="icon-mini"
+                className="icon-mini colab-del"
                 onClick={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}
                 disabled={saving}
                 title="Tirar do projecto"

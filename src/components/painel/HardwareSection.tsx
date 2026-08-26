@@ -8,6 +8,7 @@ import {
   HW_COMPONENTE_LABEL,
   HW_COMPONENTE_TIPO,
   HW_COMPONENTES_PC_TIPICO,
+  hardwareTemDados,
   type HardwareComponente,
   type HardwareComponenteTipo,
   type Projeto,
@@ -43,13 +44,7 @@ export function HardwareSection({ projeto }: Props) {
   const [, startTransition] = useTransition();
   const hw = projeto.hardware ?? {};
   const componentesIniciais = hw.componentes ?? [];
-  const hasData = !!(
-    hw.marca ||
-    hw.modelo ||
-    hw.serial ||
-    hw.acessoriosEntregues ||
-    componentesIniciais.length
-  );
+  const hasData = hardwareTemDados(hw);
   const [open, setOpen] = useState(hasData);
   const [marca, setMarca] = useState(hw.marca ?? "");
   const [modelo, setModelo] = useState(hw.modelo ?? "");

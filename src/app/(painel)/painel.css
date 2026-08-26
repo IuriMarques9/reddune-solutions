@@ -170,6 +170,14 @@
 .pnl .hwrow > * { min-width: 0; }
 .pnl .hwrow .in-sm { width: 100%; }
 .pnl .hwrow .hwtipo { font-size: 11px; border-radius: 7px; padding: 6px 8px; border: 1px solid rgba(90,14,14,.18); background: rgba(90,14,14,.04); color: var(--ink-soft); width: 100%; font-family: inherit; }
+/* Colaboradores vive no aside (coluna de 290px): pessoa em cima, papel+valor
+   em baixo — uma fila única de 4 colunas não cabe ali. */
+.pnl .colab-row { display: grid; grid-template-columns: minmax(0, 1fr) 84px 26px; grid-template-areas: "pick pick del" "papel valor valor"; gap: 6px; align-items: center; border: 1px solid rgba(90,14,14,.10); border-radius: 10px; padding: 7px 9px; background: #fff; margin-bottom: 8px; }
+.pnl .colab-row > * { min-width: 0; }
+.pnl .colab-row .colab-pick { grid-area: pick; }
+.pnl .colab-row .colab-papel { grid-area: papel; width: 100%; }
+.pnl .colab-row .colab-valor { grid-area: valor; width: 100%; }
+.pnl .colab-row .colab-del { grid-area: del; justify-self: end; }
 /* Fila principal: descrição (larga) · categoria · qtd · preço · menu ⋮.
    Subtotal, gasto-da-empresa e data vivem na sub-linha .ldata. */
 .pnl .lrow { display: grid; grid-template-columns: 1fr 128px 44px 82px 28px; gap: 8px; align-items: center; border: 1px solid rgba(90,14,14,.10); border-radius: 10px; padding: 7px 9px; background: #fff; margin-bottom: 8px; }

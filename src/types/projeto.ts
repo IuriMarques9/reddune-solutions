@@ -265,6 +265,18 @@ export interface ProjetoHardware {
   componentes?: HardwareComponente[];
 }
 
+/** Ficha de hardware com pelo menos um dado real (whitespace não conta). */
+export function hardwareTemDados(hw: ProjetoHardware | null | undefined): boolean {
+  if (!hw) return false;
+  return Boolean(
+    hw.marca?.trim() ||
+      hw.modelo?.trim() ||
+      hw.serial?.trim() ||
+      hw.acessoriosEntregues?.trim() ||
+      (hw.componentes?.length ?? 0) > 0
+  );
+}
+
 export interface ProjetoArquivo {
   id: string; // uuid
   pathname: string; // path no blob store: projetos/<projetoId>/<uuid>.<ext>

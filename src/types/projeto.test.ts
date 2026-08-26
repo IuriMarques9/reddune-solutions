@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { firstBaseTipo } from "@/types/projeto";
+import { firstBaseTipo, hardwareTemDados } from "@/types/projeto";
 import { projetoInputSchema } from "@/lib/validation-projeto";
 
 /**
@@ -31,6 +31,35 @@ describe("firstBaseTipo", () => {
   it("não confunde chaves do Object.prototype com tipos base", () => {
     expect(firstBaseTipo(["constructor"])).toBeNull();
     expect(firstBaseTipo(["toString"])).toBeNull();
+  });
+});
+
+/**
+ * `hardwareTemDados` decide se a ficha de hardware conta como preenchida —
+ * abre a secção no projecto e mete o projecto na vista "Equipamentos" do
+ * cliente. Docs antigos podem trazer strings vazias/whitespace.
+ */
+describe("hardwareTemDados", () => {
+  it("null/undefined/objecto vazio → false", () => {
+    expect(hardwareTemDados(null)).toBe(false);
+    expect(hardwareTemDados(undefined)).toBe(false);
+    expect(hardwareTemDados({})).toBe(false);
+  });
+
+  it("whitespace não conta como dado", () => {
+    expect(hardwareTemDados({ marca: "  ", modelo: "\t", serial: "" })).toBe(false);
+  });
+
+  it("qualquer campo de topo conta", () => {
+    expect(hardwareTemDados({ marca: "Asus" })).toBe(true);
+    expect(hardwareTemDados({ serial: "SN123" })).toBe(true);
+    expect(hardwareTemDados({ acessoriosEntregues: "carregador" })).toBe(true);
+  });
+
+  it("componentes contam mesmo sem campos de topo", () => {
+    expect(
+      hardwareTemDados({ componentes: [{ id: "hw_1", tipo: "cpu", descricao: "Ryzen 5 5600" }] })
+    ).toBe(true);
   });
 });
 

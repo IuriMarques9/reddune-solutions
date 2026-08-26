@@ -145,18 +145,12 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
             projetoTitulo={projeto.titulo}
           />
 
-          {/* Colaboradores — quem trabalha connosco neste projecto (não é
-              cliente) e os pagamentos que lhes fizemos. */}
-          <ColaboradoresSection
-            projeto={projeto}
-            despesas={despesas}
-            colaboradores={colaboradores}
-          />
-
-          {/* Hardware (só assistência técnica) */}
-          {projeto.categoria === "assistencia-tecnica" && (
+          {/* Hardware — qualquer categoria (cliente de web também traz PCs).
+              Colapsado quando vazio; âncora #hardware linkada do perfil do
+              cliente. */}
+          <div id="hardware" className="scroll-mt-6">
             <HardwareSection projeto={projeto} />
-          )}
+          </div>
 
           {/* Custos editável */}
           <CustosCard projeto={projeto} despesas={despesas} />
@@ -208,6 +202,15 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
               )}
             </div>
           </div>
+
+          {/* Colaboradores — quem trabalha connosco neste projecto (não é
+              cliente) e os pagamentos que lhes fizemos. Vive no aside: é
+              informação que se consulta muito e se altera pouco. */}
+          <ColaboradoresSection
+            projeto={projeto}
+            despesas={despesas}
+            colaboradores={colaboradores}
+          />
         </aside>
       </div>
     </>

@@ -8,6 +8,7 @@ import { METODO_LABEL } from "@/types/pagamento";
 import { Topbar } from "@/components/painel/Topbar";
 import { InlineStatusSelect } from "@/components/painel/InlineStatusSelect";
 import { ClienteForm } from "@/components/painel/ClienteForm";
+import { ClienteHardware } from "@/components/painel/ClienteHardware";
 import { STATUS_GROUPS } from "@/types/projeto";
 import { parseIsoDate } from "@/lib/dates";
 import { requirePainelSession } from "@/lib/painel-auth";
@@ -166,6 +167,9 @@ export default async function ClienteDetailPage({ params }: { params: Params }) 
           </table>
         </>
       )}
+
+      {/* Equipamentos — hardware registado nas fichas dos projectos */}
+      <ClienteHardware projetos={sortedProjetos} />
 
       {/* Histórico de pagamentos */}
       {pagamentos.length > 0 && (
