@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { collectGastos, gastoEmpresaDoProjeto, splitRepassadoEmpresa } from "@/lib/gastos";
+import { computeGastoEmpresa } from "@/types/projeto";
 import type { Projeto, ProjetoLinha } from "@/types/projeto";
 import type { Despesa } from "@/types/despesa";
 
@@ -117,5 +118,44 @@ describe("gastoEmpresaDoProjeto", () => {
     });
     expect(gastoEmpresaDoProjeto(p, [])).toBe(80);
     expect(totalRelatoriosDoProjeto(p, [])).toBe(0);
+  });
+});
+
+describe("linhas de plano nunca contam como gasto da empresa", () => {
+  // A armadilha que o Iuri apanhou: marcar ✓ na linha de uma mensalidade
+  // registava o PREÇO DO CLIENTE (490 €) como gasto nosso. O que gastámos é o
+  // custo do plano, e esse entra como despesa ao confirmar a cobrança.
+  const doPlano = linha({
+    id: "l-plano",
+    descricao: "Manutenção anual (ano)",
+    categoria: "software",
+    quantidade: 1,
+    precoUnit: 490,
+    gastoEmpresa: true, // marcada por engano, ou por ser anterior à regra
+    mensalidadeId: "m1",
+  });
+  const aMao = linha({
+    id: "l-mao",
+    descricao: "Disco",
+    categoria: "peca",
+    quantidade: 1,
+    precoUnit: 80,
+    gastoEmpresa: true,
+  });
+
+  it("computeGastoEmpresa ignora a linha do plano", () => {
+    expect(computeGastoEmpresa([doPlano, aMao])).toBe(80);
+  });
+
+  it("o log de gastos também a ignora", () => {
+    const p = projeto({ id: "p1", linhas: [doPlano, aMao] });
+    const eventos = collectGastos([p], []);
+    expect(eventos.map((e) => e.descricao)).toEqual(["Disco"]);
+  });
+
+  it("uma linha desligada do plano volta a contar", () => {
+    // Apagar o plano com pagamentos deixa a linha e tira a marca.
+    const desligada = { ...doPlano, mensalidadeId: null };
+    expect(computeGastoEmpresa([desligada])).toBe(490);
   });
 });

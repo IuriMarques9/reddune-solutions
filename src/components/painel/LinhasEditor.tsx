@@ -214,24 +214,38 @@ export function LinhasEditor({ linhas, onChange, disabled, gastoDespesas = 0 }: 
                 {/* Sub-linha fixa: paguei do bolso (com label visível), data
                     do gasto (regime de caixa) e subtotal. */}
                 <div className="ldata">
-                  <label className="lgasto">
-                    <input
-                      type="checkbox"
-                      className="lchk"
-                      checked={!!l.gastoEmpresa}
-                      onChange={(e) =>
-                        updateLinha(l.id, {
-                          gastoEmpresa: e.target.checked,
-                          // Ao marcar, pré-preenche com hoje (regime de caixa:
-                          // normalmente compras quando registas). Editável.
-                          ...(e.target.checked && !l.data ? { data: hojeIso() } : {}),
-                        })
-                      }
-                      disabled={disabled}
-                    />
-                    Paguei do bolso
-                  </label>
-                  {l.gastoEmpresa && (
+                  {/* Linha de um plano: o "paguei do bolso" seria uma armadilha.
+                      Marcá-lo registava o PREÇO DO CLIENTE (490 €) como gasto
+                      nosso, quando o que gastámos é o custo do plano (137,40 €)
+                      — e esse já entra como despesa ao confirmar a cobrança. */}
+                  {l.mensalidadeId ? (
+                    <span
+                      className="lgasto"
+                      title="O que este plano nos custa está no próprio plano, e entra nos gastos ao confirmares a cobrança. Marcar aqui contaria o preço do cliente como gasto nosso."
+                      style={{ color: "var(--ink-mute)" }}
+                    >
+                      Custo no plano
+                    </span>
+                  ) : (
+                    <label className="lgasto">
+                      <input
+                        type="checkbox"
+                        className="lchk"
+                        checked={!!l.gastoEmpresa}
+                        onChange={(e) =>
+                          updateLinha(l.id, {
+                            gastoEmpresa: e.target.checked,
+                            // Ao marcar, pré-preenche com hoje (regime de caixa:
+                            // normalmente compras quando registas). Editável.
+                            ...(e.target.checked && !l.data ? { data: hojeIso() } : {}),
+                          })
+                        }
+                        disabled={disabled}
+                      />
+                      Paguei do bolso
+                    </label>
+                  )}
+                  {l.gastoEmpresa && !l.mensalidadeId && (
                     <input
                       className="in-sm"
                       type="date"

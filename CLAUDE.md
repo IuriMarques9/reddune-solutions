@@ -114,7 +114,13 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
     o cartão continuava a mostrar as antigas — parecia que o automático falhara.
     Edições por gravar nunca são deitadas fora.
   - Enquanto o plano está POR ARRANCAR não se mostra o interruptor Activo nem o
-    chip "desligado": o que há para fazer é **Arrancar**, e arrancar já liga. **Migração do Trakinas:** apagar a linha "3 fases da app 5400"
+    chip "desligado": o que há para fazer é **Arrancar**, e arrancar já liga.
+  - **A linha de um plano NÃO tem "paguei do bolso"** — mostra "Custo no plano".
+    Marcá-lo registava o PREÇO DO CLIENTE (490 €) como gasto nosso, quando o
+    que gastámos é `Mensalidade.custo` (137,40 €), que já entra como despesa ao
+    confirmar a cobrança. `linhaContaComoGasto()` (types/projeto.ts) blinda as
+    contas: linhas com `mensalidadeId` nunca contam, mesmo marcadas — defesa
+    para linhas antigas. Desligada do plano, volta a contar. **Migração do Trakinas:** apagar a linha "3 fases da app 5400"
     e deixar "Entrada 1.000" + a linha do plano (12 × 366,67 = 4.400).
 - **IVA por linha** (2026-08-26): `ProjetoLinha.ivaProprio` — só as linhas
   criadas por planos o têm, e vale o IVA do PLANO. O checkbox "Acrescentar IVA"

@@ -4,7 +4,12 @@
 //   2. Despesas manuais (colecção `despesas`) — têm data própria.
 // Funções puras sobre dados já carregados (sem DB) — usadas pelo dashboard e
 // pelos relatórios para os números baterem certo entre ecrãs.
-import { computeGastoEmpresa, type LinhaCategoria, type Projeto } from "@/types/projeto";
+import {
+  computeGastoEmpresa,
+  linhaContaComoGasto,
+  type LinhaCategoria,
+  type Projeto,
+} from "@/types/projeto";
 import { DESPESA_CATEGORIA, type Despesa, type DespesaCategoria } from "@/types/despesa";
 
 /**
@@ -48,7 +53,8 @@ export function collectGastos(projetos: Projeto[], despesas: Despesa[]): GastoEv
     const fallback = projetoGastoDate(p);
     if (!p.linhas) continue;
     for (const l of p.linhas) {
-      if (!l.gastoEmpresa) continue;
+      // Linhas de plano nunca são gasto nosso — ver linhaContaComoGasto.
+      if (!linhaContaComoGasto(l)) continue;
       // Regime de caixa: data própria da linha (quando o Iuri pagou) tem
       // prioridade; sem data, cai no mês do projecto como antes.
       const data = l.data ?? fallback;

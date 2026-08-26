@@ -202,11 +202,22 @@ export interface ProjetoLinha {
   ivaProprio?: boolean;
 }
 
+/**
+ * Uma linha conta como gasto da empresa? Linhas de PLANO nunca contam, mesmo
+ * marcadas: o valor delas é o preço do CLIENTE (490 €), não o que gastámos. O
+ * que o plano nos custa vive em `Mensalidade.custo` e entra como despesa ao
+ * confirmar a cobrança — contar aqui era contar duas vezes, e pelo número
+ * errado. Defesa para linhas antigas que possam ter ficado marcadas.
+ */
+export function linhaContaComoGasto(l: ProjetoLinha): boolean {
+  return Boolean(l.gastoEmpresa) && !l.mensalidadeId;
+}
+
 /** Total de gasto da empresa nas linhas de um projecto (só linhas marcadas). */
 export function computeGastoEmpresa(linhas: ProjetoLinha[] | null | undefined): number {
   if (!linhas) return 0;
   return linhas.reduce(
-    (sum, l) => (l.gastoEmpresa ? sum + l.quantidade * l.precoUnit : sum),
+    (sum, l) => (linhaContaComoGasto(l) ? sum + l.quantidade * l.precoUnit : sum),
     0
   );
 }

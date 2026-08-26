@@ -323,14 +323,6 @@ function PlanoCard({
         >
           {resumo.pagas}/{m.numeroCobrancas}
         </span>
-        {m.dentroDoValor && (
-          <span
-            className="pill mute"
-            title="Estas cobranças são o valor do projecto partido em prestações — as Dívidas não somam o mesmo dinheiro duas vezes."
-          >
-            dentro do valor
-          </span>
-        )}
         {porArrancar && (
           <span
             className="pill warm"
