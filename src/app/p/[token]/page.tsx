@@ -9,6 +9,7 @@ import { getMensalidadesByProjeto } from "@/lib/mongodb/mensalidades";
 import { getComentariosByProjeto } from "@/lib/mongodb/portal";
 import { getSandboxesByProjeto } from "@/lib/mongodb/portal-sandbox";
 import { toPortalProjeto, toPortalCliente, type PortalArquivoDTO } from "@/lib/portal-dto";
+import { IVA_LABEL } from "@/lib/iva";
 import { Reveal } from "@/components/motion/Reveal";
 import { PortalTabs } from "@/components/portal/PortalTabs";
 import { PreviewFrame } from "@/components/portal/PreviewFrame";
@@ -290,11 +291,16 @@ export default async function PortalPage({ params }: { params: Params }) {
               Valores
             </h2>
             <div className="mt-[18px] grid grid-cols-3 gap-3">
-              <Kpi label="Total" value={eur(dto.valores.orcado)} />
+              {/* Total = o que o cliente paga de facto. Com IVA, o número
+                  grande é o bruto e a decomposição fica na lista abaixo. */}
+              <Kpi
+                label={dto.valores.comIva ? "Total c/ IVA" : "Total"}
+                value={eur(dto.valores.orcado)}
+              />
               <Kpi label="Pago" value={eur(dto.valores.pago)} />
               <Kpi label="Em falta" value={eur(dto.valores.emFalta)} accent />
             </div>
-            {dto.valores.categorias.length > 0 && (
+            {(dto.valores.categorias.length > 0 || dto.valores.comIva) && (
               <ul className="mt-5 flex flex-col gap-1.5 border-t border-dashed border-[rgba(247,238,219,0.20)] pt-4 text-sm">
                 {dto.valores.categorias.map((c) => (
                   <li key={c.label} className="flex justify-between">
@@ -302,6 +308,18 @@ export default async function PortalPage({ params }: { params: Params }) {
                     <span className="font-semibold text-cream">{eur(c.total)}</span>
                   </li>
                 ))}
+                {dto.valores.comIva && (
+                  <>
+                    <li className="mt-1.5 flex justify-between border-t border-dashed border-[rgba(247,238,219,0.20)] pt-2.5">
+                      <span className="text-[rgba(247,238,219,0.70)]">Subtotal s/ IVA</span>
+                      <span className="font-semibold text-cream">{eur(dto.valores.orcadoBase)}</span>
+                    </li>
+                    <li className="flex justify-between">
+                      <span className="text-[rgba(247,238,219,0.70)]">{IVA_LABEL}</span>
+                      <span className="font-semibold text-cream">{eur(dto.valores.iva)}</span>
+                    </li>
+                  </>
+                )}
               </ul>
             )}
             {/* Plano de pagamento — o cliente vê o que combinámos e onde vamos.

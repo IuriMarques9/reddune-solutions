@@ -32,6 +32,7 @@ import { HardwareSection } from "@/components/painel/HardwareSection";
 import { ColaboradoresSection } from "@/components/painel/ColaboradoresSection";
 import { sanitizeArquivo } from "@/types/projeto";
 import { gastoEmpresaDoProjeto } from "@/lib/gastos";
+import { totalACobrar, semIva, cents, eurIva, eurCompacto, IVA_LABEL } from "@/lib/iva";
 import { todasCobrancas } from "@/lib/mensalidades";
 import { StatusBadge } from "@/components/painel/StatusBadge";
 import { todayLisbonYmd } from "@/lib/dates";
@@ -67,16 +68,16 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
     colaboradores,
     mensalidades,
   ] = await Promise.all([
-      getProjetoById(id),
-      getLembretesByProjeto(id),
-      getAllClientes(),
-      getPagamentosByProjeto(id),
-      getComentariosByProjeto(id),
-      getSandboxesByProjeto(id),
-      getDespesasByProjeto(id),
-      getAllColaboradores(),
-      getMensalidadesByProjeto(id),
-    ]);
+    getProjetoById(id),
+    getLembretesByProjeto(id),
+    getAllClientes(),
+    getPagamentosByProjeto(id),
+    getComentariosByProjeto(id),
+    getSandboxesByProjeto(id),
+    getDespesasByProjeto(id),
+    getAllColaboradores(),
+    getMensalidadesByProjeto(id),
+  ]);
 
   if (!projeto) notFound();
 
@@ -86,7 +87,10 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
 
   const totalLembretes = lembretes.length;
   const lembretesFeitas = lembretes.filter((t) => t.feita).length;
-  const totalPago = pagamentos.reduce((s, p) => s + p.valor, 0);
+  const totalPago = cents(pagamentos.reduce((s, p) => s + p.valor, 0));
+  // Receita nossa = pagamentos SEM a parcela de IVA — esse dinheiro é do
+  // Estado, não entra no lucro. Cada pagamento decide se leva IVA.
+  const totalPagoBase = cents(pagamentos.reduce((s, p) => s + semIva(p.valor, p.comIva), 0));
   const gastoEmpresa = gastoEmpresaDoProjeto(projeto, despesas);
   // Cobranças derivadas no SERVIDOR, no fuso de Lisboa: o componente é cliente e
   // um browser noutro fuso classificaria as prestações de forma diferente.
@@ -105,7 +109,12 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
       </div>
 
       {/* Hero escuro — ficha do projecto: estado, dinheiro, progresso de pagamento */}
-      <ProjetoHero projeto={projeto} totalPago={totalPago} gastoEmpresa={gastoEmpresa} />
+      <ProjetoHero
+        projeto={projeto}
+        totalPago={totalPago}
+        totalPagoBase={totalPagoBase}
+        gastoEmpresa={gastoEmpresa}
+      />
 
       <div className="detail-wrap">
         {/* ── Coluna principal ── */}
@@ -158,6 +167,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
             projetoId={projeto.id}
             pagamentos={pagamentos}
             valorEstimado={projeto.valorEstimado}
+            projetoComIva={projeto.comIva ?? false}
             projetoStatus={projeto.status}
             projetoTitulo={projeto.titulo}
           />
@@ -170,6 +180,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
             mensalidades={mensalidades}
             cobrancas={cobrancas}
             pagamentos={pagamentos}
+            projetoComIva={projeto.comIva ?? false}
             hoje={hoje}
           />
 
@@ -221,11 +232,13 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
               {projeto.valorEstimado != null && (
                 <InfoRow
                   icon={Euro}
-                  label="Valor estimado"
-                  value={`${projeto.valorEstimado.toLocaleString("pt-PT", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })} €`}
+                  label={projeto.comIva ? "Valor estimado (c/ IVA)" : "Valor estimado"}
+                  value={`${eurIva(totalACobrar(projeto) ?? projeto.valorEstimado)} €`}
+                  hint={
+                    projeto.comIva
+                      ? `${eurIva(projeto.valorEstimado)} € + ${IVA_LABEL}`
+                      : undefined
+                  }
                 />
               )}
             </div>
@@ -247,8 +260,11 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
 
 function ProjetoBadges({ projeto, totalPago }: { projeto: import("@/types/projeto").Projeto; totalPago: number }) {
   const today = new Date().toISOString().slice(0, 10);
-  const emDivida = projeto.status === "terminado" && projeto.valorEstimado != null && totalPago < projeto.valorEstimado;
-  const divida = emDivida ? (projeto.valorEstimado! - totalPago) : 0;
+  // Dívida = total a cobrar (já com IVA, quando o projecto o leva) menos o que
+  // foi pago. Bruto contra bruto — ver src/lib/iva.ts.
+  const totalCobravel = totalACobrar(projeto);
+  const emDivida = projeto.status === "terminado" && totalCobravel != null && totalPago < totalCobravel;
+  const divida = emDivida ? cents(totalCobravel! - totalPago) : 0;
   const garantia = projeto.garantiaAte;
   const garantiaActiva = garantia && garantia >= today;
   const garantiaExpirada = garantia && garantia < today;
@@ -272,10 +288,13 @@ function InfoRow({
   icon: Icon,
   label,
   value,
+  hint,
 }: {
   icon: LucideIcon;
   label: string;
   value: string;
+  /** Segunda linha discreta (ex.: a decomposição base + IVA). */
+  hint?: string;
 }) {
   return (
     <div className="info-row">
@@ -283,6 +302,11 @@ function InfoRow({
       <div>
         <div className="l">{label}</div>
         <div className="val">{value}</div>
+        {hint && (
+          <div className="muted" style={{ fontFamily: "var(--font-mono)", fontSize: 11 }}>
+            {hint}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -304,17 +328,24 @@ function diasNoSistema(dataCriadoIso: string | null): number | null {
 function ProjetoHero({
   projeto,
   totalPago,
+  totalPagoBase,
   gastoEmpresa,
 }: {
   projeto: import("@/types/projeto").Projeto;
   totalPago: number;
+  /** Recebido líquido de IVA — é o que conta para o lucro. */
+  totalPagoBase: number;
   gastoEmpresa: number;
 }) {
-  const orcado = projeto.valorEstimado;
-  const divida = orcado != null ? Math.max(0, orcado - totalPago) : 0;
-  // Lucro REALIZADO (regime de caixa): só conta o que já foi recebido. Enquanto
-  // houver dívida não é o lucro final do projecto — daí o "Em dívida" ao lado.
-  const lucro = totalPago - gastoEmpresa;
+  // Orçado = o que o cliente paga (já com IVA quando o projecto o leva), para
+  // ficar comparável com "Recebido", que também é bruto.
+  const orcado = totalACobrar(projeto);
+  const orcadoBase = projeto.valorEstimado;
+  const divida = orcado != null ? Math.max(0, cents(orcado - totalPago)) : 0;
+  // Lucro REALIZADO (regime de caixa): só conta o que já foi recebido, e SEM a
+  // parcela de IVA (esse dinheiro é do Estado). Enquanto houver dívida não é o
+  // lucro final do projecto — daí o "Em dívida" ao lado.
+  const lucro = cents(totalPagoBase - gastoEmpresa);
   const temLucro = totalPago > 0 || gastoEmpresa > 0;
   const pct =
     orcado != null
@@ -323,7 +354,7 @@ function ProjetoHero({
         : 100
       : null;
   const dias = diasNoSistema(projeto.dataCriado);
-  const money = (n: number) => n.toLocaleString("pt-PT");
+  const money = eurCompacto;
 
   return (
     <div className="pd-hero">
@@ -353,8 +384,15 @@ function ProjetoHero({
       )}
       <div className="pd-money">
         {orcado != null && (
-          <div className="v">
-            <div className="l">Orçado</div>
+          <div
+            className="v"
+            title={
+              projeto.comIva && orcadoBase != null
+                ? `${money(orcadoBase)} € base + ${money(cents(orcado - orcadoBase))} € de ${IVA_LABEL}`
+                : undefined
+            }
+          >
+            <div className="l">{projeto.comIva ? "Orçado c/ IVA" : "Orçado"}</div>
             <div className="n">{money(orcado)} €</div>
           </div>
         )}
@@ -371,9 +409,11 @@ function ProjetoHero({
         {temLucro && (
           <div
             className="v"
-            title={`Recebido (${money(totalPago)} €) − gasto da empresa (${money(gastoEmpresa)} €: linhas marcadas ✓ + despesas ligadas)${
-              divida > 0 ? ". Ainda há valor por receber — não é o lucro final." : ""
-            }`}
+            title={`Recebido s/ IVA (${money(totalPagoBase)} €) − gasto da empresa (${money(gastoEmpresa)} €: linhas marcadas ✓ + despesas ligadas)${
+              totalPagoBase !== totalPago
+                ? `. O IVA recebido (${money(cents(totalPago - totalPagoBase))} €) é do Estado, não entra no lucro`
+                : ""
+            }${divida > 0 ? ". Ainda há valor por receber — não é o lucro final." : ""}`}
           >
             <div className="l">Lucro</div>
             <div className={lucro < 0 ? "n em" : "n"}>{money(lucro)} €</div>

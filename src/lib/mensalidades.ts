@@ -13,6 +13,7 @@ import {
   type Mensalidade,
 } from "@/types/mensalidade";
 import type { Pagamento } from "@/types/pagamento";
+import { comIva } from "@/lib/iva";
 
 /** Antecedência com que uma cobrança por pagar passa a "a-vencer". */
 export const A_VENCER_DIAS = 7;
@@ -95,6 +96,11 @@ export function cobrancasDe(
   }
 
   const passo = PERIODO_MESES[m.periodo];
+  // BRUTO: `m.valor` é a base s/ IVA (como o valorEstimado e as linhas), mas o
+  // que se compara com os pagamentos é o que o cliente entrega. Sem isto, numa
+  // prestação de 366,67 € base o cliente pagava 451,00 € e a cobrança ficava
+  // eternamente "parcial" — o pago passava o valor e nunca fechava certo.
+  const valorBruto = comIva(m.valor, m.comIva);
   const out: Cobranca[] = [];
   for (let numero = 1; numero <= m.numeroCobrancas; numero++) {
     const dataPrevista = addMeses(m.primeiraCobranca, (numero - 1) * passo);
@@ -108,11 +114,11 @@ export function cobrancasDe(
       clienteId: m.clienteId,
       numero,
       dataPrevista,
-      valor: m.valor,
+      valor: valorBruto,
       pago,
       dataPaga,
       desvioDias: dataPaga ? diffDias(dataPrevista, dataPaga) : null,
-      estado: estadoDe(m.valor, pago, dataPrevista, hoje),
+      estado: estadoDe(valorBruto, pago, dataPrevista, hoje),
     });
   }
   return out;
@@ -134,7 +140,7 @@ export type ResumoMensalidade = {
   geradas: number;
   /** Quantas estão totalmente pagas. */
   pagas: number;
-  /** Total do plano se corresse até ao fim. */
+  /** Total BRUTO do plano se corresse até ao fim. */
   valorTotal: number;
   /** Dinheiro já recebido através deste plano. */
   recebido: number;
@@ -154,7 +160,7 @@ export function resumoMensalidade(m: Mensalidade, cobrancas: Cobranca[]): Resumo
   return {
     geradas: minhas.length,
     pagas,
-    valorTotal: m.valor * m.numeroCobrancas,
+    valorTotal: comIva(m.valor, m.comIva) * m.numeroCobrancas,
     recebido,
     porCobrar,
     vencidas: minhas.filter((c) => c.estado === "vencida" || c.estado === "parcial").length,
@@ -199,7 +205,10 @@ export function somaPorCobrar(cobrancas: Cobranca[]): number {
 }
 
 export type ReceitaRecorrente = {
-  /** Receita mensal recorrente: anuidades entram a dividir por 12. */
+  // Receita mensal recorrente: anuidades entram a dividir por 12. SEM IVA de
+  // propósito — o IVA é do Estado, não é receita nossa (mesma regra do lucro
+  // na ficha do projecto). O `comprometido` abaixo é bruto, porque é dinheiro
+  // por cobrar ao cliente.
   mrr: number;
   planosAtivos: number;
   /** Tudo o que está combinado e ainda não entrou. */

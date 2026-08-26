@@ -102,7 +102,7 @@ export async function getProjetosBriefByIds(ids: string[]): Promise<ProjetoBrief
 
 export type ProjetoResumo = Pick<
   Projeto,
-  "id" | "status" | "valorEstimado" | "prazo" | "dataFechado" | "clienteId"
+  "id" | "status" | "valorEstimado" | "comIva" | "prazo" | "dataFechado" | "clienteId"
 >;
 
 /**
@@ -121,6 +121,9 @@ export async function getProjetosResumo(): Promise<ProjetoResumo[]> {
           id: 1,
           status: 1,
           valorEstimado: 1,
+          // Sem isto as listas/badges calculavam a dívida contra a base s/ IVA
+          // enquanto os pagamentos são brutos — dívida sempre errada.
+          comIva: 1,
           prazo: 1,
           dataFechado: 1,
           clienteId: 1,

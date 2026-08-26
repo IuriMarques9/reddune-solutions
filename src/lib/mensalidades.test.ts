@@ -396,6 +396,58 @@ describe("pontualidade", () => {
   });
 });
 
+  describe("IVA", () => {
+    it("cobra o valor BRUTO quando o plano leva IVA", () => {
+      // `Mensalidade.valor` é a base (como o valorEstimado e as linhas); o que
+      // se mostra e se compara com os pagamentos é o que o cliente entrega.
+      const cs = cobrancasDe(plano({ id: "m1", valor: 366.67, comIva: true }), [], "2026-09-01");
+      expect(cs[0].valor).toBe(451.0);
+    });
+
+    it("fecha a prestação com o pagamento bruto, não com a base", () => {
+      // Sem isto, o cliente pagava 451 € numa prestação de 366,67 € e a
+      // cobrança ficava eternamente aberta (ou o troco aparecia como excesso).
+      const m = plano({ id: "m1", valor: 366.67, comIva: true });
+      const cs = cobrancasDe(
+        m,
+        [pagamento({ id: "pg1", mensalidadeId: "m1", cobrancaNumero: 1, valor: 451.0 })],
+        "2026-09-10"
+      );
+      expect(cs[0].estado).toBe("paga");
+      expect(resumoMensalidade(m, cs).porCobrar).toBeCloseTo(451.0 * 11, 2);
+    });
+
+    it("um pagamento pela base deixa a prestação em parcial", () => {
+      const cs = cobrancasDe(
+        plano({ id: "m1", valor: 366.67, comIva: true }),
+        [pagamento({ id: "pg1", mensalidadeId: "m1", cobrancaNumero: 1, valor: 366.67 })],
+        "2026-09-10"
+      );
+      expect(cs[0].estado).toBe("parcial");
+    });
+
+    it("o total do plano também é bruto", () => {
+      const m = plano({ id: "m1", valor: 366.67, comIva: true, numeroCobrancas: 12 });
+      expect(resumoMensalidade(m, cobrancasDe(m, [], "2026-09-01")).valorTotal).toBeCloseTo(
+        451.0 * 12,
+        2
+      );
+    });
+
+    it("o MRR fica na BASE — o IVA é do Estado, não é receita nossa", () => {
+      const m = plano({ id: "m1", valor: 366.67, comIva: true });
+      const cs = cobrancasDe(m, [], "2026-09-01");
+      expect(receitaRecorrente([m], cs).mrr).toBeCloseTo(366.67, 2);
+      // Já o comprometido é bruto: é dinheiro por cobrar ao cliente.
+      expect(receitaRecorrente([m], cs).comprometido).toBeCloseTo(451.0 * 12, 2);
+    });
+
+    it("sem o flag nada muda (planos antigos continuam na base)", () => {
+      const cs = cobrancasDe(plano({ id: "m1", valor: 366.67 }), [], "2026-09-01");
+      expect(cs[0].valor).toBeCloseTo(366.67, 2);
+    });
+  });
+
 describe("porCobrarDentroDoValor", () => {
   it("devolve o que falta receber pelos planos que fazem parte do valor", () => {
     // Sem isto, as Dívidas somavam os 4.400 € do projecto E as 12 mensalidades

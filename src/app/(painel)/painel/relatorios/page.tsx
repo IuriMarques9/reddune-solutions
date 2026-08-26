@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllProjetos } from "@/lib/mongodb/projetos";
 import { getAllClientes } from "@/lib/mongodb/clientes";
+import { totalACobrar, semIva, cents } from "@/lib/iva";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
 import { getAllDespesas } from "@/lib/mongodb/despesas";
 import { getAllColaboradores } from "@/lib/mongodb/colaboradores";
@@ -80,11 +81,13 @@ export default async function RelatoriosPage({
   }
   const currentKey = months7[months7.length - 1].key;
 
-  // Receita mensal (pagamentos)
+  // Receita mensal (pagamentos) SEM a parcela de IVA: esse dinheiro é do
+  // Estado, não é receita nossa e não pode entrar no lucro. Ver src/lib/iva.ts.
   const receitaPorMes = new Map<string, number>();
   for (const pg of pagamentos as Pagamento[]) {
     if (!pg.data) continue;
-    receitaPorMes.set(monthKey(pg.data), (receitaPorMes.get(monthKey(pg.data)) ?? 0) + pg.valor);
+    const base = semIva(pg.valor, pg.comIva);
+    receitaPorMes.set(monthKey(pg.data), (receitaPorMes.get(monthKey(pg.data)) ?? 0) + base);
   }
 
   // Gastos: linhas de projecto marcadas `gastoEmpresa` + despesas manuais
@@ -217,7 +220,7 @@ export default async function RelatoriosPage({
   const recPorCliente = new Map<string, number>();
   for (const pg of pagamentos as Pagamento[]) {
     if (!pg.clienteId || !pg.data) continue;
-    recPorCliente.set(pg.clienteId, (recPorCliente.get(pg.clienteId) ?? 0) + pg.valor);
+    recPorCliente.set(pg.clienteId, (recPorCliente.get(pg.clienteId) ?? 0) + semIva(pg.valor, pg.comIva));
   }
   const gastoPorCliente = new Map<string, number>();
   for (const p of projetos) {
@@ -242,10 +245,17 @@ export default async function RelatoriosPage({
     "web-digital": "Web & Digital",
     "software-recuperacao": "Software & Recuperação",
   };
+  // Dois mapas: `pago` bruto (o que o cliente entregou, para a dívida) e
+  // `recebido` sem IVA (o que é receita nossa, para o lucro/margem).
   const pagoPorProjeto = new Map<string, number>();
+  const recebidoPorProjeto = new Map<string, number>();
   for (const pg of pagamentos as Pagamento[]) {
     if (!pg.data) continue;
     pagoPorProjeto.set(pg.projetoId, (pagoPorProjeto.get(pg.projetoId) ?? 0) + pg.valor);
+    recebidoPorProjeto.set(
+      pg.projetoId,
+      (recebidoPorProjeto.get(pg.projetoId) ?? 0) + semIva(pg.valor, pg.comIva)
+    );
   }
   const porTipo = new Map<string, { rec: number; gas: number; porReceber: number }>();
   for (const p of projetos) {
@@ -253,11 +263,11 @@ export default async function RelatoriosPage({
     if (!cat) continue;
     const slot = porTipo.get(cat) ?? { rec: 0, gas: 0, porReceber: 0 };
     const pago = pagoPorProjeto.get(p.id) ?? 0;
-    slot.rec += pago;
+    slot.rec += recebidoPorProjeto.get(p.id) ?? 0;
     slot.gas += gastoEmpresaDoProjeto(p, despesas.filter((d) => d.projetoId === p.id));
     // Sem isto o card mente: o hardware aparece negativo por estar POR PAGAR,
     // não por dar prejuízo — e a conclusão seria deixar de o fazer.
-    slot.porReceber += Math.max(0, (p.valorEstimado ?? 0) - pago);
+    slot.porReceber += Math.max(0, cents((totalACobrar(p) ?? 0) - pago));
     porTipo.set(cat, slot);
   }
   const tipoRows = [...porTipo.entries()]

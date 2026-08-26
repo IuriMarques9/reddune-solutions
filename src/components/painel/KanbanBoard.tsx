@@ -29,6 +29,7 @@ import {
   type ProjetoTipo,
 } from "@/types/projeto";
 import type { ServicoSlug } from "@/types/servico";
+import { totalACobrar } from "@/lib/iva";
 import { safeJsonPost } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
 import { readKanbanOrder } from "./KanbanOrderSettings";
@@ -172,7 +173,9 @@ function KanbanCardBody({ projeto }: { projeto: Projeto }) {
       <div className="kc-name">{projeto.titulo}</div>
       {projeto.proximaAccao && <div className="kc-next">{projeto.proximaAccao}</div>}
       <div className="kc-foot">
-        <span className="kc-val">{formatValor(projeto.valorEstimado)}</span>
+        <span className="kc-val" title={projeto.comIva ? "Valor com IVA" : undefined}>
+          {formatValor(totalACobrar(projeto))}
+        </span>
         {tag && <span className="kc-tag">{tag}</span>}
       </div>
     </>
@@ -757,7 +760,9 @@ export function ProjetosTable({ projetos }: { projetos: Projeto[] }) {
                   </td>
                   <td className="muted">{p.proximaAccao ?? "—"}</td>
                   <td className="num">
-                    <span className="kc-val">{formatValor(p.valorEstimado)}</span>
+                    <span className="kc-val" title={p.comIva ? "Valor com IVA" : undefined}>
+                      {formatValor(totalACobrar(p))}
+                    </span>
                   </td>
                   <td className="muted">{kcTag(p) ?? "—"}</td>
                 </tr>

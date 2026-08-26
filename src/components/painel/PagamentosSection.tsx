@@ -5,6 +5,15 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2, Loader2, Euro } from "lucide-react";
 import { METODO_PAGAMENTO, METODO_LABEL, type Pagamento, type MetodoPagamento } from "@/types/pagamento";
 import { parseMoney } from "@/lib/parse-number";
+import {
+  comIva as aplicaIva,
+  parcelaIva,
+  semIva,
+  eurCompacto,
+  IVA_LABEL,
+  IVA_TAXA,
+  cents,
+} from "@/lib/iva";
 import { safeJsonPost, safeDelete } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
 import { useConfirm } from "@/components/ui/confirm-dialog";
@@ -12,7 +21,10 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 type Props = {
   projetoId: string;
   pagamentos: Pagamento[];
+  /** BASE s/ IVA do orçamento — o IVA nunca está gravado aqui dentro. */
   valorEstimado?: number | null;
+  /** Default de IVA do projecto; cada pagamento pode divergir. */
+  projetoComIva?: boolean;
   projetoStatus?: string;
   projetoTitulo?: string;
 };
@@ -29,11 +41,16 @@ function fmtDate(iso: string): string {
   }
 }
 
-function money(n: number): string {
-  return n.toLocaleString("pt-PT");
-}
+const money = eurCompacto;
 
-export function PagamentosSection({ projetoId, pagamentos, valorEstimado, projetoStatus, projetoTitulo }: Props) {
+export function PagamentosSection({
+  projetoId,
+  pagamentos,
+  valorEstimado,
+  projetoComIva = false,
+  projetoStatus,
+  projetoTitulo,
+}: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const confirm = useConfirm();
@@ -44,11 +61,20 @@ export function PagamentosSection({ projetoId, pagamentos, valorEstimado, projet
   const [data, setData] = useState(todayIso());
   const [metodo, setMetodo] = useState<MetodoPagamento | "">("");
   const [notas, setNotas] = useState("");
+  // Este recibo leva IVA? Arranca no default do projecto, mas o Iuri pode
+  // desligar num pagamento só (parte do trabalho passada sem IVA).
+  const [comIva, setComIva] = useState(projetoComIva);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const totalPago = pagamentos.reduce((s, p) => s + p.valor, 0);
-  const emDivida = valorEstimado != null ? valorEstimado - totalPago : null;
+  // Tudo BRUTO: `valor` é o que o cliente entregou, `totalACobrar` é o
+  // orçamento já com IVA quando o projecto o leva. Bruto contra bruto — a
+  // dívida fecha mesmo com pagamentos mistos. Ver src/lib/iva.ts.
+  const totalPago = cents(pagamentos.reduce((s, p) => s + p.valor, 0));
+  const totalACobrar = valorEstimado != null ? aplicaIva(valorEstimado, projetoComIva) : null;
+  const ivaOrcamento = totalACobrar != null ? cents(totalACobrar - valorEstimado!) : 0;
+  const emDivida = totalACobrar != null ? cents(totalACobrar - totalPago) : null;
+  const ivaRecebido = cents(pagamentos.reduce((s, p) => s + parcelaIva(p.valor, p.comIva), 0));
   const canClose = projetoStatus === "terminado" && emDivida != null && emDivida <= 0;
 
   // Quick payment helpers
@@ -65,20 +91,23 @@ export function PagamentosSection({ projetoId, pagamentos, valorEstimado, projet
   // observações, exactamente como um pagamento manual.
   function quickPay(v: number) {
     if (!Number.isFinite(v) || v <= 0) return;
-    setValor(String(Math.round(v * 100) / 100));
+    setValor(String(cents(v)));
     setData(todayIso());
     setMetodo(ultimoMetodo ?? "");
     setNotas("");
+    // Os atalhos saem do orçamento, logo seguem o IVA do projecto.
+    setComIva(projetoComIva);
     setError(null);
     setAdding(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
   }
 
+  // Atalhos em valor BRUTO — é o que o cliente transfere.
   const entradaValor =
-    valorEstimado != null && valorEstimado > 0 && totalPago === 0
-      ? Math.round(valorEstimado * 0.5 * 100) / 100
+    totalACobrar != null && totalACobrar > 0 && totalPago === 0
+      ? cents(totalACobrar * 0.5)
       : null;
-  const restante = emDivida != null && emDivida > 0 ? Math.round(emDivida * 100) / 100 : null;
+  const restante = emDivida != null && emDivida > 0 ? emDivida : null;
 
   async function fecharProjeto() {
     if (!projetoTitulo) return;
@@ -99,6 +128,7 @@ export function PagamentosSection({ projetoId, pagamentos, valorEstimado, projet
     setData(todayIso());
     setMetodo("");
     setNotas("");
+    setComIva(projetoComIva);
     setError(null);
   }
 
@@ -114,6 +144,7 @@ export function PagamentosSection({ projetoId, pagamentos, valorEstimado, projet
     const res = await safeJsonPost("/api/pagamentos/upsert", {
       projetoId,
       valor: v,
+      comIva,
       data,
       metodo: metodo || null,
       notas: notas.trim() || null,
@@ -182,10 +213,18 @@ export function PagamentosSection({ projetoId, pagamentos, valorEstimado, projet
       >
         <span>
           Pago: <b>{money(totalPago)}€</b>
+          {ivaRecebido > 0 && (
+            <span style={{ color: "var(--ink-mute)" }}> (inclui {money(ivaRecebido)}€ de IVA)</span>
+          )}
         </span>
-        {valorEstimado != null && (
+        {totalACobrar != null && (
           <>
-            <span style={{ color: "var(--ink-mute)" }}>Total: {money(valorEstimado)}€</span>
+            <span style={{ color: "var(--ink-mute)" }}>
+              Total: {money(totalACobrar)}€
+              {projetoComIva && (
+                <> ({money(valorEstimado!)} s/ IVA + {money(ivaOrcamento)} de {IVA_LABEL})</>
+              )}
+            </span>
             {emDivida != null && emDivida > 0 && (
               <span style={{ color: "var(--ember)", fontWeight: 700 }}>
                 Em dívida: {money(emDivida)}€
@@ -290,6 +329,45 @@ export function PagamentosSection({ projetoId, pagamentos, valorEstimado, projet
               </select>
             </div>
           </div>
+          {/* IVA por pagamento: o valor acima é sempre o que o cliente
+              entregou; este checkbox só diz se esses euros levam IVA dentro.
+              Arranca no default do projecto e pode divergir. */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap",
+              margin: "0 0 10px",
+            }}
+          >
+            <label
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, cursor: "pointer" }}
+            >
+              <input
+                type="checkbox"
+                className="accent-ember"
+                checked={comIva}
+                onChange={(e) => setComIva(e.target.checked)}
+                disabled={saving}
+              />
+              Este pagamento leva IVA ({Math.round(IVA_TAXA * 100)}%)
+            </label>
+            {(() => {
+              const v = parseMoney(valor);
+              if (v == null || v <= 0) return null;
+              const base = semIva(v, comIva);
+              return (
+                <span
+                  style={{ fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--ink-mute)" }}
+                >
+                  {comIva
+                    ? `${money(v)}€ = ${money(base)}€ base + ${money(cents(v - base))}€ IVA`
+                    : `${money(v)}€ sem IVA`}
+                </span>
+              );
+            })()}
+          </div>
           <div className="field">
             <label htmlFor="pg-notas">Observações</label>
             <textarea
@@ -333,6 +411,20 @@ export function PagamentosSection({ projetoId, pagamentos, valorEstimado, projet
           {pagamentos.map((p) => (
             <div key={p.id} className="pay">
               <b>{money(p.valor)}€</b>
+              {/* Só marca o que é informativo: quando leva IVA, ou quando NÃO
+                  leva num projecto que por defeito leva (a excepção). */}
+              {p.comIva ? (
+                <span
+                  className="pm"
+                  title={`${money(semIva(p.valor, true))}€ base + ${money(parcelaIva(p.valor, true))}€ IVA`}
+                >
+                  c/ IVA
+                </span>
+              ) : projetoComIva ? (
+                <span className="pm" title="Registado sem IVA">
+                  s/ IVA
+                </span>
+              ) : null}
               <span className="pd">{fmtDate(p.data)}</span>
               {p.metodo && <span className="pm">{METODO_LABEL[p.metodo]}</span>}
               {p.notas && (

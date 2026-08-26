@@ -43,8 +43,13 @@ export interface Mensalidade {
   clienteId: string | null;
   /** "Mensalidade 12x", "Manutenção anual". Livre. */
   titulo: string;
-  /** Valor de CADA cobrança, s/ IVA (coerente com o resto do site). */
+  /** Valor BASE de CADA cobrança, s/ IVA (coerente com o resto do site). */
   valor: number;
+  // Este plano leva IVA por cima? Herda `Projeto.comIva` ao criar, mas pode
+  // divergir (uma manutenção facturada com IVA num projecto sem). Opcional:
+  // planos antigos sem o campo = false. `Cobranca.valor` já sai com o IVA
+  // aplicado — ver cobrancasDe — para bater com `Pagamento.valor`, que é bruto.
+  comIva?: boolean;
   periodo: MensalidadePeriodo;
   // ÚNICA âncora de datas: yyyy-mm-dd da primeira cobrança. Não há campo
   // `diaVencimento` separado de propósito — dois campos que podem discordar são
@@ -90,8 +95,9 @@ export interface Cobranca {
   numero: number;
   /** yyyy-mm-dd — o dia COMBINADO. */
   dataPrevista: string;
+  /** BRUTO — o que o cliente paga por esta prestação, IVA incluído se o plano o leva. */
   valor: number;
-  /** Soma dos pagamentos ligados a esta cobrança. */
+  /** Soma dos pagamentos ligados a esta cobrança (também bruta). */
   pago: number;
   /** yyyy-mm-dd do último pagamento ligado — o dia REAL em que entrou. */
   dataPaga: string | null;

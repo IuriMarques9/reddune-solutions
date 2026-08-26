@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { getAllProjetos } from "@/lib/mongodb/projetos";
+import { totalACobrar } from "@/lib/iva";
 import { getAllClientes } from "@/lib/mongodb/clientes";
 import { getAllColaboradores } from "@/lib/mongodb/colaboradores";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
@@ -237,14 +238,15 @@ export default async function PainelOverviewPage({
   // MESMA conta da página /painel/dividas, de propósito: o que está por cobrar
   // através de um plano "dentro do valor do projecto" sai daqui e entra pelas
   // cobranças vencidas — senão os dois ecrãs davam números diferentes para a
-  // mesma pergunta ("quanto me devem?").
+  // mesma pergunta ("quanto me devem?"). Bruto contra bruto: `totalACobrar` já
+  // traz o IVA quando o projecto o leva (ver src/lib/iva.ts).
   const dividaDoProjeto = (p: Projeto) =>
-    (p.valorEstimado ?? 0) -
+    (totalACobrar(p) ?? 0) -
     (pagoPorProjeto.get(p.id) ?? 0) -
     porCobrarDentroDoValor(mensalidades, cobrancas, p.id);
 
   const dividas = projetos.filter(
-    (p) => p.status === "terminado" && p.valorEstimado != null && dividaDoProjeto(p) > 0.005
+    (p) => p.status === "terminado" && totalACobrar(p) != null && dividaDoProjeto(p) > 0.005
   );
   const dividasValor =
     dividas.reduce((sum, p) => sum + dividaDoProjeto(p), 0) + somaPorCobrar(vencidasPlanos);

@@ -85,6 +85,9 @@ describe("toPortalProjeto", () => {
     const dto = toPortalProjeto(makeProjeto(), pagamentos);
     expect(dto.valores).toEqual({
       orcado: 400,
+      orcadoBase: 400,
+      iva: 0,
+      comIva: false,
       pago: 150,
       emFalta: 250,
       categorias: [
@@ -93,6 +96,19 @@ describe("toPortalProjeto", () => {
       ],
       planos: [],
     });
+  });
+
+  it("com IVA: total bruto, base e parcela separadas; categorias ficam s/ IVA", () => {
+    const p = { ...makeProjeto(), comIva: true };
+    const v = toPortalProjeto(p, pagamentos).valores!;
+    expect(v.comIva).toBe(true);
+    expect(v.orcadoBase).toBe(400);
+    expect(v.iva).toBe(92);
+    expect(v.orcado).toBe(492);
+    // Os pagamentos somam 150 (bruto) -> faltam 342, não 250.
+    expect(v.emFalta).toBe(342);
+    // As categorias continuam a ser a BASE: o IVA nunca entra nas linhas.
+    expect(v.categorias.reduce((s, c) => s + c.total, 0)).toBe(400);
   });
 
   it("valores null quando não há orçamento nem pagamentos", () => {
@@ -105,11 +121,23 @@ describe("toPortalProjeto", () => {
     const so1: Pagamento = { id: "s1", projetoId: "p1", clienteId: "c1", valor: 100, data: "2026-07-02", metodo: "mbway", notas: null, criadoEm: "2026-07-02" };
     expect(toPortalProjeto(p, [so1]).valores).toEqual({
       orcado: 100,
+      orcadoBase: 100,
+      iva: 0,
+      comIva: false,
       pago: 100,
       emFalta: 0,
       categorias: [],
       planos: [],
     });
+  });
+
+  it("sem orçamento fechado não acrescenta IVA ao sinal (o pago já é bruto)", () => {
+    const p = { ...makeProjeto(), valorEstimado: null, linhas: null, comIva: true };
+    const so1: Pagamento = { id: "s1", projetoId: "p1", clienteId: "c1", valor: 100, comIva: true, data: "2026-07-02", metodo: "mbway", notas: null, criadoEm: "2026-07-02" };
+    const v = toPortalProjeto(p, [so1]).valores!;
+    expect(v.orcado).toBe(100);
+    expect(v.iva).toBe(0);
+    expect(v.comIva).toBe(false);
   });
 
   describe("planos de pagamento", () => {
@@ -153,6 +181,21 @@ describe("toPortalProjeto", () => {
         periodoSufixo: "mês",
         proximaData: "2026-10-01",
       });
+    });
+
+    it("mostra a prestação COM IVA quando o plano o leva", () => {
+      // O cliente vê o que vai pagar, coerente com o `orcado` bruto ao lado.
+      // Quem manda é o flag do PLANO (herdado do projecto ao criar, mas pode
+      // divergir) — o mesmo critério de Pagamento.comIva.
+      const p = { ...makeProjeto(), comIva: true };
+      const comIva = plano({ id: "m1", valor: 366.67, comIva: true });
+      expect(toPortalProjeto(p, [], [comIva]).valores!.planos[0].valor).toBe(451.0);
+    });
+
+    it("sem o flag no plano, a prestação fica na base mesmo com o projecto c/ IVA", () => {
+      const p = { ...makeProjeto(), comIva: true };
+      const semIvaNoPlano = plano({ id: "m1", valor: 366.67 });
+      expect(toPortalProjeto(p, [], [semIvaNoPlano]).valores!.planos[0].valor).toBe(366.67);
     });
 
     it("nunca deixa passar notas internas nem contabilidade nossa", () => {

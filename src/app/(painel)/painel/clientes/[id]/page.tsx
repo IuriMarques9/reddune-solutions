@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, User } from "lucide-react";
 import { getProjetosByCliente } from "@/lib/mongodb/projetos";
 import { getClienteById } from "@/lib/mongodb/clientes";
+import { totalACobrar } from "@/lib/iva";
 import { getPagamentosByCliente } from "@/lib/mongodb/pagamentos";
 import { METODO_LABEL } from "@/types/pagamento";
 import { Topbar } from "@/components/painel/Topbar";
@@ -48,15 +49,17 @@ export default async function ClienteDetailPage({ params }: { params: Params }) 
   );
   const finished = projetos.filter((p) => STATUS_GROUPS.arquivo.includes(p.status));
 
-  const totalValor = projetos.reduce((sum, p) => sum + (p.valorEstimado ?? 0), 0);
+  // Facturado ao cliente = valor bruto (com IVA quando o projecto o leva).
+  const totalValor = projetos.reduce((sum, p) => sum + (totalACobrar(p) ?? 0), 0);
 
   const pagoPorProjeto = new Map<string, number>();
   for (const p of pagamentos) {
     pagoPorProjeto.set(p.projetoId, (pagoPorProjeto.get(p.projetoId) ?? 0) + p.valor);
   }
   const dividaTotal = projetos.reduce((sum, p) => {
-    if (p.status !== "terminado" || p.valorEstimado == null) return sum;
-    const restante = p.valorEstimado - (pagoPorProjeto.get(p.id) ?? 0);
+    const total = totalACobrar(p);
+    if (p.status !== "terminado" || total == null) return sum;
+    const restante = total - (pagoPorProjeto.get(p.id) ?? 0);
     return restante > 0 ? sum + restante : sum;
   }, 0);
 
@@ -149,12 +152,14 @@ export default async function ClienteDetailPage({ params }: { params: Params }) 
                       projetoId={p.id}
                       status={p.status}
                       pagoTotal={pagoPorProjeto.get(p.id) ?? 0}
-                      valorEstimado={p.valorEstimado}
+                      totalACobrar={totalACobrar(p)}
                     />
                   </td>
                   <td className="muted col-hide-sm">{fmtDate(p.prazo)}</td>
                   {p.valorEstimado != null ? (
-                    <td className="num">{eur(p.valorEstimado)} €</td>
+                    <td className="num" title={p.comIva ? `${eur(p.valorEstimado)} € s/ IVA` : undefined}>
+                      {eur(totalACobrar(p) ?? 0)} €{p.comIva ? " c/ IVA" : ""}
+                    </td>
                   ) : (
                     <td className="muted">—</td>
                   )}

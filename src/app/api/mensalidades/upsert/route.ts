@@ -24,6 +24,8 @@ const schema = z.object({
   numeroCobrancas: z.number().int().min(1).max(MENSALIDADE_MAX_COBRANCAS),
   ativo: z.boolean(),
   dentroDoValor: z.boolean(),
+  // Omitido = herda o do projecto (mesma regra do Pagamento.comIva).
+  comIva: z.boolean().nullish(),
   notas: z.string().max(2000).nullish(),
   fechadoEm: z.string().nullish(),
 });
@@ -56,6 +58,7 @@ export const POST = withAuth(async (session, request) => {
     numeroCobrancas: input.numeroCobrancas,
     ativo: input.ativo,
     dentroDoValor: input.dentroDoValor,
+    comIva: input.comIva ?? projeto.comIva ?? false,
     notas: input.notas?.trim() || null,
     // Só aplicado no insert (upsertMensalidade usa $setOnInsert).
     criadoEm: existente?.criadoEm ?? new Date().toISOString(),

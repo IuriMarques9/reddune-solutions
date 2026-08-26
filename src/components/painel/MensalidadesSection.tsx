@@ -28,6 +28,7 @@ import {
   type Pagamento,
 } from "@/types/pagamento";
 import { resumoMensalidade } from "@/lib/mensalidades";
+import { comIva, IVA_LABEL } from "@/lib/iva";
 import { parseMoney } from "@/lib/parse-number";
 import { safeDelete, safeJsonPost } from "@/lib/safe-fetch";
 import { useToast } from "@/hooks/use-toast";
@@ -40,6 +41,8 @@ type Props = {
   cobrancas: Cobranca[];
   /** Pagamentos do projecto — só para adivinhar o método usado da última vez. */
   pagamentos: Pagamento[];
+  /** `Projeto.comIva` — o default de um plano novo (pode divergir por plano). */
+  projetoComIva: boolean;
   /** yyyy-mm-dd de hoje em Lisboa, calculado no servidor. */
   hoje: string;
 };
@@ -88,6 +91,7 @@ export function MensalidadesSection({
   mensalidades,
   cobrancas,
   pagamentos,
+  projetoComIva,
   hoje,
 }: Props) {
   const [aCriar, setACriar] = useState(false);
@@ -118,6 +122,7 @@ export function MensalidadesSection({
       {aCriar && (
         <PlanoForm
           projetoId={projetoId}
+          projetoComIva={projetoComIva}
           onFechar={() => setACriar(false)}
         />
       )}
@@ -134,6 +139,7 @@ export function MensalidadesSection({
               <PlanoForm
                 key={m.id}
                 projetoId={projetoId}
+                projetoComIva={projetoComIva}
                 mensalidade={m}
                 onFechar={() => setAEditar(null)}
               />
@@ -200,6 +206,7 @@ function PlanoCard({
       numeroCobrancas: m.numeroCobrancas,
       ativo: m.ativo,
       dentroDoValor: m.dentroDoValor,
+      comIva: m.comIva ?? false,
       notas: m.notas,
       fechadoEm: m.fechadoEm,
       ...patch,
@@ -251,8 +258,12 @@ function PlanoCard({
       {/* Cabeçalho */}
       <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
         <b style={{ fontFamily: "var(--font-display)", fontSize: 14.5 }}>{m.titulo}</b>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}>
-          {money(m.valor)} € / {sufixo}
+        <span
+          style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}
+          title={m.comIva ? `${money(m.valor)} € base + ${IVA_LABEL}` : undefined}
+        >
+          {money(comIva(m.valor, m.comIva))} € / {sufixo}
+          {m.comIva ? " c/ IVA" : ""}
         </span>
         <span
           className="mono"
@@ -417,6 +428,7 @@ function PlanoCard({
               cobranca={c}
               projetoId={projetoId}
               pagamentos={pagamentos}
+              comIva={m.comIva ?? false}
               hoje={hoje}
               onFechar={() => setAConfirmar(null)}
             />
@@ -509,12 +521,15 @@ function ConfirmarCobranca({
   cobranca: c,
   projetoId,
   pagamentos,
+  comIva: levaIva,
   hoje,
   onFechar,
 }: {
   cobranca: Cobranca;
   projetoId: string;
   pagamentos: Pagamento[];
+  /** O plano leva IVA — o recibo herda a marca, para o lucro descontar a parcela. */
+  comIva: boolean;
   hoje: string;
   onFechar: () => void;
 }) {
@@ -549,6 +564,7 @@ function ConfirmarCobranca({
       data,
       metodo: metodo || null,
       notas: notas.trim() || null,
+      comIva: levaIva,
       mensalidadeId: c.mensalidadeId,
       cobrancaNumero: c.numero,
     });
@@ -575,6 +591,7 @@ function ConfirmarCobranca({
     >
       <div style={{ fontSize: 12, color: "var(--ink-soft)", marginBottom: 8 }}>
         Cobrança {c.numero} · prevista para {fmtDate(c.dataPrevista)}
+        {levaIva && <> · valor já com {IVA_LABEL}</>}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0 12px" }}>
         <div className="field">
@@ -650,10 +667,12 @@ function ConfirmarCobranca({
 
 function PlanoForm({
   projetoId,
+  projetoComIva,
   mensalidade,
   onFechar,
 }: {
   projetoId: string;
+  projetoComIva: boolean;
   mensalidade?: Mensalidade;
   onFechar: () => void;
 }) {
@@ -666,13 +685,17 @@ function PlanoForm({
   const [primeira, setPrimeira] = useState(mensalidade?.primeiraCobranca ?? "");
   const [quantas, setQuantas] = useState(String(mensalidade?.numeroCobrancas ?? 12));
   const [dentroDoValor, setDentroDoValor] = useState(mensalidade?.dentroDoValor ?? true);
+  // Herda o do projecto num plano novo; num plano existente manda o que lá está.
+  const [levaIva, setLevaIva] = useState(mensalidade?.comIva ?? projetoComIva);
   const [notas, setNotas] = useState(mensalidade?.notas ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const v = parseMoney(valor);
   const n = Number.parseInt(quantas, 10);
-  const total = v != null && Number.isFinite(n) && n > 0 ? v * n : null;
+  const porCobranca = v != null ? comIva(v, levaIva) : null;
+  const total =
+    porCobranca != null && Number.isFinite(n) && n > 0 ? porCobranca * n : null;
 
   async function submeter(e: React.FormEvent) {
     e.preventDefault();
@@ -692,6 +715,7 @@ function PlanoForm({
       numeroCobrancas: n,
       ativo: mensalidade?.ativo ?? true,
       dentroDoValor,
+      comIva: levaIva,
       notas: notas.trim() || null,
       fechadoEm: mensalidade?.fechadoEm ?? null,
     });
@@ -731,7 +755,7 @@ function PlanoForm({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
         <div className="field">
-          <label htmlFor="mn-valor">Valor de cada cobrança €</label>
+          <label htmlFor="mn-valor">Valor de cada cobrança € (s/ IVA)</label>
           <input
             id="mn-valor"
             type="number"
@@ -795,10 +819,41 @@ function PlanoForm({
         {total != null && (
           <>
             {" "}
-            Total do plano: <b>{money(total)} €</b>.
+            Total do plano: <b>{money(total)} €</b>
+            {levaIva && porCobranca != null && (
+              <> — {money(porCobranca)} € por cobrança, já com {IVA_LABEL}</>
+            )}
+            .
           </>
         )}
       </p>
+
+      <label
+        style={{
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 8,
+          marginBottom: 10,
+          fontSize: 12.5,
+          cursor: saving ? "default" : "pointer",
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={levaIva}
+          onChange={(e) => setLevaIva(e.target.checked)}
+          disabled={saving}
+          style={{ marginTop: 3 }}
+        />
+        <span>
+          Acrescentar {IVA_LABEL}
+          <span style={{ display: "block", color: "var(--ink-mute)", fontSize: 11.5 }}>
+            O valor acima é sempre a base s/ IVA. Ligado, cada cobrança passa a ser
+            cobrada com IVA por cima — é esse o número que tem de bater com o
+            pagamento registado.
+          </span>
+        </span>
+      </label>
 
       <label
         style={{

@@ -64,6 +64,7 @@ export const projetoSchema = z.object({
   dataCriado: z.string().nullish(),
   dataFechado: z.string().nullish(),
   valorEstimado: z.number().finite().nullish(),
+  comIva: z.boolean().nullish(),
   valorPago: z.number().finite().nullish(),
   metodoPagamento: z.string().max(100).nullish(),
   local: z.preprocess((v) => (v === "" ? null : v), z.enum(PROJETO_LOCAL).nullish()),

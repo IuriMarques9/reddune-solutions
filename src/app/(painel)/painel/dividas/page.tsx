@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check, Mail, ChevronRight, CalendarClock } from "lucide-react";
 import { getAllProjetos } from "@/lib/mongodb/projetos";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
+import { totalACobrar } from "@/lib/iva";
 import { getAllClientes } from "@/lib/mongodb/clientes";
 import { getAllMensalidades } from "@/lib/mongodb/mensalidades";
 import { requirePainelSession } from "@/lib/painel-auth";
@@ -89,15 +90,19 @@ export default async function DividasPage({
     emPlano: number;
   };
 
+  // Comparação BRUTA: total a cobrar (com IVA quando o projecto o leva) contra
+  // o que foi pago. Ver src/lib/iva.ts.
   const rows: Row[] = allProjetos
-    .filter((p) => p.status === "terminado" && p.valorEstimado != null)
+    .filter((p) => p.status === "terminado" && totalACobrar(p) != null)
     .map((p) => {
       const pago = pagoPorProjeto.get(p.id) ?? 0;
       // ANTI-DUPLA-CONTAGEM: o que está por cobrar através de um plano marcado
       // "faz parte do valor do projecto" sai daqui e aparece no separador
       // Mensalidades. Sem isto o mesmo dinheiro contava duas vezes.
       const emPlano = porCobrarDentroDoValor(mensalidades, cobrancas, p.id);
-      const restante = (p.valorEstimado ?? 0) - pago - emPlano;
+      // Bruto contra bruto: `totalACobrar` já traz o IVA quando o projecto o
+      // leva, e `Pagamento.valor` é sempre o que o cliente entregou.
+      const restante = (totalACobrar(p) ?? 0) - pago - emPlano;
       const dias = diasDesde(p.dataFechado ?? p.dataCriado);
       return {
         projeto: p,
@@ -198,7 +203,12 @@ export default async function DividasPage({
                           nome
                         )}
                       </td>
-                      <td className="col-hide-sm">{eur(p.valorEstimado ?? 0)} €</td>
+                      <td
+                        className="col-hide-sm"
+                        title={p.comIva ? `${eur(p.valorEstimado ?? 0)} € s/ IVA` : undefined}
+                      >
+                        {eur(totalACobrar(p) ?? 0)} €{p.comIva ? " c/ IVA" : ""}
+                      </td>
                       <td className="col-hide-sm">{eur(pago)} €</td>
                       <td className="num" style={{ color: "var(--ember)" }}>
                         {eur(restante)} €
