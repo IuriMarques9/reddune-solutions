@@ -34,7 +34,6 @@ import { gastoEmpresaDoProjeto } from "@/lib/gastos";
 import { totalACobrar, semIva, cents, eurCompacto, IVA_LABEL } from "@/lib/iva";
 import {
   todasCobrancas,
-  isPlanoDespesa,
   isPlanoPorArrancar,
   proximaCobranca,
   resumoMensalidade,
@@ -289,7 +288,6 @@ function PlanosAside({
                 {m.valor > 0 ? `${money(m.valor)} € / ${PERIODO_SUFIXO[m.periodo]}` : "valor por definir"}
                 {" · "}
                 {resumo.pagas}/{m.numeroCobrancas}
-                {isPlanoDespesa(m) ? " · a pagar" : ""}
               </div>
               {porArrancar ? (
                 <div className="muted" style={{ fontSize: 11.5, marginTop: 2 }}>

@@ -13,7 +13,6 @@ import type { Mensalidade } from "@/types/mensalidade";
 import { PERIODO_SUFIXO } from "@/types/mensalidade";
 import {
   cobrancasDe,
-  isPlanoDespesa,
   isPlanoPorArrancar,
   proximaCobranca,
   resumoMensalidade,
@@ -136,9 +135,7 @@ export function toPortalProjeto(
     // combinámos e onde vamos. Os fechados/desligados não interessam.
     const hoje = todayLisbonYmd();
     const planos: PortalPlanoDTO[] = mensalidades
-      // `!isPlanoDespesa`: o que NÓS pagamos de alojamento não é da conta do
-      // cliente — nem o valor, nem a existência.
-      .filter((m) => m.projetoId === projeto.id && m.ativo && !m.fechadoEm && !isPlanoDespesa(m))
+      .filter((m) => m.projetoId === projeto.id && m.ativo && !m.fechadoEm)
       .map((m) => {
         const cobrancas = cobrancasDe(m, pagamentos, hoje);
         const resumo = resumoMensalidade(m, cobrancas);

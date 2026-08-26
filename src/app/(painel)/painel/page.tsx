@@ -25,7 +25,6 @@ import { collectGastos, sumGastosInMonth } from "@/lib/gastos";
 import {
   cobrancasNoMes,
   cobrancasVencidas,
-  planosReceita,
   porCobrarDentroDoValor,
   proximaCobranca,
   somaPorCobrar,
@@ -233,8 +232,7 @@ export default async function PainelOverviewPage({
   }
 
   // Cobranças dos planos recorrentes — derivadas, nunca guardadas.
-  // "A cobrar" e a dívida são só o lado da receita.
-  const cobrancas = todasCobrancas(planosReceita(mensalidades), pagamentos, todayLisbonYmd(now));
+  const cobrancas = todasCobrancas(mensalidades, pagamentos, todayLisbonYmd(now));
   const vencidasPlanos = cobrancasVencidas(cobrancas);
 
   // MESMA conta da página /painel/dividas, de propósito: o que está por cobrar
@@ -245,7 +243,7 @@ export default async function PainelOverviewPage({
   const dividaDoProjeto = (p: Projeto) =>
     (totalACobrar(p) ?? 0) -
     (pagoPorProjeto.get(p.id) ?? 0) -
-    porCobrarDentroDoValor(planosReceita(mensalidades), cobrancas, p.id);
+    porCobrarDentroDoValor(mensalidades, cobrancas, p.id);
 
   const dividas = projetos.filter(
     (p) => p.status === "terminado" && totalACobrar(p) != null && dividaDoProjeto(p) > 0.005

@@ -10,10 +10,8 @@ import { logMutation } from "@/lib/mongodb/mutation-audit";
 import {
   MENSALIDADE_MAX_COBRANCAS,
   MENSALIDADE_PERIODO,
-  PLANO_TIPO,
   type Mensalidade,
 } from "@/types/mensalidade";
-import { DESPESA_CATEGORIA } from "@/types/despesa";
 
 export const dynamic = "force-dynamic";
 
@@ -21,9 +19,6 @@ const schema = z.object({
   id: z.string().max(128).optional(),
   projetoId: z.string().min(1).max(128),
   titulo: z.string().min(1).max(120),
-  // Ausente = "receita" (todos os planos anteriores a esta funcionalidade).
-  tipo: z.enum(PLANO_TIPO).nullish(),
-  // 0 só é aceitável num plano de despesa — ver a validação abaixo.
   valor: z.number().finite().min(0),
   periodo: z.enum(MENSALIDADE_PERIODO),
   // A única âncora de datas do plano — ver a nota em src/types/mensalidade.ts.
@@ -43,8 +38,6 @@ const schema = z.object({
   comIva: z.boolean().nullish(),
   // Categoria da linha nos Custos — só conta quando dentroDoValor é false.
   categoriaCusto: z.enum(LINHA_CATEGORIA).nullish(),
-  // Categoria da Despesa gerada ao confirmar, nos planos de despesa.
-  categoriaDespesa: z.enum(DESPESA_CATEGORIA).nullish(),
   // O que o plano nos custa por período, e se esse número já traz IVA.
   custo: z.number().finite().min(0).nullish(),
   custoComIva: z.boolean().nullish(),
@@ -60,12 +53,9 @@ export const POST = withAuth(async (session, request) => {
   const projeto = await getProjetoById(input.projetoId);
   if (!projeto) return apiError("Projeto não encontrado", 404);
 
-  const tipo = input.tipo ?? "receita";
-  // Um plano de receita SEM valor não é um combinado — é um vazio. Já um plano
-  // de despesa pode nascer sem número: serve de lembrete da renovação até a
-  // factura chegar, e o valor real escreve-se ao confirmar.
-  if (tipo === "receita" && input.valor <= 0) {
-    return apiError("Um plano a receber precisa de um valor por cobrança", 400);
+  // Um plano sem valor não é um combinado, é um vazio.
+  if (input.valor <= 0) {
+    return apiError("Um plano precisa de um valor por cobrança", 400);
   }
 
   // Num update, o projecto do plano não muda — impede mover um plano para outro
@@ -81,26 +71,18 @@ export const POST = withAuth(async (session, request) => {
     projetoId: input.projetoId,
     // Desnormalizado do projecto, como em Pagamento.
     clienteId: projeto.clienteId ?? null,
-    tipo,
     titulo: input.titulo.trim(),
     valor: input.valor,
     periodo: input.periodo,
     primeiraCobranca: input.primeiraCobranca || null,
     numeroCobrancas: input.numeroCobrancas,
     ativo: input.ativo,
-    // Receita: sempre parte do valor (é dona da sua linha). Despesa: nunca —
-    // é dinheiro nosso a sair, nada tem que ver com o que a cliente paga.
-    dentroDoValor: tipo !== "despesa",
-    // Idem para o IVA: a despesa regista o que saiu do banco, já com o que
-    // vier na factura.
-    comIva: tipo === "despesa" ? false : input.comIva ?? projeto.comIva ?? false,
+    // Sempre parte do valor: o plano é dono da sua linha nos Custos.
+    dentroDoValor: true,
+    comIva: input.comIva ?? projeto.comIva ?? false,
     categoriaCusto: input.categoriaCusto ?? existente?.categoriaCusto ?? undefined,
     custo: input.custo ?? undefined,
     custoComIva: input.custoComIva ?? undefined,
-    categoriaDespesa:
-      tipo === "despesa"
-        ? input.categoriaDespesa ?? existente?.categoriaDespesa ?? "dominios"
-        : undefined,
     notas: input.notas?.trim() || null,
     // Só aplicado no insert (upsertMensalidade usa $setOnInsert).
     criadoEm: existente?.criadoEm ?? new Date().toISOString(),

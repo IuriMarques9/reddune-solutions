@@ -135,27 +135,18 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   `margemDoPlano()` devolve receita/custo/margem/pct, tudo em BASE s/ IVA — o
   IVA pago é dedutível, por isso desconta-se antes de comparar (137,40 € de
   factura = 111,71 € de custo real; margem 378,29 € e não 352,60 €).
-  **INTERNO**: o portal nunca vê custo nem margem, só o que o cliente paga.
+  O bloco mostra DUAS colunas — "por período" e **"até ao fim"** (× nº de
+  cobranças): é o total que diz se o preço compensa. **INTERNO**: o portal
+  nunca vê custo nem margem, só o que o cliente paga.
   Confirmar um recebimento grava o Pagamento E a Despesa do custo (editável no
   momento — a Vercel muda de preço). O tempo do Iuri NÃO se regista: trabalho é
   lucro, não é gasto.
-- **Planos de DESPESA** (2026-08-26): `Mensalidade.tipo: "receita" | "despesa"`
-  (ausente = receita). Um plano de despesa é o que NÓS pagamos por causa do
-  projecto — alojamento, base de dados, domínio. Nasceu da constatação de que a
-  manutenção de 490 €/ano da Márcia é receita, mas só uma parte sai do banco.
-  - **`valor` é OPCIONAL** só neste tipo: serve de lembrete da renovação até a
-    factura chegar. Com `valor: 0` a previsão NUNCA está paga sem confirmação —
-    um `pago >= valor` ingénuo dava tudo por pago à nascença (ver `estadoDe`).
-  - Confirmar (botão **Paguei**) grava uma `Despesa` ligada ao projecto, com
-    `mensalidadeId`/`cobrancaNumero` — o mesmo gesto das cobranças, outro
-    destino. Entra logo nos gastos e baixa o Lucro do projecto.
-  - NUNCA: linha nos Custos, dívida do cliente, receita recorrente, IVA, nem
-    aparecer no portal. `planosReceita()`/`planosDespesa()` filtram os ecrãs de
-    dinheiro-a-receber (dívidas, visão geral, relatórios, portal).
-  - **O tempo do Iuri não se regista aqui** — regra dele: trabalho é lucro, não
-    é gasto. Só entra o que sai mesmo do banco.
-  - `todasCobrancas` aceita pagamentos E despesas na mesma lista: apontam ao
-    plano pelo mesmo campo e nunca se cruzam.
+- **NÃO existe tipo de plano** (removido 2026-08-27). Houve um `Mensalidade.tipo`
+  com "despesa" para o que NÓS pagamos; foi apagado a pedido do Iuri — *"isto
+  não faz sentido"*. Um plano é SEMPRE dinheiro a receber. O que ele nos custa
+  vive no campo `custo` do próprio plano; gastos sem plano associado são
+  Despesas normais, como as ferramentas. **Não voltar a criar dois caminhos
+  para a mesma coisa.**
 - **`fimDaCobertura()`** (2026-08-27): o fim de um plano é a última cobrança
   **MAIS um período** — uma anuidade paga a 27/06/2026 cobre até 27/06/2027.
   NÃO é o dia da última cobrança: o painel dizia "acaba" no próprio dia do
@@ -167,6 +158,8 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
 - **Formulário sem parágrafos grandes** (2026-08-27): o essencial fica no
   texto, o detalhe passa para o componente `Ajuda` (ícone ⓘ com tooltip). Não
   voltar a escrever blocos de 3 linhas no form — ninguém os lê à segunda vez.
+  O `PlanoForm` e o `BlocoMargem` foram reescritos de raiz nessa data: patches
+  sucessivos tinham-nos deixado emaranhados em condicionais mortas.
 - **Duplicações removidas** (2026-08-27): o lápis "Editar" do card do kanban
   fazia o mesmo que clicar no card; o aside "Informações" mostrava Cliente e
   Valor estimado, que o hero mesmo por cima já dá (cliente com link, Orçado com

@@ -107,16 +107,6 @@ export function fimDaCobertura(m: Mensalidade): string | null {
   return addMeses(m.primeiraCobranca, m.numeroCobrancas * passo);
 }
 
-/** Combinado mas ainda sem data — arranca quando o cliente pagar. */
-export function isPlanoPorArrancar(m: Mensalidade): boolean {
-  return !m.primeiraCobranca;
-}
-
-/** O plano é de despesa (dinheiro nosso a sair), não de receita. */
-export function isPlanoDespesa(m: Mensalidade): boolean {
-  return m.tipo === "despesa";
-}
-
 /**
  * O que o plano deixa por período, em BASE s/ IVA.
  *
@@ -146,14 +136,9 @@ export function margemDoPlano(m: Mensalidade): {
   };
 }
 
-/** Planos a receber do cliente — os únicos que são dívida, receita e portal. */
-export function planosReceita(mensalidades: Mensalidade[]): Mensalidade[] {
-  return mensalidades.filter((m) => !isPlanoDespesa(m));
-}
-
-/** Planos a pagar por nós — alojamento, base de dados, domínio. */
-export function planosDespesa(mensalidades: Mensalidade[]): Mensalidade[] {
-  return mensalidades.filter(isPlanoDespesa);
+/** Combinado mas ainda sem data — arranca quando o cliente pagar. */
+export function isPlanoPorArrancar(m: Mensalidade): boolean {
+  return !m.primeiraCobranca;
 }
 
 /**
@@ -192,7 +177,7 @@ export function cobrancasDe(
   // que se compara com os pagamentos é o que o cliente entrega. Sem isto, numa
   // prestação de 366,67 € base o cliente pagava 451,00 € e a cobrança ficava
   // eternamente "parcial" — o pago passava o valor e nunca fechava certo.
-  const valorBruto = isPlanoDespesa(m) ? m.valor : comIva(m.valor, m.comIva);
+  const valorBruto = comIva(m.valor, m.comIva);
   const out: Cobranca[] = [];
   for (let numero = 1; numero <= m.numeroCobrancas; numero++) {
     const dataPrevista = addMeses(m.primeiraCobranca, (numero - 1) * passo);
@@ -252,7 +237,7 @@ export function resumoMensalidade(m: Mensalidade, cobrancas: Cobranca[]): Resumo
   return {
     geradas: minhas.length,
     pagas,
-    valorTotal: (isPlanoDespesa(m) ? m.valor : comIva(m.valor, m.comIva)) * m.numeroCobrancas,
+    valorTotal: comIva(m.valor, m.comIva) * m.numeroCobrancas,
     recebido,
     porCobrar,
     vencidas: minhas.filter((c) => c.estado === "vencida" || c.estado === "parcial").length,
@@ -319,7 +304,6 @@ export function receitaRecorrente(
   let planosAtivos = 0;
   for (const m of mensalidades) {
     if (!m.ativo || m.fechadoEm) continue;
-    if (isPlanoDespesa(m)) continue; // não é receita nossa — é dinheiro a sair
     const abertas = cobrancas.filter((c) => c.mensalidadeId === m.id && c.estado !== "paga");
     if (abertas.length === 0) continue;
     planosAtivos += 1;
@@ -386,16 +370,6 @@ export function sincronizarLinhaDoPlano(
 ): { linhas: ProjetoLinha[]; valorEstimado: number | null } | null {
   const linhas = [...(linhasActuais ?? [])];
   const i = linhas.findIndex((l) => l.mensalidadeId === m.id);
-
-  // Um plano de DESPESA nunca gera linha nos Custos: as linhas são o que o
-  // cliente paga. O gasto vive na colecção `despesas`, ao confirmar.
-  if (isPlanoDespesa(m)) {
-    // Passou a fazer parte do valor: a linha que o plano criou deixa de fazer
-    // sentido (senão contava duas vezes).
-    if (i < 0) return null;
-    linhas.splice(i, 1);
-    return { linhas, valorEstimado: somaLinhas(linhas, valorEstimadoActual) };
-  }
 
   const linha: ProjetoLinha = {
     id: i >= 0 ? linhas[i].id : novoId(),
@@ -471,8 +445,6 @@ export type CobrancaCalendario = Cobranca & {
   totalCobrancas: number;
   projetoTitulo: string;
   clienteNome: string | null;
-  /** true = dinheiro nosso a sair (alojamento, domínio), não a entrar. */
-  ehDespesa: boolean;
   // true = não é cobrança nenhuma, é o dia em que a cobertura acaba (última
   // cobrança + um período). É aí que se decide renovar.
   ehFimDoPlano: boolean;
@@ -510,7 +482,6 @@ export function cobrancasParaCalendario(
       totalCobrancas: m.numeroCobrancas,
       projetoTitulo: p?.titulo ?? "Projecto",
       clienteNome: p?.clienteNome ?? null,
-      ehDespesa: isPlanoDespesa(m),
       ehFimDoPlano: true,
     });
   }
@@ -524,7 +495,6 @@ export function cobrancasParaCalendario(
       totalCobrancas: m?.numeroCobrancas ?? c.numero,
       projetoTitulo: p?.titulo ?? "Projecto",
       clienteNome: p?.clienteNome ?? null,
-      ehDespesa: m ? isPlanoDespesa(m) : false,
       ehFimDoPlano: false,
     };
   });
@@ -547,7 +517,7 @@ export function porCobrarDentroDoValor(
 ): number {
   const ids = new Set(
     mensalidades
-      .filter((m) => m.projetoId === projetoId && !isPlanoDespesa(m))
+      .filter((m) => m.projetoId === projetoId)
       .map((m) => m.id)
   );
   if (ids.size === 0) return 0;

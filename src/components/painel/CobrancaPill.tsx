@@ -30,19 +30,19 @@ export function CobrancaPill({
     : c.valor > 0
       ? `${valor} € · ${quem}`
       : c.planoTitulo;
-  const sinal = ehFim ? "⤓" : c.ehDespesa ? "↓" : "↑";
+  const sinal = ehFim ? "⤓" : "↑";
 
   return (
     <Link
       href={`/painel/projetos/${c.projetoId}#mensalidades`}
-      className={cn("cal-ev e", (c.ehDespesa || ehFim) && "out", estadoCls, className)}
+      className={cn("cal-ev e", ehFim && "out", estadoCls, className)}
       style={style}
       title={
         ehFim
           ? `${c.planoTitulo} cobre até aqui — renovar ou deixar cair · ${c.projetoTitulo}${
               c.clienteNome ? ` — ${c.clienteNome}` : ""
             }`
-          : `${c.ehDespesa ? "A pagar por nós" : "A receber"} · ${c.planoTitulo} ${c.numero}/${
+          : `${c.planoTitulo} ${c.numero}/${
               c.totalCobrancas
             } · ${c.valor > 0 ? `${valor} €` : "valor por definir"} · ${c.projetoTitulo}${
               c.clienteNome ? ` — ${c.clienteNome}` : ""
