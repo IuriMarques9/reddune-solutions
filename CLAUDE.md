@@ -91,6 +91,23 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   um gasto nosso, e serve para o cliente ver a rubrica no portal. `valorEstimado`
   é reposto como soma das linhas — a mesma conta do CustosCard. Linhas escritas
   à mão nunca são tocadas; apagar o plano deixa a linha e só tira a marca.
+- **Planos de DESPESA** (2026-08-26): `Mensalidade.tipo: "receita" | "despesa"`
+  (ausente = receita). Um plano de despesa é o que NÓS pagamos por causa do
+  projecto — alojamento, base de dados, domínio. Nasceu da constatação de que a
+  manutenção de 490 €/ano da Márcia é receita, mas só uma parte sai do banco.
+  - **`valor` é OPCIONAL** só neste tipo: serve de lembrete da renovação até a
+    factura chegar. Com `valor: 0` a previsão NUNCA está paga sem confirmação —
+    um `pago >= valor` ingénuo dava tudo por pago à nascença (ver `estadoDe`).
+  - Confirmar (botão **Paguei**) grava uma `Despesa` ligada ao projecto, com
+    `mensalidadeId`/`cobrancaNumero` — o mesmo gesto das cobranças, outro
+    destino. Entra logo nos gastos e baixa o Lucro do projecto.
+  - NUNCA: linha nos Custos, dívida do cliente, receita recorrente, IVA, nem
+    aparecer no portal. `planosReceita()`/`planosDespesa()` filtram os ecrãs de
+    dinheiro-a-receber (dívidas, visão geral, relatórios, portal).
+  - **O tempo do Iuri não se regista aqui** — regra dele: trabalho é lucro, não
+    é gasto. Só entra o que sai mesmo do banco.
+  - `todasCobrancas` aceita pagamentos E despesas na mesma lista: apontam ao
+    plano pelo mesmo campo e nunca se cruzam.
 - Push diário: `/api/cron/mensalidades` (Vercel Cron 08:00 UTC em `vercel.json`)
   precisa da env **`CRON_SECRET`** — sem ela devolve 401 a tudo, inclusive ao
   próprio cron. Hobby permite crons (1×/dia, ±59 min). Dedup em
