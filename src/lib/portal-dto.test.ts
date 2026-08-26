@@ -3,6 +3,7 @@ import { toPortalProjeto, toPortalCliente } from "./portal-dto";
 import type { Projeto } from "@/types/projeto";
 import type { Cliente } from "@/types/cliente";
 import type { Pagamento } from "@/types/pagamento";
+import type { Mensalidade } from "@/types/mensalidade";
 
 const POISON = "SEGREDO_INTERNO_NUNCA_MOSTRAR";
 
@@ -90,6 +91,7 @@ describe("toPortalProjeto", () => {
         { label: "Peça", total: 250 },
         { label: "Mão-de-obra", total: 150 },
       ],
+      planos: [],
     });
   });
 
@@ -106,6 +108,75 @@ describe("toPortalProjeto", () => {
       pago: 100,
       emFalta: 0,
       categorias: [],
+      planos: [],
+    });
+  });
+
+  describe("planos de pagamento", () => {
+    function plano(p: Partial<Mensalidade> & { id: string }): Mensalidade {
+      return {
+        projetoId: "p1",
+        clienteId: "c1",
+        titulo: "Mensalidade 12x",
+        valor: 366.67,
+        periodo: "mensal",
+        primeiraCobranca: "2026-09-01",
+        numeroCobrancas: 12,
+        ativo: true,
+        dentroDoValor: true,
+        notas: POISON,
+        criadoEm: "2026-08-18T00:00:00.000Z",
+        fechadoEm: null,
+        ...p,
+      };
+    }
+
+    it("mostra o plano, quantas já foram pagas e a próxima data", () => {
+      const pg: Pagamento = {
+        id: "pg1",
+        projetoId: "p1",
+        clienteId: "c1",
+        valor: 366.67,
+        data: "2026-09-05",
+        metodo: "transferencia",
+        notas: POISON,
+        criadoEm: "2026-09-05",
+        mensalidadeId: "m1",
+        cobrancaNumero: 1,
+      };
+      const planos = toPortalProjeto(makeProjeto(), [pg], [plano({ id: "m1" })]).valores!.planos;
+      expect(planos).toHaveLength(1);
+      expect(planos[0]).toMatchObject({
+        titulo: "Mensalidade 12x",
+        total: 12,
+        pagas: 1,
+        periodoSufixo: "mês",
+        proximaData: "2026-10-01",
+      });
+    });
+
+    it("nunca deixa passar notas internas nem contabilidade nossa", () => {
+      const planos = toPortalProjeto(makeProjeto(), [], [plano({ id: "m1" })]).valores!.planos;
+      const cru = JSON.stringify(planos);
+      expect(cru).not.toContain(POISON);
+      for (const k of ["notas", "dentroDoValor", "desvioDias", "id", "mensalidadeId"]) {
+        expect(planos[0]).not.toHaveProperty(k);
+      }
+    });
+
+    it("esconde planos desligados ou fechados", () => {
+      const desligado = plano({ id: "m1", ativo: false });
+      const fechado = plano({ id: "m2", fechadoEm: "2026-09-30T00:00:00.000Z" });
+      expect(toPortalProjeto(makeProjeto(), [], [desligado, fechado]).valores!.planos).toEqual([]);
+    });
+
+    it("ignora planos de outro projecto", () => {
+      const outro = plano({ id: "m9", projetoId: "p-outro" });
+      expect(toPortalProjeto(makeProjeto(), [], [outro]).valores!.planos).toEqual([]);
+    });
+
+    it("sem planos, a lista fica vazia (o portal não muda)", () => {
+      expect(toPortalProjeto(makeProjeto(), pagamentos).valores!.planos).toEqual([]);
     });
   });
 

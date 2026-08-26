@@ -6,12 +6,15 @@ import { cn } from "@/lib/utils";
 import { parseIsoDate, startOfDay } from "@/lib/dates";
 import type { Projeto, ProjetoStatus } from "@/types/projeto";
 import type { Lembrete } from "@/types/lembrete";
+import type { CobrancaCalendario } from "@/lib/mensalidades";
 import { QuickLembreteModal } from "./QuickLembreteModal";
+import { CobrancaPill } from "./CobrancaPill";
 
 type Props = {
   projetos: Projeto[];
   lembretes: Lembrete[];
   weekStart: Date;
+  cobrancas?: CobrancaCalendario[];
 };
 
 const DAY_NAMES = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -39,7 +42,7 @@ function sameDay(a: Date, b: Date): boolean {
   return startOfDay(a).getTime() === startOfDay(b).getTime();
 }
 
-export function WeekCalendar({ projetos, lembretes, weekStart }: Props) {
+export function WeekCalendar({ projetos, lembretes, weekStart, cobrancas = [] }: Props) {
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickPrazo, setQuickPrazo] = useState<string | null>(null);
   const [quickHora, setQuickHora] = useState<string | null>(null);
@@ -69,6 +72,12 @@ export function WeekCalendar({ projetos, lembretes, weekStart }: Props) {
       const d = parseIsoDate(p.prazo);
       return d && sameDay(d, day);
     });
+  }
+
+  // Uma cobrança tem dia, não hora: vive sempre na faixa "Dia inteiro".
+  function cobrancasFor(day: Date) {
+    const iso = isoFromDate(day);
+    return cobrancas.filter((c) => c.dataPrevista === iso);
   }
 
   function openQuick(day: Date, hour: number) {
@@ -131,6 +140,9 @@ export function WeekCalendar({ projetos, lembretes, weekStart }: Props) {
                   >
                     {t.titulo}
                   </Link>
+                ))}
+                {cobrancasFor(d).map((c) => (
+                  <CobrancaPill key={`c-${c.mensalidadeId}-${c.numero}`} cobranca={c} />
                 ))}
               </div>
             );

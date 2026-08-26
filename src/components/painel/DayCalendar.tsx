@@ -6,12 +6,15 @@ import { cn } from "@/lib/utils";
 import { parseIsoDate, startOfDay } from "@/lib/dates";
 import type { Projeto, ProjetoStatus } from "@/types/projeto";
 import type { Lembrete } from "@/types/lembrete";
+import type { CobrancaCalendario } from "@/lib/mensalidades";
 import { QuickLembreteModal } from "./QuickLembreteModal";
+import { CobrancaPill } from "./CobrancaPill";
 
 type Props = {
   projetos: Projeto[];
   lembretes: Lembrete[];
   day: Date;
+  cobrancas?: CobrancaCalendario[];
 };
 
 const HOUR_START = 8;
@@ -38,7 +41,7 @@ function sameDay(a: Date, b: Date): boolean {
   return startOfDay(a).getTime() === startOfDay(b).getTime();
 }
 
-export function DayCalendar({ projetos, lembretes, day }: Props) {
+export function DayCalendar({ projetos, lembretes, day, cobrancas = [] }: Props) {
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickPrazo, setQuickPrazo] = useState<string | null>(null);
   const [quickHora, setQuickHora] = useState<string | null>(null);
@@ -58,6 +61,8 @@ export function DayCalendar({ projetos, lembretes, day }: Props) {
     return d && sameDay(d, day);
   });
   const semHora = dayLembretes.filter((t) => !t.prazoHora);
+  // Uma cobrança tem dia, não hora: vive sempre na faixa "Dia inteiro".
+  const dayCobrancas = cobrancas.filter((c) => c.dataPrevista === isoFromDate(day));
 
   function openQuick(hour: number, minute: number) {
     setQuickPrazo(isoFromDate(day));
@@ -68,7 +73,7 @@ export function DayCalendar({ projetos, lembretes, day }: Props) {
   return (
     <>
       <div className="space-y-4">
-        {(dayProjetos.length > 0 || semHora.length > 0) && (
+        {(dayProjetos.length > 0 || semHora.length > 0 || dayCobrancas.length > 0) && (
           <div className="rounded-card border border-dune-deep/10 bg-cream/40 p-3 space-y-2">
             <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-ink-mute">
               Dia inteiro
@@ -96,6 +101,13 @@ export function DayCalendar({ projetos, lembretes, day }: Props) {
                 >
                   {t.titulo}
                 </Link>
+              ))}
+              {dayCobrancas.map((c) => (
+                <CobrancaPill
+                  key={`c-${c.mensalidadeId}-${c.numero}`}
+                  cobranca={c}
+                  style={{ marginTop: 0 }}
+                />
               ))}
             </div>
           </div>

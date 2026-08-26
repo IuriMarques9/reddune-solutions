@@ -16,10 +16,19 @@ import { getAllProjetos } from "@/lib/mongodb/projetos";
 import { getAllClientes } from "@/lib/mongodb/clientes";
 import { getAllColaboradores } from "@/lib/mongodb/colaboradores";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
+import { getAllMensalidades } from "@/lib/mongodb/mensalidades";
 import { getAllLembretes } from "@/lib/mongodb/lembretes";
 import { getAllDespesas } from "@/lib/mongodb/despesas";
 import { getRecentAuditEntries, type AuditEntry } from "@/lib/mongodb/mutation-audit";
 import { collectGastos, sumGastosInMonth } from "@/lib/gastos";
+import {
+  cobrancasNoMes,
+  cobrancasVencidas,
+  porCobrarDentroDoValor,
+  proximaCobranca,
+  somaPorCobrar,
+  todasCobrancas,
+} from "@/lib/mensalidades";
 import { requirePainelSession } from "@/lib/painel-auth";
 import { Topbar } from "@/components/painel/Topbar";
 import { NovoMenu } from "@/components/painel/NovoMenu";
@@ -34,6 +43,7 @@ import {
   startOfDay,
   todayLisbonDate,
   todayLisbonMonth,
+  todayLisbonYmd,
 } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
@@ -166,17 +176,27 @@ export default async function PainelOverviewPage({
 }) {
   await requirePainelSession();
 
-  const [projetos, clientes, pagamentos, lembretes, despesas, colaboradores, audit, params] =
-    await Promise.all([
-      getAllProjetos(),
-      getAllClientes(),
-      getAllPagamentos(),
-      getAllLembretes(),
-      getAllDespesas(),
-      getAllColaboradores(),
-      getRecentAuditEntries(6),
-      searchParams,
-    ]);
+  const [
+    projetos,
+    clientes,
+    pagamentos,
+    lembretes,
+    despesas,
+    colaboradores,
+    mensalidades,
+    audit,
+    params,
+  ] = await Promise.all([
+    getAllProjetos(),
+    getAllClientes(),
+    getAllPagamentos(),
+    getAllLembretes(),
+    getAllDespesas(),
+    getAllColaboradores(),
+    getAllMensalidades(),
+    getRecentAuditEntries(6),
+    searchParams,
+  ]);
 
   const foco: Foco = params.foco === "semana" ? "semana" : "hoje";
 
@@ -210,16 +230,24 @@ export default async function PainelOverviewPage({
     pagoPorProjeto.set(p.projetoId, (pagoPorProjeto.get(p.projetoId) ?? 0) + p.valor);
   }
 
+  // Cobranças dos planos recorrentes — derivadas, nunca guardadas.
+  const cobrancas = todasCobrancas(mensalidades, pagamentos, todayLisbonYmd(now));
+  const vencidasPlanos = cobrancasVencidas(cobrancas);
+
+  // MESMA conta da página /painel/dividas, de propósito: o que está por cobrar
+  // através de um plano "dentro do valor do projecto" sai daqui e entra pelas
+  // cobranças vencidas — senão os dois ecrãs davam números diferentes para a
+  // mesma pergunta ("quanto me devem?").
+  const dividaDoProjeto = (p: Projeto) =>
+    (p.valorEstimado ?? 0) -
+    (pagoPorProjeto.get(p.id) ?? 0) -
+    porCobrarDentroDoValor(mensalidades, cobrancas, p.id);
+
   const dividas = projetos.filter(
-    (p) =>
-      p.status === "terminado" &&
-      p.valorEstimado != null &&
-      (pagoPorProjeto.get(p.id) ?? 0) < p.valorEstimado
+    (p) => p.status === "terminado" && p.valorEstimado != null && dividaDoProjeto(p) > 0.005
   );
-  const dividasValor = dividas.reduce(
-    (sum, p) => sum + ((p.valorEstimado ?? 0) - (pagoPorProjeto.get(p.id) ?? 0)),
-    0
-  );
+  const dividasValor =
+    dividas.reduce((sum, p) => sum + dividaDoProjeto(p), 0) + somaPorCobrar(vencidasPlanos);
 
   const counts = {
     emCurso: projetos.filter((p) => STATUS_GROUPS.ativo.includes(p.status)).length,
@@ -315,6 +343,15 @@ export default async function PainelOverviewPage({
     .sort((a, b) => (b.dataCriado ?? "").localeCompare(a.dataCriado ?? ""))
     .map((p) => ({ id: p.id, titulo: p.titulo }));
 
+  // ── A cobrar este mês (planos recorrentes) ──────────────────────────────
+  const cobrancasMes = cobrancasNoMes(cobrancas, mesActual);
+  const previstoMes = cobrancasMes.reduce((s, c) => s + c.valor, 0);
+  const porCobrarMes = somaPorCobrar(cobrancasMes);
+  const proxima = proximaCobranca(cobrancas);
+  const proximoProjeto = proxima
+    ? projetos.find((p) => p.id === proxima.projetoId)?.titulo ?? null
+    : null;
+
   const concluidosMes = projetos.filter((p) => p.dataFechado?.startsWith(mesActual)).length;
   const novosClientesMes = clientes.filter((c) => c.criadoEm?.startsWith(mesActual)).length;
   const pagamentosMes = pagamentos.filter((p) => p.data?.startsWith(mesActual)).length;
@@ -399,8 +436,57 @@ export default async function PainelOverviewPage({
         <div className="kpi accent">
           <div className="kpi-label">Em dívida</div>
           <div className="kpi-num">{eur(dividasValor)}€</div>
+          {vencidasPlanos.length > 0 && (
+            <div className="kpi-label" style={{ marginTop: 2 }}>
+              inclui {vencidasPlanos.length} cobrança{vencidasPlanos.length === 1 ? "" : "s"}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ---------- A cobrar este mês (planos recorrentes) ---------- */}
+      {cobrancas.length > 0 && (
+        <div className="card" style={{ marginBottom: 18 }}>
+          <div className="card-head">
+            <span className="card-title">A cobrar este mês</span>
+            <Link className="btn-ghost" href="/painel/dividas?v=mensalidades">
+              Ver mensalidades
+            </Link>
+          </div>
+          <div className="month msum">
+            <div title="O que estava combinado para entrar este mês pelos planos de mensalidade e anuidade.">
+              <div className="kpi-label">Previsto</div>
+              <div className="m-num sm">{eur(previstoMes)} €</div>
+            </div>
+            <div title="Do previsto deste mês, o que ainda não entrou.">
+              <div className="kpi-label">Por cobrar</div>
+              <div className={porCobrarMes > 0 ? "m-num sm neg" : "m-num sm"}>
+                {eur(porCobrarMes)} €
+              </div>
+            </div>
+            <div title="Cobranças de qualquer mês que já passaram do dia previsto e continuam por pagar.">
+              <div className="kpi-label">Vencidas</div>
+              <div className={vencidasPlanos.length > 0 ? "m-num sm neg" : "m-num sm"}>
+                {vencidasPlanos.length}
+              </div>
+            </div>
+          </div>
+          {proxima && (
+            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", margin: "12px 0 0" }}>
+              Próxima:{" "}
+              <Link href={`/painel/projetos/${proxima.projetoId}#mensalidades`}>
+                {eur(proxima.valor)} € · {proximoProjeto ?? "projecto"}
+              </Link>{" "}
+              <span className="muted">
+                a {new Date(proxima.dataPrevista).toLocaleDateString("pt-PT", {
+                  day: "numeric",
+                  month: "long",
+                })}
+              </span>
+            </p>
+          )}
+        </div>
+      )}
 
       {/* ---------- Resumo do mês · Atividade recente ---------- */}
       <div className="cols2">

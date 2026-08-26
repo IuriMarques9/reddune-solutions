@@ -46,6 +46,24 @@ async function doInit(): Promise<void> {
     db.collection("pagamentos").createIndex({ id: 1 }, { unique: true }),
     db.collection("pagamentos").createIndex({ projetoId: 1 }),
     db.collection("pagamentos").createIndex({ clienteId: 1 }),
+    // Parcial: só os pagamentos ligados a um plano recorrente entram no índice
+    // (a esmagadora maioria é avulso e não tem o campo).
+    db.collection("pagamentos").createIndex(
+      { mensalidadeId: 1 },
+      { partialFilterExpression: { mensalidadeId: { $type: "string" } } }
+    ),
+
+    db.collection("mensalidades").createIndex({ id: 1 }, { unique: true }),
+    db.collection("mensalidades").createIndex({ projetoId: 1 }),
+    db.collection("mensalidades").createIndex({ clienteId: 1 }),
+
+    db.collection("mensalidade_avisos").createIndex({ key: 1 }, { unique: true }),
+    // TTL 400 dias: mais do que um ciclo anual completo, para uma anuidade não
+    // voltar a ser avisada por o registo ter expirado entre cobranças.
+    db.collection("mensalidade_avisos").createIndex(
+      { at: 1 },
+      { expireAfterSeconds: 400 * 24 * 60 * 60, name: "mens_aviso_ttl" }
+    ),
 
     db.collection("servicos").createIndex({ id: 1 }, { unique: true }),
     db.collection("servicos").createIndex({ slug: 1, ordem: 1 }),

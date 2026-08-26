@@ -354,8 +354,10 @@
 .pnl .pill.warm { background:rgba(214,66,42,.10); color:var(--ember); }
 .pnl .pill.mute { background:rgba(90,14,14,.07); color:var(--ink-soft); }
 .pnl .pill.ok { background:rgba(90,14,14,.08); color:var(--dune); }
-.pnl .mini-kpis { display:flex; gap:12px; margin-bottom:20px; }
-.pnl .mini-kpis .k { flex:1; background:var(--sand-warm); border:1px solid rgba(90,14,14,.10); border-radius:16px; padding:14px 16px; box-shadow:0 6px 20px rgba(90,14,14,.05); }
+/* wrap + min-width: com 4 KPIs (Receita/Previsto/Gastos/Lucro) os cartões
+   quebram para uma segunda linha em vez de espremerem os números */
+.pnl .mini-kpis { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+.pnl .mini-kpis .k { flex:1 1 150px; min-width:150px; background:var(--sand-warm); border:1px solid rgba(90,14,14,.10); border-radius:16px; padding:14px 16px; box-shadow:0 6px 20px rgba(90,14,14,.05); }
 .pnl .mini-kpis .k .kpi-num { font-size:24px; margin-top:4px; }
 .pnl .mini-kpis .k.accent .kpi-num { color:var(--ember); }
 .pnl .btn-ghost { display:inline-flex; align-items:center; gap:6px; border:1px solid rgba(90,14,14,.16); border-radius:100px; padding:6px 13px; font-size:12.5px; font-weight:600; color:var(--ink-soft); }
@@ -423,6 +425,11 @@
 .pnl .cal-cell.out { opacity:.4; }
 .pnl .cal-ev { display:block; margin-top:4px; font-size:10px; padding:2px 6px; border-radius:5px; background:rgba(214,66,42,.12); color:var(--ember); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width: 100%; }
 .pnl .cal-ev.b { background:rgba(90,14,14,.08); color:var(--ink-soft); }
+/* cobranças de mensalidades/anuidades: âmbar por defeito, ember em atraso,
+   apagada quando já foi paga (fica no calendário como histórico) */
+.pnl .cal-ev.e { background:rgba(176,121,63,.16); color:#8a5a2b; }
+.pnl .cal-ev.e.late { background:rgba(214,66,42,.16); color:var(--ember); font-weight:600; }
+.pnl .cal-ev.e.done { background:rgba(90,14,14,.06); color:var(--ink-mute); text-decoration:line-through; }
 
 /* serviços */
 .pnl .svc { display:flex; align-items:center; gap:14px; padding:14px 18px; background:var(--sand-warm); border:1px solid rgba(90,14,14,.09); border-radius:14px; margin-bottom:9px; }

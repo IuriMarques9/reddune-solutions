@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { resolvePortalToken } from "@/lib/portal-auth";
 import { getClienteById } from "@/lib/mongodb/clientes";
 import { getPagamentosByProjeto } from "@/lib/mongodb/pagamentos";
+import { getMensalidadesByProjeto } from "@/lib/mongodb/mensalidades";
 import { getComentariosByProjeto } from "@/lib/mongodb/portal";
 import { getSandboxesByProjeto } from "@/lib/mongodb/portal-sandbox";
 import { toPortalProjeto, toPortalCliente, type PortalArquivoDTO } from "@/lib/portal-dto";
@@ -48,13 +49,14 @@ export default async function PortalPage({ params }: { params: Params }) {
   const projeto = await resolvePortalToken(token);
   if (!projeto) notFound();
 
-  const [cliente, pagamentos, comentarios, sandboxes] = await Promise.all([
+  const [cliente, pagamentos, comentarios, sandboxes, mensalidades] = await Promise.all([
     projeto.clienteId ? getClienteById(projeto.clienteId) : Promise.resolve(null),
     getPagamentosByProjeto(projeto.id),
     getComentariosByProjeto(projeto.id),
     getSandboxesByProjeto(projeto.id),
+    getMensalidadesByProjeto(projeto.id),
   ]);
-  const dto = toPortalProjeto(projeto, pagamentos);
+  const dto = toPortalProjeto(projeto, pagamentos, mensalidades);
   // Entregáveis = o que NÓS pusemos lá. O que o cliente enviou tem secção
   // própria (senão o cliente via as próprias fotos listadas como entrega nossa).
   const todosEntregaveis = dto.arquivos.filter((a) => a.origem !== "cliente");
@@ -298,6 +300,26 @@ export default async function PortalPage({ params }: { params: Params }) {
                   <li key={c.label} className="flex justify-between">
                     <span className="text-[rgba(247,238,219,0.70)]">{c.label}</span>
                     <span className="font-semibold text-cream">{eur(c.total)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {/* Plano de pagamento — o cliente vê o que combinámos e onde vamos.
+                Sem atrasos, sem notas internas: foi a decisão do Iuri. */}
+            {dto.valores.planos.length > 0 && (
+              <ul className="mt-5 flex flex-col gap-3 border-t border-dashed border-[rgba(247,238,219,0.20)] pt-4 text-sm">
+                {dto.valores.planos.map((pl) => (
+                  <li key={pl.titulo}>
+                    <div className="font-semibold text-cream">
+                      {pl.total} {pl.total === 1 ? "cobrança" : "cobranças"} de {eur(pl.valor)}
+                      <span className="text-[rgba(247,238,219,0.70)]"> / {pl.periodoSufixo}</span>
+                    </div>
+                    <div className="mt-0.5 text-[13px] text-[rgba(247,238,219,0.70)]">
+                      {pl.pagas} paga{pl.pagas === 1 ? "" : "s"}
+                      {pl.proximaData
+                        ? ` · próxima a ${dataPt(pl.proximaData)}`
+                        : " · plano concluído"}
+                    </div>
                   </li>
                 ))}
               </ul>

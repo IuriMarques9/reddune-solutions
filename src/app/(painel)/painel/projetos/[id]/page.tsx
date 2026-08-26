@@ -16,8 +16,10 @@ import { getLembretesByProjeto } from "@/lib/mongodb/lembretes";
 import { getAllClientes } from "@/lib/mongodb/clientes";
 import { getAllColaboradores } from "@/lib/mongodb/colaboradores";
 import { getPagamentosByProjeto } from "@/lib/mongodb/pagamentos";
+import { getMensalidadesByProjeto } from "@/lib/mongodb/mensalidades";
 import { getDespesasByProjeto } from "@/lib/mongodb/despesas";
 import { PagamentosSection } from "@/components/painel/PagamentosSection";
+import { MensalidadesSection } from "@/components/painel/MensalidadesSection";
 import { CustosCard } from "@/components/painel/CustosCard";
 import { ProjetoRowMenu } from "@/components/painel/ProjetoRowMenu";
 import { LembreteChecklist } from "@/components/painel/LembreteChecklist";
@@ -30,6 +32,7 @@ import { HardwareSection } from "@/components/painel/HardwareSection";
 import { ColaboradoresSection } from "@/components/painel/ColaboradoresSection";
 import { sanitizeArquivo } from "@/types/projeto";
 import { gastoEmpresaDoProjeto } from "@/lib/gastos";
+import { todasCobrancas } from "@/lib/mensalidades";
 import { StatusBadge } from "@/components/painel/StatusBadge";
 import { todayLisbonYmd } from "@/lib/dates";
 
@@ -53,8 +56,17 @@ function formatDate(iso: string | null): string {
 export default async function ProjetoDetalhePage({ params }: { params: Params }) {
   await requirePainelSession();
   const { id } = await params;
-  const [projeto, lembretes, clientes, pagamentos, comentarios, sandboxes, despesas, colaboradores] =
-    await Promise.all([
+  const [
+    projeto,
+    lembretes,
+    clientes,
+    pagamentos,
+    comentarios,
+    sandboxes,
+    despesas,
+    colaboradores,
+    mensalidades,
+  ] = await Promise.all([
       getProjetoById(id),
       getLembretesByProjeto(id),
       getAllClientes(),
@@ -63,6 +75,7 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
       getSandboxesByProjeto(id),
       getDespesasByProjeto(id),
       getAllColaboradores(),
+      getMensalidadesByProjeto(id),
     ]);
 
   if (!projeto) notFound();
@@ -75,6 +88,10 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
   const lembretesFeitas = lembretes.filter((t) => t.feita).length;
   const totalPago = pagamentos.reduce((s, p) => s + p.valor, 0);
   const gastoEmpresa = gastoEmpresaDoProjeto(projeto, despesas);
+  // Cobranças derivadas no SERVIDOR, no fuso de Lisboa: o componente é cliente e
+  // um browser noutro fuso classificaria as prestações de forma diferente.
+  const hoje = todayLisbonYmd();
+  const cobrancas = todasCobrancas(mensalidades, pagamentos, hoje);
 
   return (
     <>
@@ -143,6 +160,17 @@ export default async function ProjetoDetalhePage({ params }: { params: Params })
             valorEstimado={projeto.valorEstimado}
             projetoStatus={projeto.status}
             projetoTitulo={projeto.titulo}
+          />
+
+          {/* Mensalidades e anuidades — planos de pagamento recorrente. Vive
+              logo a seguir aos Pagamentos: é a mesma conversa (dinheiro deste
+              projecto), mas o que está combinado e ainda não entrou. */}
+          <MensalidadesSection
+            projetoId={projeto.id}
+            mensalidades={mensalidades}
+            cobrancas={cobrancas}
+            pagamentos={pagamentos}
+            hoje={hoje}
           />
 
           {/* Hardware — qualquer categoria (cliente de web também traz PCs).

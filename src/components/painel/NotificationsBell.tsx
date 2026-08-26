@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Bell, UserPlus, MessageSquare, X } from "lucide-react";
+import { Bell, UserPlus, MessageSquare, CalendarClock, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -12,7 +12,7 @@ import { safeFetch, safeJsonPost } from "@/lib/safe-fetch";
 
 type NotificationItem = {
   id: string;
-  type: "lead" | "comment";
+  type: "lead" | "comment" | "cobranca";
   title: string;
   description: string;
   href: string;
@@ -32,6 +32,15 @@ function fmtRelative(iso: string): string {
   const then = Date.parse(iso);
   if (Number.isNaN(then)) return "";
   const diff = Date.now() - then;
+  // As cobranças têm data FUTURA (vencem daqui a dias) — sem este ramo, uma
+  // cobrança a vencer na semana que vem aparecia como "agora".
+  if (diff < -60_000) {
+    const min = Math.round(-diff / 60_000);
+    if (min < 60) return `daqui a ${min} min`;
+    const h = Math.round(min / 60);
+    if (h < 24) return `daqui a ${h} h`;
+    return `daqui a ${Math.round(h / 24)} d`;
+  }
   const min = Math.round(diff / 60_000);
   if (min < 1) return "agora";
   if (min < 60) return `há ${min} min`;
@@ -125,7 +134,7 @@ export function NotificationsBell() {
           <div className="px-4 py-8 text-center">
             <div className="text-sm font-medium text-ink">Sem novidades</div>
             <div className="mt-1 text-[12px] text-ink-soft">
-              Novos leads e actividade aparecem aqui.
+              Novos leads, comentários e cobranças aparecem aqui.
             </div>
           </div>
         ) : (
@@ -149,6 +158,8 @@ export function NotificationsBell() {
                   >
                     {item.type === "lead" ? (
                       <UserPlus size={14} />
+                    ) : item.type === "cobranca" ? (
+                      <CalendarClock size={14} />
                     ) : (
                       <MessageSquare size={14} />
                     )}

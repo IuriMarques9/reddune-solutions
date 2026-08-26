@@ -4,6 +4,7 @@ import { getAllClientes } from "@/lib/mongodb/clientes";
 import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
 import { getAllDespesas } from "@/lib/mongodb/despesas";
 import { getAllColaboradores } from "@/lib/mongodb/colaboradores";
+import { getAllMensalidades } from "@/lib/mongodb/mensalidades";
 import { Topbar } from "@/components/painel/Topbar";
 import { GastosLog, type GastoFiltro } from "@/components/painel/GastosLog";
 import { DualLineChart } from "@/components/painel/DualLineChart";
@@ -18,7 +19,15 @@ import {
   gastoEmpresaDoProjeto,
   splitRepassadoEmpresa,
 } from "@/lib/gastos";
-import { todayLisbonDate } from "@/lib/dates";
+import { todayLisbonDate, todayLisbonYmd } from "@/lib/dates";
+import {
+  cobrancasNoMes,
+  pontualidade,
+  receitaRecorrente,
+  somaPorCobrar,
+  todasCobrancas,
+} from "@/lib/mensalidades";
+import { PERIODO_SUFIXO } from "@/types/mensalidade";
 import { requirePainelSession } from "@/lib/painel-auth";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +42,14 @@ function fmtEuro(v: number): string {
   return `${Math.round(v).toLocaleString("pt-PT")} €`;
 }
 
+/** "+3,5 d" (atrasado) · "−2 d" (adiantado) · "em dia". */
+function fmtDias(v: number): string {
+  const arredondado = Math.round(v * 10) / 10;
+  if (arredondado === 0) return "em dia";
+  const n = Math.abs(arredondado).toLocaleString("pt-PT", { maximumFractionDigits: 1 });
+  return `${arredondado > 0 ? "+" : "−"}${n} d`;
+}
+
 export default async function RelatoriosPage({
   searchParams,
 }: {
@@ -40,14 +57,16 @@ export default async function RelatoriosPage({
 }) {
   await requirePainelSession();
 
-  const [projetos, clientes, pagamentos, despesas, colaboradores, params] = await Promise.all([
-    getAllProjetos(),
-    getAllClientes(),
-    getAllPagamentos(),
-    getAllDespesas(),
-    getAllColaboradores(),
-    searchParams,
-  ]);
+  const [projetos, clientes, pagamentos, despesas, colaboradores, mensalidades, params] =
+    await Promise.all([
+      getAllProjetos(),
+      getAllClientes(),
+      getAllPagamentos(),
+      getAllDespesas(),
+      getAllColaboradores(),
+      getAllMensalidades(),
+      searchParams,
+    ]);
 
   const clienteNome = new Map(clientes.map((c) => [c.id, c.nome]));
   // Ancorado ao dia de Lisboa para o "mês corrente" não deslizar em UTC.
@@ -82,6 +101,49 @@ export default async function RelatoriosPage({
   const receitaMes = receitaPorMes.get(currentKey) ?? 0;
   const gastosMes = gastosPorMes[gastosPorMes.length - 1];
   const lucroMes = receitaMes - gastosMes;
+
+  // ── Planos recorrentes ──────────────────────────────────────────────────
+  // As cobranças são derivadas (nunca guardadas): ver src/lib/mensalidades.ts.
+  const cobrancas = todasCobrancas(mensalidades, pagamentos, todayLisbonYmd());
+  // "Previsto" é o que estava COMBINADO para entrar este mês. Fica ao lado da
+  // Receita, nunca misturado com ela: a Receita é dinheiro que entrou mesmo.
+  const previstoMes = cobrancasNoMes(cobrancas, currentKey).reduce((s, c) => s + c.valor, 0);
+  const porCobrarMes = somaPorCobrar(cobrancasNoMes(cobrancas, currentKey));
+  const recorrente = receitaRecorrente(mensalidades, cobrancas);
+  const pont = pontualidade(cobrancas);
+  // Planos activos, para o card mostrar de onde vem o MRR.
+  const planosRows = mensalidades
+    .filter((m) => m.ativo && !m.fechadoEm)
+    .map((m) => {
+      const minhas = cobrancas.filter((c) => c.mensalidadeId === m.id);
+      const pagas = minhas.filter((c) => c.estado === "paga").length;
+      return {
+        m,
+        pagas,
+        porCobrar: somaPorCobrar(minhas),
+        projetoTitulo: projetos.find((p) => p.id === m.projetoId)?.titulo ?? "Projecto",
+      };
+    })
+    .filter((r) => r.porCobrar > 0)
+    .sort((a, b) => b.porCobrar - a.porCobrar);
+  const planosMax = Math.max(1, ...planosRows.map((r) => r.porCobrar));
+
+  // Desvio por cliente: quem paga a horas e quem faz esperar.
+  const pontPorCliente = new Map<string, { nome: string; n: number; soma: number }>();
+  for (const c of cobrancas) {
+    if (c.desvioDias == null || !c.clienteId) continue;
+    const slot = pontPorCliente.get(c.clienteId) ?? {
+      nome: clienteNome.get(c.clienteId) ?? "(sem nome)",
+      n: 0,
+      soma: 0,
+    };
+    slot.n += 1;
+    slot.soma += c.desvioDias;
+    pontPorCliente.set(c.clienteId, slot);
+  }
+  const pontRows = [...pontPorCliente.entries()]
+    .map(([id, v]) => ({ id, nome: v.nome, n: v.n, media: v.soma / v.n }))
+    .sort((a, b) => b.media - a.media);
 
   // Gastos por categoria (mês corrente) — largura % do máximo. Só mostra as
   // categorias com valor: a lista tem 9 e a maioria fica a zero num mês normal.
@@ -297,6 +359,20 @@ export default async function RelatoriosPage({
       {/* KPIs do mês: Receita / Gastos / Lucro */}
       <div className="mini-kpis" style={{ marginTop: 16 }}>
         <div className="k"><div className="kpi-label">Receita · este mês</div><div className="kpi-num">{fmtEuro(receitaMes)}</div></div>
+        {previstoMes > 0 && (
+          <div
+            className="k"
+            title="O que estava combinado para entrar este mês pelos planos de mensalidade e anuidade. Não é receita — é o que se espera cobrar."
+          >
+            <div className="kpi-label">Previsto · este mês</div>
+            <div className="kpi-num">{fmtEuro(previstoMes)}</div>
+            {porCobrarMes > 0 && (
+              <div className="kpi-label" style={{ marginTop: 2, color: "var(--ember)" }}>
+                {fmtEuro(porCobrarMes)} por cobrar
+              </div>
+            )}
+          </div>
+        )}
         <div className="k"><div className="kpi-label">Gastos · este mês</div><div className="kpi-num" style={{ color: "var(--ember)" }}>{fmtEuro(gastosMes)}</div></div>
         <div className="k accent"><div className="kpi-label">Lucro · este mês</div><div className="kpi-num">{fmtEuro(lucroMes)}</div></div>
       </div>
@@ -349,6 +425,99 @@ export default async function RelatoriosPage({
           ))
         )}
       </div>
+
+      {/* Receita recorrente — só aparece quando há planos a correr */}
+      {recorrente.planosAtivos > 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="card-head">
+            <span className="card-title">Receita recorrente</span>
+            <span className="kpi-label">
+              {recorrente.planosAtivos} plano{recorrente.planosAtivos === 1 ? "" : "s"} a correr
+            </span>
+          </div>
+          <div className="msum" style={{ marginBottom: 16 }}>
+            <div title="Receita mensal recorrente: as anuidades entram a dividir por 12.">
+              <div className="kpi-label">Por mês</div>
+              <div className="m-num sm">{fmtEuro(recorrente.mrr)}</div>
+            </div>
+            <div title="Tudo o que está combinado nos planos e ainda não entrou — incluindo cobranças que ainda nem venceram.">
+              <div className="kpi-label">Comprometido</div>
+              <div className="m-num sm">{fmtEuro(recorrente.comprometido)}</div>
+            </div>
+          </div>
+          {planosRows.map((r) => (
+            <div
+              key={r.m.id}
+              className="bar-row"
+              title={`${r.projetoTitulo} — ${fmtEuro(r.m.valor)} por ${PERIODO_SUFIXO[r.m.periodo]}`}
+            >
+              <div className="bl">
+                <span>
+                  <Link href={`/painel/projetos/${r.m.projetoId}#mensalidades`}>{r.m.titulo}</Link>{" "}
+                  <span className="muted" style={{ fontSize: 11.5 }}>
+                    {r.projetoTitulo} · {r.pagas}/{r.m.numeroCobrancas} pagas
+                  </span>
+                </span>
+                <b>{fmtEuro(r.porCobrar)}</b>
+              </div>
+              <div className="bar-track">
+                <div
+                  className="bar-fill"
+                  style={{ width: `${Math.max(4, Math.round((r.porCobrar / planosMax) * 100))}%` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pontualidade — a diferença entre o dia combinado e o dia em que entrou */}
+      {pont.total > 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="card-head">
+            <span className="card-title">Pontualidade dos pagamentos</span>
+            <span className="kpi-label">
+              {pont.total} cobrança{pont.total === 1 ? "" : "s"} paga{pont.total === 1 ? "" : "s"} ·
+              todo o histórico
+            </span>
+          </div>
+          <div className="msum" style={{ marginBottom: 16 }}>
+            <div title="Pagaram antes do dia combinado.">
+              <div className="kpi-label">Adiantadas</div>
+              <div className="m-num sm">{pont.adiantadas}</div>
+            </div>
+            <div title="Pagaram no dia combinado.">
+              <div className="kpi-label">Em dia</div>
+              <div className="m-num sm">{pont.emDia}</div>
+            </div>
+            <div title="Pagaram depois do dia combinado.">
+              <div className="kpi-label">Atrasadas</div>
+              <div className={pont.atrasadas > 0 ? "m-num sm neg" : "m-num sm"}>{pont.atrasadas}</div>
+            </div>
+            <div title="Média de dias entre o dia previsto e o dia em que o dinheiro entrou.">
+              <div className="kpi-label">Desvio médio</div>
+              <div className="m-num sm">{fmtDias(pont.mediaDias)}</div>
+            </div>
+          </div>
+          {pontRows.map((r) => (
+            <div
+              key={r.id}
+              className="bar-row"
+              title={`${r.n} cobrança${r.n === 1 ? "" : "s"} paga${r.n === 1 ? "" : "s"}`}
+            >
+              <div className="bl">
+                <span>
+                  <Link href={`/painel/clientes/${r.id}`}>{r.nome}</Link>{" "}
+                  <span className="muted" style={{ fontSize: 11.5 }}>
+                    {r.n} cobrança{r.n === 1 ? "" : "s"}
+                  </span>
+                </span>
+                <b style={{ color: r.media > 0 ? "var(--ember)" : undefined }}>{fmtDias(r.media)}</b>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Lucro por tipo de trabalho — onde o dinheiro fica mesmo */}
       <div className="card" style={{ marginTop: 16 }}>

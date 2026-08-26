@@ -8,6 +8,10 @@ import {
 } from "@/types/projeto";
 import type { Cliente } from "@/types/cliente";
 import type { Pagamento } from "@/types/pagamento";
+import type { Mensalidade } from "@/types/mensalidade";
+import { PERIODO_SUFIXO } from "@/types/mensalidade";
+import { cobrancasDe, proximaCobranca, resumoMensalidade } from "@/lib/mensalidades";
+import { todayLisbonYmd } from "@/lib/dates";
 
 // DTOs do portal do cliente: allowlist EXPLÍCITA. Campo novo no Projeto/Cliente
 // nunca chega ao portal sem ser adicionado aqui de propósito. Nunca fazer spread.
@@ -38,6 +42,21 @@ export type PortalValoresDTO = {
   pago: number;
   emFalta: number;
   categorias: { label: string; total: number }[];
+  // Plano de pagamento em prestações, quando existe. O cliente vê O PLANO e o
+  // que falta — nunca as notas internas, o histórico de atrasos, nem se o plano
+  // conta dentro do valor do projecto (isso é contabilidade nossa).
+  planos: PortalPlanoDTO[];
+};
+
+export type PortalPlanoDTO = {
+  titulo: string;
+  /** "366,67 € / mês" já é montado no ecrã; aqui vão os números crus. */
+  valor: number;
+  periodoSufixo: string;
+  total: number;
+  pagas: number;
+  /** yyyy-mm-dd da próxima por liquidar; null se estiver tudo pago. */
+  proximaData: string | null;
 };
 
 export type PortalProjetoDTO = {
@@ -61,7 +80,11 @@ export type PortalClienteDTO = {
   morada: string | null;
 };
 
-export function toPortalProjeto(projeto: Projeto, pagamentos: Pagamento[]): PortalProjetoDTO {
+export function toPortalProjeto(
+  projeto: Projeto,
+  pagamentos: Pagamento[],
+  mensalidades: Mensalidade[] = []
+): PortalProjetoDTO {
   const linhas = projeto.linhas ?? [];
   const linhasTotal = linhas.reduce((s, l) => s + l.quantidade * l.precoUnit, 0);
   // Com linhas, o Total vem da SOMA das linhas (bate sempre com os subtotais por
@@ -82,6 +105,24 @@ export function toPortalProjeto(projeto: Projeto, pagamentos: Pagamento[]): Port
     for (const l of linhas) {
       porCategoria.set(l.categoria, (porCategoria.get(l.categoria) ?? 0) + l.quantidade * l.precoUnit);
     }
+    // Planos activos deste projecto, do ponto de vista do cliente: o que
+    // combinámos e onde vamos. Os fechados/desligados não interessam.
+    const hoje = todayLisbonYmd();
+    const planos: PortalPlanoDTO[] = mensalidades
+      .filter((m) => m.projetoId === projeto.id && m.ativo && !m.fechadoEm)
+      .map((m) => {
+        const cobrancas = cobrancasDe(m, pagamentos, hoje);
+        const resumo = resumoMensalidade(m, cobrancas);
+        return {
+          titulo: m.titulo,
+          valor: m.valor,
+          periodoSufixo: PERIODO_SUFIXO[m.periodo],
+          total: m.numeroCobrancas,
+          pagas: resumo.pagas,
+          proximaData: proximaCobranca(cobrancas)?.dataPrevista ?? null,
+        };
+      });
+
     valores = {
       orcado: total,
       pago,
@@ -90,6 +131,7 @@ export function toPortalProjeto(projeto: Projeto, pagamentos: Pagamento[]): Port
         label: LINHA_CATEGORIA_LABEL[c] ?? c,
         total,
       })),
+      planos,
     };
   }
 

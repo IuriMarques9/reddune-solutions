@@ -3,12 +3,27 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { requirePainelSession } from "@/lib/painel-auth";
 import { getAllProjetos } from "@/lib/mongodb/projetos";
 import { getAllLembretes } from "@/lib/mongodb/lembretes";
+import { getAllMensalidades } from "@/lib/mongodb/mensalidades";
+import { getAllPagamentos } from "@/lib/mongodb/pagamentos";
 import { Topbar } from "@/components/painel/Topbar";
 import { MonthCalendar } from "@/components/painel/MonthCalendar";
 import { WeekCalendar } from "@/components/painel/WeekCalendar";
 import { DayCalendar } from "@/components/painel/DayCalendar";
 import { CalendarViewToggle } from "@/components/painel/CalendarViewToggle";
-import { monthKey, parseMonthKey, parseIsoDate, isToday, isWithinNextDays, todayLisbonDate } from "@/lib/dates";
+import {
+  monthKey,
+  parseMonthKey,
+  parseIsoDate,
+  isToday,
+  isWithinNextDays,
+  todayLisbonDate,
+  todayLisbonYmd,
+} from "@/lib/dates";
+import {
+  cobrancasParaCalendario,
+  todasCobrancas,
+  type CobrancaCalendario,
+} from "@/lib/mensalidades";
 import { STATUS_GROUPS, type Projeto } from "@/types/projeto";
 import type { Lembrete } from "@/types/lembrete";
 
@@ -63,11 +78,21 @@ export default async function CalendarioPage({
 }) {
   await requirePainelSession();
 
-  const [projetos, lembretes, params] = await Promise.all([
+  const [projetos, lembretes, mensalidades, pagamentos, params] = await Promise.all([
     getAllProjetos(),
     getAllLembretes(),
+    getAllMensalidades(),
+    getAllPagamentos(),
     searchParams,
   ]);
+
+  // Cobranças derivadas no servidor (fuso de Lisboa) e já com o nome do plano,
+  // do projecto e do cliente — as vistas do calendário são componentes cliente.
+  const cobrancas = cobrancasParaCalendario(
+    todasCobrancas(mensalidades, pagamentos, todayLisbonYmd()),
+    mensalidades,
+    projetos
+  );
 
   const view: View =
     params.view === "semana" || params.view === "dia" ? params.view : "mes";
@@ -147,16 +172,27 @@ export default async function CalendarioPage({
               monthIndex={target.monthIndex}
               projetos={projetos}
               lembretes={lembretes}
+              cobrancas={cobrancas}
             />
           </div>
-          <AgendaSide projetos={projetos} lembretes={lembretes} />
+          <AgendaSide projetos={projetos} lembretes={lembretes} cobrancas={cobrancas} />
         </div>
       )}
       {view === "semana" && (
-        <WeekCalendar projetos={projetos} lembretes={lembretes} weekStart={weekStart} />
+        <WeekCalendar
+          projetos={projetos}
+          lembretes={lembretes}
+          weekStart={weekStart}
+          cobrancas={cobrancas}
+        />
       )}
       {view === "dia" && (
-        <DayCalendar projetos={projetos} lembretes={lembretes} day={focusDate} />
+        <DayCalendar
+          projetos={projetos}
+          lembretes={lembretes}
+          day={focusDate}
+          cobrancas={cobrancas}
+        />
       )}
     </>
   );
@@ -169,7 +205,11 @@ export default async function CalendarioPage({
 // porque mostra o mês completo tal como está na base de dados.
 type AgendaEntry = { id: string; href: string; label: string; sub: string | null; date: Date; accionavel: boolean };
 
-function buildAgenda(projetos: Projeto[], lembretes: Lembrete[]) {
+function buildAgenda(
+  projetos: Projeto[],
+  lembretes: Lembrete[],
+  cobrancas: CobrancaCalendario[]
+) {
   // "Hoje" no fuso de Portugal (o servidor Vercel corre em UTC).
   const now = todayLisbonDate();
   const entries: AgendaEntry[] = [];
@@ -184,6 +224,23 @@ function buildAgenda(projetos: Projeto[], lembretes: Lembrete[]) {
     if (!d) continue;
     entries.push({ id: `t-${t.id}`, href: `/painel/projetos/${t.projetoId}`, label: t.titulo, sub: "Lembrete", date: d, accionavel: !t.feita });
   }
+  for (const c of cobrancas) {
+    const d = parseIsoDate(c.dataPrevista);
+    if (!d) continue;
+    const valor = c.valor.toLocaleString("pt-PT", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    entries.push({
+      id: `c-${c.mensalidadeId}-${c.numero}`,
+      href: `/painel/projetos/${c.projetoId}#mensalidades`,
+      label: `${valor} € · ${c.clienteNome ?? c.projetoTitulo}`,
+      sub: `${c.planoTitulo} ${c.numero}/${c.totalCobrancas}`,
+      date: d,
+      // Uma cobrança já paga não é accionável — fica só na grelha do mês.
+      accionavel: c.estado !== "paga",
+    });
+  }
   const hoje = entries
     .filter((e) => e.accionavel && isToday(e.date.toISOString(), now))
     .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -194,8 +251,16 @@ function buildAgenda(projetos: Projeto[], lembretes: Lembrete[]) {
   return { hoje, proximos };
 }
 
-function AgendaSide({ projetos, lembretes }: { projetos: Projeto[]; lembretes: Lembrete[] }) {
-  const { hoje, proximos } = buildAgenda(projetos, lembretes);
+function AgendaSide({
+  projetos,
+  lembretes,
+  cobrancas,
+}: {
+  projetos: Projeto[];
+  lembretes: Lembrete[];
+  cobrancas: CobrancaCalendario[];
+}) {
+  const { hoje, proximos } = buildAgenda(projetos, lembretes, cobrancas);
   const fmtDay = (d: Date) =>
     d.toLocaleDateString("pt-PT", { weekday: "short", day: "2-digit", month: "short" });
 

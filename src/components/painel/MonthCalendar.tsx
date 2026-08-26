@@ -9,16 +9,20 @@ import {
 } from "@/lib/dates";
 import type { Projeto } from "@/types/projeto";
 import type { Lembrete } from "@/types/lembrete";
+import type { CobrancaCalendario } from "@/lib/mensalidades";
+import { CobrancaPill } from "./CobrancaPill";
 
 type CalendarEntry =
   | { kind: "projeto"; item: Projeto }
-  | { kind: "lembrete"; item: Lembrete };
+  | { kind: "lembrete"; item: Lembrete }
+  | { kind: "cobranca"; item: CobrancaCalendario };
 
 type Props = {
   year: number;
   monthIndex: number;
   projetos: Projeto[];
   lembretes?: Lembrete[];
+  cobrancas?: CobrancaCalendario[];
 };
 
 const DAYS_HEADER = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
@@ -27,7 +31,13 @@ function isoDate(year: number, monthIndex: number, day: number): string {
   return `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-export function MonthCalendar({ year, monthIndex, projetos, lembretes = [] }: Props) {
+export function MonthCalendar({
+  year,
+  monthIndex,
+  projetos,
+  lembretes = [],
+  cobrancas = [],
+}: Props) {
   // "Hoje" no fuso de Portugal (não no do servidor Vercel, que corre em UTC).
   const hojeLisboa = todayLisbonDate();
   const totalDays = daysInMonth(year, monthIndex);
@@ -57,6 +67,14 @@ export function MonthCalendar({ year, monthIndex, projetos, lembretes = [] }: Pr
     if (!d) continue;
     if (d.getFullYear() !== year || d.getMonth() !== monthIndex) continue;
     addToDay(d.getDate(), { kind: "lembrete", item: t });
+  }
+
+  // As cobranças já vêm com data yyyy-mm-dd calculada no servidor: compara-se
+  // como texto, sem passar por Date, para nenhum fuso deslocar o dia.
+  const prefixoMes = `${year}-${String(monthIndex + 1).padStart(2, "0")}-`;
+  for (const c of cobrancas) {
+    if (!c.dataPrevista.startsWith(prefixoMes)) continue;
+    addToDay(Number(c.dataPrevista.slice(8, 10)), { kind: "cobranca", item: c });
   }
 
   // day: dia do mês corrente; outDay: dia do mês adjacente (célula .out)
@@ -110,6 +128,12 @@ export function MonthCalendar({ year, monthIndex, projetos, lembretes = [] }: Pr
                     >
                       {p.titulo}
                     </Link>
+                  );
+                }
+                if (entry.kind === "cobranca") {
+                  const c = entry.item;
+                  return (
+                    <CobrancaPill key={`c-${c.mensalidadeId}-${c.numero}-${i}`} cobranca={c} />
                   );
                 }
                 const t = entry.item;

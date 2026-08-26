@@ -44,6 +44,23 @@ export async function upsertPagamento(p: Pagamento): Promise<void> {
   );
 }
 
+/**
+ * Corta a ligação dos pagamentos a um plano recorrente apagado. Os pagamentos
+ * FICAM (o dinheiro entrou mesmo, e continua a contar na receita) — passam só a
+ * ser avulso. Sem isto ficavam a apontar a uma mensalidade que já não existe.
+ * Devolve quantos foram desligados.
+ */
+export async function desligarPagamentosDaMensalidade(mensalidadeId: string): Promise<number> {
+  const db = await getDb();
+  const result = await db
+    .collection<Pagamento>(COLLECTION)
+    .updateMany(
+      { mensalidadeId },
+      { $unset: { mensalidadeId: "", cobrancaNumero: "" } }
+    );
+  return result.modifiedCount;
+}
+
 export async function deletePagamento(id: string): Promise<boolean> {
   const db = await getDb();
   const result = await db.collection<Pagamento>(COLLECTION).deleteOne({ id });
