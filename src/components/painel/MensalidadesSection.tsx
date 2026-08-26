@@ -311,14 +311,8 @@ function PlanoCard({
         </span>
         {ehDespesa && (
           <span
+            className="pill warm"
             title="Dinheiro NOSSO a sair (alojamento, base de dados, domínio). Não é dívida do cliente nem aparece no portal dele."
-            style={{
-              fontSize: 10.5,
-              padding: "1px 7px",
-              borderRadius: 999,
-              background: "rgba(176,121,63,.18)",
-              color: "#8a5a2b",
-            }}
           >
             a pagar por nós
           </span>
@@ -331,42 +325,24 @@ function PlanoCard({
         </span>
         {m.dentroDoValor && (
           <span
+            className="pill mute"
             title="Estas cobranças são o valor do projecto partido em prestações — as Dívidas não somam o mesmo dinheiro duas vezes."
-            style={{
-              fontSize: 10.5,
-              padding: "1px 7px",
-              borderRadius: 999,
-              background: "rgba(90,14,14,.07)",
-              color: "var(--ink-soft)",
-            }}
           >
             dentro do valor
           </span>
         )}
         {porArrancar && (
           <span
+            className="pill warm"
             title="Combinado mas sem data. A linha já está nos Custos; o calendário nasce quando o cliente pagar."
-            style={{
-              fontSize: 10.5,
-              padding: "1px 7px",
-              borderRadius: 999,
-              background: "rgba(176,121,63,.18)",
-              color: "#8a5a2b",
-            }}
           >
             por arrancar
           </span>
         )}
         {!m.ativo && !porArrancar && (
           <span
+            className="pill mute"
             title="Desligado: não gera cobranças novas. As que já venceram por pagar mantêm-se."
-            style={{
-              fontSize: 10.5,
-              padding: "1px 7px",
-              borderRadius: 999,
-              background: "rgba(90,14,14,.07)",
-              color: "var(--ink-mute)",
-            }}
           >
             desligado
           </span>
