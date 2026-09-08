@@ -169,6 +169,47 @@ Site Next.js (App Router) na Vercel + MongoDB. Login NextAuth (credenciais, util
   próprio cron. Hobby permite crons (1×/dia, ±59 min). Dedup em
   `mensalidade_avisos` (TTL 400 dias), senão repetia o aviso todos os dias.
 
+## Despesas editáveis (sessão 2026-09-08)
+- As despesas manuais **editam-se** nas três listas onde já se apagavam: log de
+  gastos dos Relatórios (`GastosLog` — a superfície canónica, é para lá que o
+  `CustosCard` manda), card "Despesas recentes" da visão geral e lista de
+  pagamentos a colaboradores da ficha do projecto. **Um único formulário**: o
+  `DespesaFormSheet` ganhou a prop `despesa?` e serve criar E editar. Não criar
+  página `/painel/despesas/[id]` nem um segundo form.
+- **`mensalidadeId` + `cobrancaNumero` NÃO são campos de utilizador.** São a
+  ligação que marca uma cobrança do plano como paga (`cobrancasDe`) e viajam
+  intactos no payload da edição; no sheet aparecem só como chip de leitura
+  "Do plano · cobrança N". Perdê-los reabria a prestação na ficha, no calendário,
+  no cron das 08:00 e no sino — de repente e sem rasto.
+- Por isso `validation-despesa.ts` deixou de ter `.transform((v) => v ?? null)`
+  nesses dois campos: **ausente (`undefined`) = preservar o que está na BD;
+  `null` explícito = apagar**. Sem essa distinção o servidor não conseguia
+  preservar nada. Mesma lição do `validation-projeto.ts` (o "Guardar custos" que
+  apagava cliente/tipo/categoria). Não voltar a pôr lá o transform.
+- `upsertDespesa` faz `$set` do **documento inteiro** — campo omitido é
+  reescrito, não preservado (só `criadoEm` escapa, via `$setOnInsert`). A rota
+  lê o `existing` com `getDespesaById` e é ela que preserva, devolve 404 num id
+  que já não existe, grava o `before` na auditoria e deriva o `op` da existência
+  real em vez de o adivinhar pelo payload.
+- Revalidação é sempre da **união antes∪depois**: mudar uma despesa do projecto
+  A para o B tem de revalidar os dois, senão a ficha de A fica com o gasto e o
+  lucro errados. Vale igual no DELETE.
+- Dentro do `SheetContent` **não valem as classes do painel** (`pill`,
+  `icon-mini`, `ic`, `card`): o sheet é portalado para o `body` e o `painel.css`
+  está scoped sob `.pnl`. Só Tailwind/shadcn lá dentro. E atenção aos tokens
+  Oasis (`ember`, `ink`, `dune`…): são `var(--x)` com hex, por isso o Tailwind 3
+  **não gera** as variantes com opacidade — `bg-ember/10` não existe no CSS. Usar
+  `rgba()` à mão (é o que já apaga o `bg-ink/40` do overlay do próprio Sheet).
+- **Por decidir (defeito pré-existente, não tocado):** as despesas continuam a
+  ser injectadas em `todasCobrancas` em quatro sítios (`projetos/[id]`,
+  `calendario`, `cron`, `notifications`), resquício do `Mensalidade.tipo`
+  removido a 2026-08-27. O custo do plano soma ao `pago` da MESMA cobrança que o
+  pagamento do cliente já fechou (490 € + 137,40 € = 627,40 € "recebidos") e
+  /painel, /painel/dividas e /painel/relatorios não fazem essa soma — a mesma
+  cobrança mostra valores diferentes conforme o ecrã. Saídas: deixar de injectar
+  `...despesas` nos quatro sítios (e limpar a prop morta `despesas` da
+  `MensalidadesSection`), ou manter e filtrar.
+
 ## Extras — taxas gerais (sessão 2026-08-24)
 - Taxas que valem para as três categorias (urgência, deslocação) vivem em
   `slug: "extras"` na colecção `servicos` — `SERVICO_EXTRAS` / `SERVICO_GRUPO`

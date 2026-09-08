@@ -653,7 +653,7 @@ export default async function RelatoriosPage({
             <GastoTab g="manual" cur={filtro} label="Manuais" n={nManual} />
           </nav>
         </div>
-        <GastosLog events={logVisivel} projetos={projetoOptions} filtro={filtro} />
+        <GastosLog events={logVisivel} projetos={projetoOptions} filtro={filtro} despesas={despesas} colaboradores={colaboradores} />
       </div>
     </>
   );

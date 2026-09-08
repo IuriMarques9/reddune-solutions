@@ -8,6 +8,7 @@ import {
   Inbox,
   ListChecks,
   Package,
+  Receipt,
   UserPlus,
   Wrench,
   type LucideIcon,
@@ -58,9 +59,10 @@ const COLL_LABEL: Record<string, string> = {
   products: "Produto",
   portfolio: "Trabalho",
   servicos: "Serviço",
+  despesas: "Despesa",
 };
 // Colecções com rótulo feminino (concordância do particípio: criada/editada/apagada).
-const COLL_FEM = new Set<string>([]);
+const COLL_FEM = new Set<string>(["despesas"]);
 const OP_PART: Record<string, string> = { create: "criad", update: "editad", delete: "apagad" };
 
 // Hora actual em Lisboa (o servidor Vercel corre em UTC — getHours() cru
@@ -89,9 +91,16 @@ function fmtRel(d: Date): string {
 }
 
 function auditObj(e: AuditEntry): string {
-  const after = e.after as { titulo?: string; nome?: string; name?: unknown } | null;
+  const after = e.after as {
+    titulo?: string;
+    nome?: string;
+    descricao?: string;
+    name?: unknown;
+  } | null;
   if (after?.titulo) return after.titulo;
   if (after?.nome) return after.nome;
+  // Despesas não têm título nem nome — é a descrição que as identifica.
+  if (after?.descricao) return after.descricao;
   return `${COLL_LABEL[e.collection] ?? e.collection} · ${e.entityId.slice(0, 8)}`;
 }
 
@@ -119,6 +128,8 @@ function auditIcon(e: AuditEntry): LucideIcon {
       return Images;
     case "servicos":
       return Wrench;
+    case "despesas":
+      return Receipt;
     default:
       return Inbox;
   }
@@ -568,6 +579,7 @@ export default async function PainelOverviewPage({
         <DespesasSection
           despesas={despesasRecentes}
           projetos={projetoOptions}
+          colaboradores={colaboradores}
           verTudoHref="/painel/relatorios"
         />
       </div>

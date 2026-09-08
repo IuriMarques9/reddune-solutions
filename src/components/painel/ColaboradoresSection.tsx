@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronRight, Euro, Loader2, Plus, Trash2, Users } from "lucide-react";
+import { ChevronRight, Euro, Loader2, Pencil, Plus, Trash2, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Projeto, ProjetoColaborador } from "@/types/projeto";
 import type { Despesa } from "@/types/despesa";
@@ -48,6 +48,12 @@ function toRows(cs: ProjetoColaborador[]): Row[] {
   }));
 }
 
+// O sheet de despesa serve dois gestos aqui: registar um pagamento novo a uma
+// pessoa ou corrigir um já lançado. É o modo que decide a `key` da remontagem.
+type SheetAlvo =
+  | { modo: "novo"; colaboradorId: string }
+  | { modo: "editar"; despesa: Despesa };
+
 type Props = {
   projeto: Projeto;
   /** Despesas ligadas a este projecto (a página já as carrega) — os pagamentos
@@ -84,8 +90,9 @@ export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Ficha pré-seleccionada no sheet de pagamento; null = sheet fechado.
-  const [payFor, setPayFor] = useState<string | null>(null);
+  // Alvo do sheet de pagamento — pessoa a pagar ou despesa a corrigir;
+  // null = sheet fechado.
+  const [alvo, setAlvo] = useState<SheetAlvo | null>(null);
   const [novoAberto, setNovoAberto] = useState(false);
 
   const dirty = JSON.stringify(rows.map(({ key: _key, ...r }) => r)) !==
@@ -321,7 +328,7 @@ export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props
                 <button
                   type="button"
                   className="btn-ghost"
-                  onClick={() => setPayFor(c.colaboradorId)}
+                  onClick={() => setAlvo({ modo: "novo", colaboradorId: c.colaboradorId })}
                   disabled={saving}
                 >
                   <Euro style={{ width: 13, height: 13 }} aria-hidden="true" />
@@ -360,20 +367,32 @@ export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props
               >
                 {fmtEuro(d.valor)}
               </b>
-              <button
-                type="button"
-                className="icon-mini"
-                onClick={() => apagarPagamento(d)}
-                disabled={deleting === d.id}
-                title="Apagar pagamento"
-                aria-label={`Apagar pagamento de ${fmtEuro(d.valor)} a ${nomeDe(d.colaboradorId)}`}
-              >
-                {deleting === d.id ? (
-                  <Loader2 className="animate-spin" aria-hidden="true" />
-                ) : (
-                  <Trash2 aria-hidden="true" />
-                )}
-              </button>
+              <span style={{ display: "inline-flex", gap: 4 }}>
+                <button
+                  type="button"
+                  className="icon-mini"
+                  onClick={() => setAlvo({ modo: "editar", despesa: d })}
+                  disabled={deleting === d.id}
+                  title="Editar pagamento"
+                  aria-label={`Editar pagamento de ${fmtEuro(d.valor)} a ${nomeDe(d.colaboradorId)}`}
+                >
+                  <Pencil aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  className="icon-mini"
+                  onClick={() => apagarPagamento(d)}
+                  disabled={deleting === d.id}
+                  title="Apagar pagamento"
+                  aria-label={`Apagar pagamento de ${fmtEuro(d.valor)} a ${nomeDe(d.colaboradorId)}`}
+                >
+                  {deleting === d.id ? (
+                    <Loader2 className="animate-spin" aria-hidden="true" />
+                  ) : (
+                    <Trash2 aria-hidden="true" />
+                  )}
+                </button>
+              </span>
             </div>
           ))}
         </div>
@@ -393,20 +412,26 @@ export function ColaboradoresSection({ projeto, despesas, colaboradores }: Props
         )}
       </div>
 
-      {/* Sheet de pagamento — reutiliza o form de despesa com categoria, projecto
-          e pessoa já preenchidos. key remonta o form a cada abertura para o
-          prefill pegar. */}
-      {payFor != null && (
+      {/* Sheet de pagamento — reutiliza o form de despesa, a registar com
+          categoria, projecto e pessoa já preenchidos ou a corrigir um pagamento
+          já lançado. key remonta o form a cada abertura para o prefill (ou a
+          despesa) pegar. */}
+      {alvo != null && (
         <DespesaFormSheet
-          key={payFor}
+          key={alvo.modo === "editar" ? alvo.despesa.id : alvo.colaboradorId}
           projetos={[{ id: projeto.id, titulo: projeto.titulo }]}
           colaboradores={colaboradores}
           open
           onOpenChange={(o) => {
-            if (!o) setPayFor(null);
+            if (!o) setAlvo(null);
           }}
           hideTrigger
-          prefill={{ categoria: "colaboradores", projetoId: projeto.id, colaboradorId: payFor }}
+          despesa={alvo.modo === "editar" ? alvo.despesa : undefined}
+          prefill={
+            alvo.modo === "novo"
+              ? { categoria: "colaboradores", projetoId: projeto.id, colaboradorId: alvo.colaboradorId }
+              : undefined
+          }
         />
       )}
     </section>

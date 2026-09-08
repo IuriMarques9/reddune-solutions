@@ -18,6 +18,7 @@ import {
   fimDaCobertura,
   margemDoPlano,
 } from "@/lib/mensalidades";
+import type { Despesa } from "@/types/despesa";
 import type { Mensalidade } from "@/types/mensalidade";
 import type { Pagamento } from "@/types/pagamento";
 import type { ProjetoLinha } from "@/types/projeto";
@@ -51,6 +52,21 @@ function pagamento(p: Partial<Pagamento> & { id: string }): Pagamento {
     metodo: "transferencia",
     notas: null,
     criadoEm: "2026-09-01T00:00:00.000Z",
+    ...p,
+  };
+}
+
+// A despesa do custo de um plano (nasce ao confirmar a cobrança) faz de
+// confirmação tal como um pagamento. Mesma fábrica de gastos.test.ts.
+function despesa(p: Partial<Despesa> & { id: string }): Despesa {
+  return {
+    descricao: "despesa",
+    categoria: "dominios",
+    valor: 0,
+    data: "2026-07-01",
+    projetoId: null,
+    notas: null,
+    criadoEm: "2026-07-01T00:00:00.000Z",
     ...p,
   };
 }
@@ -705,5 +721,63 @@ describe("porCobrarDentroDoValor", () => {
     const outro = plano({ id: "m2", projetoId: "outro" });
     const cs = cobrancasDe(outro, [], "2026-09-01");
     expect(porCobrarDentroDoValor([outro], cs, "proj-trakinas")).toBe(0);
+  });
+});
+
+describe("despesa a confirmar uma cobrança", () => {
+  // `cobrancasDe` aceita qualquer ConfirmacaoDeCobranca, e a ficha do projecto,
+  // o calendário, o cron das 08:00 e o sino passam-lhe `[...pagamentos,
+  // ...despesas]`: para eles, uma despesa com o par mensalidadeId +
+  // cobrancaNumero fecha a prestação. Por isso o par não é campo de utilizador
+  // numa edição de despesa — é ele que diz a que prestação o dinheiro pertence.
+  const alojamento = plano({
+    id: "m-alojamento",
+    titulo: "Alojamento anual",
+    valor: 137.4,
+    periodo: "anual",
+    numeroCobrancas: 3,
+    primeiraCobranca: "2026-06-27",
+  });
+  const renovacao = despesa({
+    id: "d-alojamento-1",
+    descricao: "Alojamento anual — custo",
+    categoria: "dominios",
+    valor: 137.4,
+    data: "2026-06-27",
+    projetoId: "proj-trakinas",
+    mensalidadeId: "m-alojamento",
+    cobrancaNumero: 1,
+  });
+
+  it("fecha a prestação que confirmou, e só essa", () => {
+    const cs = todasCobrancas([alojamento], [renovacao], "2026-07-10");
+    expect(cs[0].estado).toBe("paga");
+    expect(cs[0].pago).toBeCloseTo(137.4, 2);
+    // A data real sai da despesa, como sairia de um pagamento.
+    expect(cs[0].dataPaga).toBe("2026-06-27");
+    // É o número que escolhe a prestação — a renovação seguinte fica intacta.
+    expect(cs[1].pago).toBe(0);
+  });
+
+  it("com meia ligação o dinheiro não chega a prestação nenhuma", () => {
+    // Sem número, `cobrancasDe` salta a confirmação: a prestação continua a
+    // dever-se por inteiro, mesmo com a despesa a apontar ao plano certo.
+    const meia = despesa({ ...renovacao, cobrancaNumero: null });
+    const cs = todasCobrancas([alojamento], [meia], "2026-07-10");
+    expect(cs.every((c) => c.pago === 0)).toBe(true);
+    expect(cs[0].estado).toBe("vencida");
+  });
+
+  it("uma edição que apague o par põe a prestação outra vez em atraso", () => {
+    // O custo de perder a ligação numa gravação: a prestação REABRE nos quatro
+    // ecrãs que injectam as despesas, e o aviso de atraso volta a disparar por
+    // dinheiro que já foi tratado.
+    const antes = todasCobrancas([alojamento], [renovacao], "2026-07-10");
+    expect(cobrancasVencidas(antes)).toEqual([]);
+
+    const semLigacao = despesa({ ...renovacao, mensalidadeId: null, cobrancaNumero: null });
+    const depois = todasCobrancas([alojamento], [semLigacao], "2026-07-10");
+    expect(depois[0].estado).toBe("vencida");
+    expect(cobrancasVencidas(depois).map((c) => c.numero)).toEqual([1]);
   });
 });

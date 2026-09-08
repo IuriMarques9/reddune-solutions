@@ -26,6 +26,7 @@ import {
   DESPESA_CATEGORIA_HINT,
   DESPESA_CATEGORIA_LABEL,
   DESPESA_CATEGORIA_ORDER,
+  type Despesa,
   type DespesaCategoria,
 } from "@/types/despesa";
 import { parseMoney } from "@/lib/parse-number";
@@ -48,6 +49,8 @@ export type DespesaPrefill = {
 
 type SheetProps = {
   projetos: ProjetoOption[];
+  /** Despesa a editar. Sem esta prop o sheet regista uma nova. */
+  despesa?: Despesa;
   /** Fichas para escolher em pagamentos a colaboradores. */
   colaboradores?: Colaborador[];
   /** Controlo externo do sheet (ex.: NovoMenu). Sem esta prop gere o próprio estado. */
@@ -59,11 +62,13 @@ type SheetProps = {
 };
 
 /**
- * DespesaFormSheet — botão + Sheet lateral para registar uma despesa manual
- * da empresa (stock, domínios, licenças, marketing…). POST /api/despesas/upsert.
+ * DespesaFormSheet — botão + Sheet lateral para registar ou editar uma despesa
+ * manual da empresa (stock, domínios, licenças, marketing…).
+ * POST /api/despesas/upsert.
  */
 export function DespesaFormSheet({
   projetos,
+  despesa,
   colaboradores = [],
   open: openProp,
   onOpenChange,
@@ -72,6 +77,7 @@ export function DespesaFormSheet({
 }: SheetProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = openProp ?? internalOpen;
+  const isEdit = !!despesa;
 
   function setOpen(o: boolean) {
     onOpenChange?.(o);
@@ -82,21 +88,36 @@ export function DespesaFormSheet({
     <Sheet open={open} onOpenChange={setOpen}>
       {!hideTrigger && (
         <SheetTrigger asChild>
-          <button type="button" className="btn-primary">
-            <Plus className="ic" aria-hidden="true" />
-            Registar despesa
+          <button type="button" className={isEdit ? "btn-ghost" : "btn-primary"}>
+            {!isEdit && <Plus className="ic" aria-hidden="true" />}
+            {isEdit ? "Editar" : "Registar despesa"}
           </button>
         </SheetTrigger>
       )}
       <SheetContent side="right" className="flex flex-col p-0">
         <SheetHeader>
-          <SheetTitle>Registar despesa</SheetTitle>
+          <SheetTitle>{isEdit ? "Editar despesa" : "Registar despesa"}</SheetTitle>
+          {/* Nasceu de um plano: diz-se, não se trava — a ligação viaja no
+              payload e nunca é campo de utilizador. */}
+          {/* rgba à mão, não `bg-ember/8`: os tokens Oasis são `var(--ember)`
+              com hex lá dentro, e o Tailwind 3 não gera a variante com
+              opacidade — a classe saía do CSS e o chip ficava sem fundo. */}
+          {despesa?.mensalidadeId && (
+            <span className="self-start rounded-full border border-[rgba(214,66,42,0.25)] bg-[rgba(214,66,42,0.08)] px-2 py-0.5 text-[10px] uppercase tracking-wide text-dune">
+              Do plano
+              {despesa.cobrancaNumero ? ` · cobrança ${despesa.cobrancaNumero}` : ""}
+            </span>
+          )}
           <SheetDescription>
-            Gasto da empresa — stock, peças, domínios, licenças, marketing…
+            {isEdit
+              ? "Actualiza os dados desta despesa."
+              : "Gasto da empresa — stock, peças, domínios, licenças, marketing…"}
           </SheetDescription>
         </SheetHeader>
         <DespesaForm
+          key={despesa?.id ?? "nova"}
           projetos={projetos}
+          despesa={despesa}
           colaboradores={colaboradores}
           prefill={prefill}
           onSaved={() => setOpen(false)}
@@ -109,29 +130,42 @@ export function DespesaFormSheet({
 
 type FormProps = {
   projetos: ProjetoOption[];
+  despesa?: Despesa;
   colaboradores: Colaborador[];
   prefill?: DespesaPrefill;
   onSaved?: () => void;
   onCancel?: () => void;
 };
 
-function DespesaForm({ projetos, colaboradores, prefill, onSaved, onCancel }: FormProps) {
+function DespesaForm({ projetos, despesa, colaboradores, prefill, onSaved, onCancel }: FormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [pending, startTransition] = useTransition();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [descricao, setDescricao] = useState("");
-  const [categoria, setCategoria] = useState<DespesaCategoria | "">(prefill?.categoria ?? "");
-  const [valor, setValor] = useState("");
-  const [data, setData] = useState(todayLisbonYmd());
-  const [projetoId, setProjetoId] = useState(prefill?.projetoId ?? "");
-  const [colaboradorId, setColaboradorId] = useState(prefill?.colaboradorId ?? "");
-  const [notas, setNotas] = useState("");
+  // A despesa a editar ganha sempre ao prefill — o prefill é para a criação.
+  // Remontagem por `key` no chamador; sem useEffect de re-sync (via-se o valor
+  // a saltar, ver CustosCard).
+  const [descricao, setDescricao] = useState(despesa?.descricao ?? "");
+  const [categoria, setCategoria] = useState<DespesaCategoria | "">(
+    despesa?.categoria ?? prefill?.categoria ?? ""
+  );
+  const [valor, setValor] = useState(despesa ? String(despesa.valor).replace(".", ",") : "");
+  const [data, setData] = useState(despesa?.data.slice(0, 10) ?? todayLisbonYmd());
+  const [projetoId, setProjetoId] = useState(despesa?.projetoId ?? prefill?.projetoId ?? "");
+  const [colaboradorId, setColaboradorId] = useState(
+    despesa?.colaboradorId ?? prefill?.colaboradorId ?? ""
+  );
+  const [notas, setNotas] = useState(despesa?.notas ?? "");
   // Sheet de ficha nova aberto por cima deste — quem falta na lista cria-se
   // aqui em vez de abandonar o pagamento a meio.
   const [novoAberto, setNovoAberto] = useState(false);
+
+  // Projecto que a despesa aponta mas já não existe na lista (foi apagado).
+  // Precisa de entrada própria no Select, senão o campo fica em branco.
+  const orfao =
+    projetoId && !projetos.some((p) => p.id === projetoId) ? projetoId : null;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -152,6 +186,7 @@ function DespesaForm({ projetos, colaboradores, prefill, onSaved, onCancel }: Fo
     }
     setSubmitting(true);
     const res = await safeJsonPost<{ id: string }>("/api/despesas/upsert", {
+      id: despesa?.id,
       descricao: descricao.trim(),
       categoria,
       valor: Math.round(v * 100) / 100,
@@ -159,19 +194,31 @@ function DespesaForm({ projetos, colaboradores, prefill, onSaved, onCancel }: Fo
       projetoId: projetoId || null,
       colaboradorId: categoria === "colaboradores" ? colaboradorId || null : null,
       notas: notas.trim() || null,
+      // A ligação ao plano não é campo de utilizador: viaja intacta, senão o
+      // upsert reescrevia-a a null e a prestação reabria no calendário e no cron.
+      mensalidadeId: despesa?.mensalidadeId ?? null,
+      cobrancaNumero: despesa?.cobrancaNumero ?? null,
     });
     setSubmitting(false);
     if (!res.ok) {
       setError(res.error);
-      toast({ title: "Erro a registar despesa", description: res.error, variant: "destructive" });
+      toast({
+        title: despesa ? "Erro a guardar despesa" : "Erro a registar despesa",
+        description: res.error,
+        variant: "destructive",
+      });
       return;
     }
-    toast({ title: "Despesa registada", variant: "success" });
+    toast({ title: despesa ? "Despesa guardada" : "Despesa registada", variant: "success" });
     startTransition(() => router.refresh());
     onSaved?.();
   }
 
   const isBusy = submitting || pending;
+  // A rota anula o colaboradorId fora da categoria "colaboradores", em silêncio.
+  const perdeColaborador = !!despesa?.colaboradorId && categoria !== "colaboradores";
+  const nomePago =
+    colaboradores.find((c) => c.id === despesa?.colaboradorId)?.nome ?? "este colaborador";
 
   return (
     <form onSubmit={onSubmit} className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
@@ -209,6 +256,11 @@ function DespesaForm({ projetos, colaboradores, prefill, onSaved, onCancel }: Fo
           </Select>
           {categoria && (
             <p className="text-[11px] text-muted-foreground">{DESPESA_CATEGORIA_HINT[categoria]}</p>
+          )}
+          {perdeColaborador && (
+            <p className="text-[11px] text-muted-foreground">
+              Deixa de contar como pagamento a {nomePago}.
+            </p>
           )}
         </div>
         <div className="space-y-1">
@@ -250,6 +302,13 @@ function DespesaForm({ projetos, colaboradores, prefill, onSaved, onCancel }: Fo
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none">— sem projecto —</SelectItem>
+              {/* Apagar um projecto deixa as despesas dele como histórico
+                  (api/projetos/[id]). Sem esta entrada o campo ficava EM BRANCO
+                  — nem título nem "sem projecto" — e lia-se como desligado
+                  quando a ligação continua lá. */}
+              {orfao && (
+                <SelectItem value={orfao}>— projecto apagado —</SelectItem>
+              )}
               {projetos.map((p) => (
                 <SelectItem key={p.id} value={p.id}>
                   {p.titulo}
@@ -319,7 +378,7 @@ function DespesaForm({ projetos, colaboradores, prefill, onSaved, onCancel }: Fo
         )}
         <Button type="submit" disabled={isBusy} className="bg-ink text-cream hover:bg-ember">
           {isBusy && <Loader2 className="h-4 w-4 mr-1 animate-spin" aria-hidden="true" />}
-          Registar
+          {despesa ? "Guardar" : "Registar"}
         </Button>
       </div>
     </form>
